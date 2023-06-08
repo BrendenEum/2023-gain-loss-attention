@@ -25,6 +25,7 @@ mcmc_chains/
 figure-html/
 test*
 *.asc
+*.edf
 .vscode/
 *.db
 config.txt
