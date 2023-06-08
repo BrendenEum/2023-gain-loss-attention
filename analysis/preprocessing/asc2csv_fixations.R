@@ -43,10 +43,9 @@ rawdata <- readLines(file.path(datadir, fixfilename)) %>% data.table()
 
 # Get a datatable with only fixation and saccade data for each trial.
 
-cond1 <- rawdata$. %like% "FIX"
-cond2 <- rawdata$. %like% "SACC"
-cond3 <- rawdata$. %like% "TRIAL"
-data <- rawdata[cond1 | cond2 | cond3, ]
+cond1 <- rawdata$. %like% "EFIX"
+cond2 <- rawdata$. %like% "TRIAL"
+data <- rawdata[cond1 | cond2, ]
 
 # Drop everything before the first trial (trial numbers with neg or 0 are practice).
 
@@ -65,6 +64,8 @@ data$duration <- NA # Duration of event, only for E events (end)
 data$xPos <- NA # X coordinate of fixation event
 data$yPos <- NA # Y coordinate of fixation event
 data$pupil <- NA # Pupil area or diameter (check experiment, I don't remember rn)
+data$trialstart <- 0 # Indicator for when a trial starts
+data$trialend <- 0 # Indicator for when a trial ends
 
 for (obs in 1:length(data$.)) {
 
@@ -72,8 +73,11 @@ for (obs in 1:length(data$.)) {
 
   if (fixList[[obs]][3] == "TRIALSTART") {
     trial_number <- as.integer(fixList[[obs]][4])
-  } else if (fixList[[obs-1]][3] == "TRIALEND") {
-    trial_number <- NA
+  }
+  if (obs > 3) { # Need this since the next if statement looks two obs back.
+    if (fixList[[obs-2]][3] == "TRIALEND") {
+      trial_number <- NA
+    }
   }
   data$trial[obs] <- trial_number
 
@@ -91,6 +95,12 @@ for (obs in 1:length(data$.)) {
     data$pupil[obs] <- as.integer(fixList[[obs]][8])
   }
 
+  if (fixList[[obs]][3] == "TRIALSTART") {
+    data$trialstart[obs] <- 1
+  }
+  if (fixList[[obs]][3] == "TRIALEND") {
+    data$trialend[obs] <- 1
+  }
 }
 
 # Get rid of all observations that arent within a trial.
@@ -101,11 +111,27 @@ data <- data[!is.na(data$trial),]
 # Process this fixation data into the output file described above, one trial at a time.
 # Uses processFixationData.R.
 
-source("processFixationData.R")
-output <- data.table()
-
-for (t in unique(data$trial)) {
-
-  tdata <- data[data$trial == t, ]
-
-}
+# source("processFixationData.R")
+# output <- data.table()
+#
+# for (t in unique(data$trial)) {
+#
+#   trial_output <- data.table()
+#   tdata <- data[data$trial == t, ]
+#   trial_start_time <- tdata$timestart[1]
+#   trial_end_time <- tdata$timestart[tdata$trialend==1]
+#
+#   # Did the first EFIX start before the trial started? (Almost always yes).
+#   # If so, set the start of this EFIX to the start of the trial.
+#   if (tdata$event[2] == "EFIX" & tdata$timestart[2] < trial_start_time) {
+#     tdata$timestart[2] <- trial_start_time
+#   }
+#
+#
+#
+#
+#
+#   for (i in 1:length(tdata$trial)) {
+#   }
+#
+# }
