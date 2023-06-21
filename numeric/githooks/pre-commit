@@ -1,0 +1,46 @@
+#!/bin/sh
+#
+# Autoformat Python files and create package list
+# To skip this hook, commit with option -n or --no-verify
+
+# CONFIG
+max_line_length=80
+
+
+exitEarlyIf() {
+  if [ $? -ne 0 ]; then
+    echo "pre-commit: $1; aborting commit"
+    echo 'run `git commit -n [...]` to commit anyway'
+    exit 1
+  fi
+}
+
+
+set -o pipefail
+options="--max-line-length=${max_line_length}"
+changed_files=$(git diff --cached --name-only | grep -E '\.py$')
+
+# Run autopep8 on any files that need it and print changed files
+if [ "${changed_files}" ]; then
+  to_format=$(autopep8 -d $options $changed_files \
+    | grep -E '^--- original/.+\.py$' \
+    | sed 's/--- original\///')
+  exitEarlyIf 'failed to get autopep8 diffs'
+  if [ "${to_format}" ]; then
+    autopep8 -i $options $to_format
+    exitEarlyIf 'failed to format files'
+    echo "autopep8 formatted the following files:\n${to_format}"
+    git add $to_format
+  fi
+fi
+
+# If relevant, update list of Python packages
+# TODO: figure out a better way to manage dependencies
+loaded_packages=$(pip list --format=freeze)
+if [[ (! -f requirements.txt \
+    || "$(cat requirements.txt)" != "${loaded_packages}") \
+    && "$(find . -name '*.py' -print -quit)" ]]; then
+  echo "${loaded_packages}" > requirements.txt
+  echo 'updated requirements.txt'
+  git add requirements.txt
+fi

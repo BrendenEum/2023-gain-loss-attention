@@ -1,0 +1,1 @@
+This is where static content (e.g. images) that are used in the experiment would go

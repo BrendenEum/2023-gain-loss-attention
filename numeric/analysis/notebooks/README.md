@@ -1,0 +1,3 @@
+This is where notebooks for intermediate analyses go. The idea is to use the notebook to figure out how to do an analysis then the clean and functional code from the notebook would be placed into a final script that reproduces all the analyses for a submission (e.g. `run_all_analyses.R`)  
+
+I typically name notebooks with something like `NB3_question_of_interest` and try to keep notebooks self-contained and small.  
