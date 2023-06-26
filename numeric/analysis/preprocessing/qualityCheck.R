@@ -26,15 +26,16 @@
 rm(list=ls())
 library(dplyr)
 library(data.table)
-datadir <- "D:/OneDrive - California Institute of Technology/PhD/Rangel Lab/2023-gain-loss-attention/experiment/code/data" # ! ! !
+datadir <- "D:/OneDrive - California Institute of Technology/PhD/Rangel Lab/2023-gain-loss-attention/numeric/data/raw_data" # ! ! !
 outdir <- datadir
 
 # Input data.
 # Each line in the datatable is one row in the .asc file, as a single string.
 
-fixfilename <- "123456_GainLossTask_2023-06-07_14h08.33.756"                                        # ! ! !
-fixfilename <- paste0(fixfilename, ".csv")
-subject_id <- as.integer(substr(fixfilename,1,6))
+subjectidnumber <- "101"
+fixfilename <- "101_GainLossTask_2023-06-23_16h33.23.918"                                        # ! ! !
+fixfilename <- paste0(subjectidnumber, "/", fixfilename, ".csv")
+subject_id <- as.integer(substr(fixfilename,1,3))
 rawdata <- read.csv(file.path(datadir, fixfilename))
 
 # Trim the dataset down to the variables and observations that you want.
@@ -51,10 +52,10 @@ voi <- c(
   "Response.keys",
   "Response.rt",
   "FixCrossLoc",
-  "LLottery.timesOn",
-  "LLottery.timesOff",
-  "RLottery.timesOn",
-  "RLottery.timesOff",
+  "LROI.timesOn",
+  "LROI.timesOff",
+  "RROI.timesOn",
+  "RROI.timesOff",
   "Sanity"
 )
 data <- rawdata[rawdata$TrialType == "Trial", voi]
@@ -89,8 +90,8 @@ if (mean(real.data$responseLogged) > 0.9) {
 # Has eyetracking data for more than 90% of real trials.
 
 real.data <- data[data$Sanity==0,]
-real.data$ET.L <- !(real.data$LLottery.timesOn=="") & !(real.data$LLottery.timesOff=="")
-real.data$ET.R <- !(real.data$RLottery.timesOn=="") & !(real.data$RLottery.timesOff=="")
+real.data$ET.L <- !(real.data$LROI.timesOn=="") & !(real.data$LROI.timesOff=="")
+real.data$ET.R <- !(real.data$RROI.timesOn=="") & !(real.data$RROI.timesOff=="")
 cond <- real.data$ET.L | real.data$ET.R
 if (mean(cond) > 0.9) {
   et.check <- T

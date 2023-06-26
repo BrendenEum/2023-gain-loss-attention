@@ -8,13 +8,14 @@
 `optim_yn_ddm.R`: Parameter optimization functions
 `grid_search_yn_ddm.R`: Grid search over parameters functions
 
-## Create docker container
+## Create docker image
 
 ```
+d:
 set STUDY_DIR="D:\OneDrive - California Institute of Technology\PhD\Rangel Lab\2023-gain-loss-attention"
-cd %STUDY_DIR%\analysis\helpers\cluster_scripts
+cd %STUDY_DIR%\dots\analysis\helpers\cluster_scripts
 
-docker build -t zenkavi/rddmstatespace:0.0.1 -f ./rddmstatespace.Dockerfile .
+docker build -t brendeneum/modelfreeanalysis:0.0.1 -f ./modelfreeanalysis.Dockerfile .
 ```
 
 ## Check image exists
@@ -26,37 +27,36 @@ docker images
 ## Push docker image to dockerhub
 
 ```
-docker push zenkavi/rddmstatespace:0.0.1
+docker push brendeneum/modelfreeanalysis:0.0.1
 ```
+
 
 ## Test scripts in container locally
 
 Note: Remove `-it` from docker command when submitting jobs
 
-Optim
+Model free analysis sections for aDDM papers.
+(Basic Psychometrics, Fixation Process, Choice Biases)
 
 ```
-export STUDY_DIR=/Users/zeynepenkavi/Documents/RangelLab/NovelVsRepeated
-export INPUT_PATH=$STUDY_DIR/behavior/inputs
-export CODE_PATH=$STUDY_DIR/behavior/analysis/helpers/ddm
-export OUT_PATH=$STUDY_DIR/behavior/analysis/helpers/cluster_scripts/ddm/optim_out
+set STUDY_DIR="D:\OneDrive - California Institute of Technology\PhD\Rangel Lab\2023-gain-loss-attention"
+set INPUT_PATH=%STUDY_DIR%\dots\data\processed_data\e
+set CODE_PATH=%STUDY_DIR%\dots\analysis\helpers\modelfreeanalysis
+set OUT_PATH=%STUDY_DIR%\dots\analysis\outputs\temp
+cd %CODE_PATH%
 
-docker run --rm -it -v $INPUT_PATH:/inputs -v $CODE_PATH:/ddm -v $OUT_PATH:/optim_out \
--e INPUT_PATH=/inputs -e CODE_PATH=/ddm -e OUT_PATH=/optim_out \
-zenkavi/rddmstatespace:0.0.1 Rscript --vanilla /ddm/optim_yn_ddm.R --model yn_ddm --subnum 621 --day 4 --type RE --testing 1 --max_iter 10
+docker run --rm -it -v %INPUT_PATH%:/input -v %CODE_PATH%:/code -v %OUT_PATH%:/out -e INPUT_PATH=/input -e CODE_PATH=/code -e OUT_PATH=/out brendeneum/modelfreeanalysis:0.0.1 Rscript --vanilla code/ModelFreeAnalysis.R --data cfr.RData
 ```
 
-Grid search
+aDDM analysis sections for aDDM papers.
+(aDDM)
 
 ```
-export STUDY_DIR=/Users/zeynepenkavi/Documents/RangelLab/NovelVsRepeated
-export INPUT_PATH=$STUDY_DIR/behavior/inputs
-export CODE_PATH=$STUDY_DIR/behavior/analysis/helpers/ddm
-export OUT_PATH=$STUDY_DIR/behavior/analysis/helpers/cluster_scripts/ddm/grid_search_out
+set PALETTE_PATH=%STUDY_DIR%\dots\analysis\helpers\modelfreeanalysis
+set CODE_PATH=%STUDY_DIR%\dots\analysis\helpers\aDDM
+cd %CODE_PATH%
 
-docker run --rm -it -v $INPUT_PATH:/inputs -v $CODE_PATH:/ddm -v $OUT_PATH:/grid_search_out \
--e INPUT_PATH=/inputs -e CODE_PATH=/ddm -e OUT_PATH=/grid_search_out \
-zenkavi/rddmstatespace:0.0.1 Rscript --vanilla /ddm/grid_search_yn_ddm.R --model yn_ddm --subnum 621 --day 4 --type RE --grid ddm_grid_test.csv
+docker run --rm -it -v %INPUT_PATH%:/input -v %CODE_PATH%:/code -v %OUT_PATH%:/out -v %PALETTE_PATH%:/palette -e INPUT_PATH=/input -e CODE_PATH=/code -e OUT_PATH=/out -e PALETTE_PATH=/palette brendeneum/modelfreeanalysis:0.0.1 Rscript --vanilla code/AddmAnalysis.R --data 2022-MAP-indiv.RData
 ```
 
 ## Push behavior files to S3
@@ -86,6 +86,8 @@ docker run --rm -it -v ~/.aws:/root/.aws -v $(pwd)/behavior/analysis/helpers/clu
 
 ```
 export KEYS_PATH=/Users/zeynepenkavi/aws_keys
+
+alias aws='docker run --rm -t -v ~/.aws:/root/.aws amazon/aws-cli:2.11.26'
 
 aws ec2 create-key-pair --key-name rddmstatespace-cluster --query 'KeyMaterial' --output text > $KEYS_PATH/rddmstatespace-cluster.pem
 
@@ -186,6 +188,14 @@ export OUT_PATH=/shared/behavior/analysis/helpers/cluster_scripts/ddm/optim_out
 aws s3 sync $OUT_PATH s3://novel-vs-repeated/behavior/analysis/helpers/cluster_scripts/ddm/optim_out
 ```
 
+## Exit out of cluster ssh and delete cluster
+
+```
+exit
+pcluster delete-cluster --cluster-name rddmstatespace-cluster
+pcluster list-clusters
+```
+
 ## Download fitted parameters
 
 ```
@@ -194,11 +204,4 @@ export OUTPUTS_DIR=/Users/zeynepenkavi/CpuEaters/NovelVsRepeated/behavior/analys
 docker run --rm -it -v ~/.aws:/root/.aws -v $OUTPUTS_DIR:/outputs amazon/aws-cli s3 sync s3://novel-vs-repeated/behavior/analysis/helpers/cluster_scripts/ddm/grid_search_out /outputs/grid_search_out
 
 docker run --rm -it -v ~/.aws:/root/.aws -v $OUTPUTS_DIR:/outputs amazon/aws-cli s3 sync s3://novel-vs-repeated/behavior/analysis/helpers/cluster_scripts/ddm/optim_out /outputs/optim_out
-```
-
-## Delete cluster
-
-```
-pcluster delete-cluster --cluster-name rddmstatespace-cluster
-pcluster list-clusters
 ```

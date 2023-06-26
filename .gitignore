@@ -2,6 +2,9 @@
 .Rproj.user
 .Rhistory
 .Ruserdata
+*.hdf5
+*.psydat
+*.log
 *.rds
 Rplots.pdf
 _book
@@ -21,6 +24,7 @@ nilearn_cache
 tmp*
 *.mat
 *.csv
+*.xlsx
 mcmc_chains/
 figure-html/
 test*

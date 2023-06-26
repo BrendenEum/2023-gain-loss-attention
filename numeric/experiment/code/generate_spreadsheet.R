@@ -32,10 +32,10 @@ font_size = 100
 
 # Trial counts
 
-nTrials.center = 64
-nTrials.left = 64
-nTrials.right = 64
-nSanity = 8
+nTrials.center = 32
+nTrials.left = 32
+nTrials.right = 32
+nSanity = 4
 
 
 ################################################################################
@@ -46,6 +46,7 @@ nSanity = 8
 
 spread_raw <- data.frame(
   TrialType = NA,
+  TrialN = NA,
   Condition = NA,
   Sanity = NA,
   LProb = NA,
@@ -88,7 +89,7 @@ as.percent <- function(x) {
 
 # Function to add details of a trial
 
-trial.details <- function(TrialType, sanity, cross_loc, condition, spread, row, n) {
+trial.details <- function(TrialType, TrialNumber, sanity, cross_loc, condition, spread, row, n) {
 
   n <- n + 1
 
@@ -144,6 +145,7 @@ trial.details <- function(TrialType, sanity, cross_loc, condition, spread, row, 
   spread <- as.data.frame(spread)
 
   spread[row,"TrialType"] <- TrialType
+  spread[row,"TrialN"] <- TrialNumber
   spread[row,"Condition"] <- condition
   spread[row,"Sanity"] <- sanity
   spread[row,"LProb"] <- Lstats[2]
@@ -179,6 +181,7 @@ spread <- spread_raw
 for (practice in 1:2) {
   trial.list <- trial.details(
     TrialType = "Practice",
+    TrialNumber = 0,
     sanity = 0,
     cross_loc = "center",
     condition = "gain",
@@ -194,6 +197,7 @@ for (practice in 1:2) {
 for (practice in 1:2) {
   trial.list <- trial.details(
     TrialType = "Practice",
+    TrialNumber = 0,
     sanity = 0,
     cross_loc = "left",
     condition = "gain",
@@ -209,6 +213,7 @@ for (practice in 1:2) {
 for (practice in 1:2) {
   trial.list <- trial.details(
     TrialType = "Practice",
+    TrialNumber = 0,
     sanity = 0,
     cross_loc = "right",
     condition = "gain",
@@ -225,6 +230,7 @@ for (practice in 1:2) {
 
   trial.list <- trial.details(
     TrialType = "Practice",
+    TrialNumber = 0,
     sanity = 0,
     cross_loc = "left",
     condition = "loss",
@@ -241,6 +247,7 @@ for (practice in 1:2) {
 
   trial.list <- trial.details(
     TrialType = "Practice",
+    TrialNumber = 0,
     sanity = 0,
     cross_loc = "right",
     condition = "loss",
@@ -257,6 +264,7 @@ for (practice in 1:2) {
 
   trial.list <- trial.details(
     TrialType = "Practice",
+    TrialNumber = 0,
     sanity = 0,
     cross_loc = "center",
     condition = "loss",
@@ -277,7 +285,9 @@ write.csv(
 )
 
 
-################### BLOCK: GAIN
+################### BLOCK: GAIN 1
+
+TrialNumber <- 1
 
 spread <- spread_raw
 row <- 1
@@ -286,6 +296,7 @@ for (trial in 1:nTrials.center) {
 
   trial.list <- trial.details(
     TrialType = "Trial",
+    TrialNumber = TrialNumber,
     sanity = 0,
     cross_loc = "center",
     condition = "gain",
@@ -297,12 +308,15 @@ for (trial in 1:nTrials.center) {
   row <- trial.list$row
   n <- trial.list$n
 
+  TrialNumber = TrialNumber + 1
+
 }
 
 for (trial in 1:nTrials.left) {
 
   trial.list <- trial.details(
     TrialType = "Trial",
+    TrialNumber = TrialNumber,
     sanity = 0,
     cross_loc = "left",
     condition = "gain",
@@ -314,12 +328,15 @@ for (trial in 1:nTrials.left) {
   row <- trial.list$row
   n <- trial.list$n
 
+  TrialNumber = TrialNumber + 1
+
 }
 
 for (trial in 1:nTrials.right) {
 
   trial.list <- trial.details(
     TrialType = "Trial",
+    TrialNumber = TrialNumber,
     sanity = 0,
     cross_loc = "right",
     condition = "gain",
@@ -331,12 +348,15 @@ for (trial in 1:nTrials.right) {
   row <- trial.list$row
   n <- trial.list$n
 
+  TrialNumber = TrialNumber + 1
+
 }
 
 for (trial in 1:nSanity) {
 
   trial.list <- trial.details(
     TrialType = "Trial",
+    TrialNumber = TrialNumber,
     sanity = 1,
     cross_loc = "center",
     condition = "gain",
@@ -348,16 +368,18 @@ for (trial in 1:nSanity) {
   row <- trial.list$row
   n <- trial.list$n
 
+  TrialNumber = TrialNumber + 1
+
 }
 
 write.csv(
   spread,
-  file = "spreadsheet_gain.csv",
+  file = "spreadsheet_gain1.csv",
   na="",
   row.names = F
 )
 
-################### Block: LOSS
+################### BLOCK: GAIN 2
 
 spread <- spread_raw
 row <- 1
@@ -366,6 +388,101 @@ for (trial in 1:nTrials.center) {
 
   trial.list <- trial.details(
     TrialType = "Trial",
+    TrialNumber = TrialNumber,
+    sanity = 0,
+    cross_loc = "center",
+    condition = "gain",
+    spread = spread,
+    row = row,
+    n = NA
+  )
+  spread <- trial.list$spread
+  row <- trial.list$row
+  n <- trial.list$n
+
+  TrialNumber = TrialNumber + 1
+
+}
+
+for (trial in 1:nTrials.left) {
+
+  trial.list <- trial.details(
+    TrialType = "Trial",
+    TrialNumber = TrialNumber,
+    sanity = 0,
+    cross_loc = "left",
+    condition = "gain",
+    spread = spread,
+    row = row,
+    n = NA
+  )
+  spread <- trial.list$spread
+  row <- trial.list$row
+  n <- trial.list$n
+
+  TrialNumber = TrialNumber + 1
+
+}
+
+for (trial in 1:nTrials.right) {
+
+  trial.list <- trial.details(
+    TrialType = "Trial",
+    TrialNumber = TrialNumber,
+    sanity = 0,
+    cross_loc = "right",
+    condition = "gain",
+    spread = spread,
+    row = row,
+    n = NA
+  )
+  spread <- trial.list$spread
+  row <- trial.list$row
+  n <- trial.list$n
+
+  TrialNumber = TrialNumber + 1
+
+}
+
+for (trial in 1:nSanity) {
+
+  trial.list <- trial.details(
+    TrialType = "Trial",
+    TrialNumber = TrialNumber,
+    sanity = 1,
+    cross_loc = "center",
+    condition = "gain",
+    spread = spread,
+    row = row,
+    n = NA
+  )
+  spread <- trial.list$spread
+  row <- trial.list$row
+  n <- trial.list$n
+
+  TrialNumber = TrialNumber + 1
+
+}
+
+write.csv(
+  spread,
+  file = "spreadsheet_gain2.csv",
+  na="",
+  row.names = F
+)
+
+################### Block: LOSS 1
+
+TrialNumber = 1
+
+spread <- spread_raw
+row <- 1
+
+for (trial in 1:nTrials.center) {
+
+  trial.list <- trial.details(
+    TrialType = "Trial",
+    TrialNumber = TrialNumber,
     sanity = 0,
     cross_loc = "center",
     condition = "loss",
@@ -377,12 +494,15 @@ for (trial in 1:nTrials.center) {
   row <- trial.list$row
   n <- trial.list$n
 
+  TrialNumber = TrialNumber + 1
+
 }
 
 for (trial in 1:nTrials.left) {
 
   trial.list <- trial.details(
     TrialType = "Trial",
+    TrialNumber = TrialNumber,
     sanity = 0,
     cross_loc = "left",
     condition = "loss",
@@ -394,12 +514,15 @@ for (trial in 1:nTrials.left) {
   row <- trial.list$row
   n <- trial.list$n
 
+  TrialNumber = TrialNumber + 1
+
 }
 
 for (trial in 1:nTrials.right) {
 
   trial.list <- trial.details(
     TrialType = "Trial",
+    TrialNumber = TrialNumber,
     sanity = 0,
     cross_loc = "right",
     condition = "loss",
@@ -411,12 +534,15 @@ for (trial in 1:nTrials.right) {
   row <- trial.list$row
   n <- trial.list$n
 
+  TrialNumber = TrialNumber + 1
+
 }
 
 for (trial in 1:nSanity) {
 
   trial.list <- trial.details(
     TrialType = "Trial",
+    TrialNumber = TrialNumber,
     sanity = 1,
     cross_loc = "center",
     condition = "loss",
@@ -428,11 +554,105 @@ for (trial in 1:nSanity) {
   row <- trial.list$row
   n <- trial.list$n
 
+  TrialNumber = TrialNumber + 1
+
 }
 
 write.csv(
   spread,
-  file = "spreadsheet_loss.csv",
+  file = "spreadsheet_loss1.csv",
+  na="",
+  row.names = F
+)
+
+################### Block: LOSS 2
+
+spread <- spread_raw
+row <- 1
+
+for (trial in 1:nTrials.center) {
+
+  trial.list <- trial.details(
+    TrialType = "Trial",
+    TrialNumber = TrialNumber,
+    sanity = 0,
+    cross_loc = "center",
+    condition = "loss",
+    spread = spread,
+    row = row,
+    n = NA
+  )
+  spread <- trial.list$spread
+  row <- trial.list$row
+  n <- trial.list$n
+
+  TrialNumber = TrialNumber + 1
+
+}
+
+for (trial in 1:nTrials.left) {
+
+  trial.list <- trial.details(
+    TrialType = "Trial",
+    TrialNumber = TrialNumber,
+    sanity = 0,
+    cross_loc = "left",
+    condition = "loss",
+    spread = spread,
+    row = row,
+    n = NA
+  )
+  spread <- trial.list$spread
+  row <- trial.list$row
+  n <- trial.list$n
+
+  TrialNumber = TrialNumber + 1
+
+}
+
+for (trial in 1:nTrials.right) {
+
+  trial.list <- trial.details(
+    TrialType = "Trial",
+    TrialNumber = TrialNumber,
+    sanity = 0,
+    cross_loc = "right",
+    condition = "loss",
+    spread = spread,
+    row = row,
+    n = NA
+  )
+  spread <- trial.list$spread
+  row <- trial.list$row
+  n <- trial.list$n
+
+  TrialNumber = TrialNumber + 1
+
+}
+
+for (trial in 1:nSanity) {
+
+  trial.list <- trial.details(
+    TrialType = "Trial",
+    TrialNumber = TrialNumber,
+    sanity = 1,
+    cross_loc = "center",
+    condition = "loss",
+    spread = spread,
+    row = row,
+    n = NA
+  )
+  spread <- trial.list$spread
+  row <- trial.list$row
+  n <- trial.list$n
+
+  TrialNumber = TrialNumber + 1
+
+}
+
+write.csv(
+  spread,
+  file = "spreadsheet_loss2.csv",
   na="",
   row.names = F
 )
