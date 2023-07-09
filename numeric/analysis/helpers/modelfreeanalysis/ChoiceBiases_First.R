@@ -6,12 +6,7 @@ bias.firstfix.plt <- function(data) {
     as.character() %>%
     as.numeric()
 
-  pdata <- data[data$fix_type=="First",] %>%
-    group_by(subject, Condition, vDiff) %>%
-    mutate(
-      firstSeenChosen.corr = firstSeenChosen - mean(firstSeenChosen),
-    ) %>%
-    ungroup() %>%
+  pdata <- data[data$FirstFix==T,] %>%
     group_by(subject, Condition, fix_dur) %>%
     summarize(
       corrFirst.mean = mean(firstSeenChosen.corr)
@@ -29,7 +24,7 @@ bias.firstfix.plt <- function(data) {
     geom_line(aes(color=Condition), size=linesize) +
     geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
     labs(y="Corr. Pr(First Seen Chosen)", x="First Fixation Duration (s)")+
-    xlim(c(0,1.2)) +
+    xlim(c(.2,.8)) +
     ylim(c(-0.4,0.4))
 
 
@@ -40,7 +35,7 @@ bias.firstfix.plt <- function(data) {
 
 bias.firstfix.reg <- function(data) {
 
-  data <- data[data$fix_type=="First",] %>%
+  data <- data[data$FirstFix==T,] %>%
     group_by(subject, Condition, vDiff) %>%
     mutate(
       firstSeenChosen.corr = firstSeenChosen - mean(firstSeenChosen),

@@ -2,7 +2,7 @@
 
 psycho.numfix.plt <- function(data) {
 
-  pdata <- data[data$fix_type=="Last",] %>%
+  pdata <- data[data$LastFix==T,] %>%
     group_by(subject, Condition, difficulty) %>%
     summarize(
       fix_num.mean = mean(fix_num)
@@ -18,7 +18,7 @@ psycho.numfix.plt <- function(data) {
     myPlot +
     geom_line(aes(color=Condition), size=linesize) +
     geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
-    xlim(c(0,1)) +
+    xlim(c(0,4)) +
     ylim(c(0,NA)) +
     labs(y="Number of Fixations", x="Best - Worst E[V]")
 
@@ -31,7 +31,7 @@ psycho.numfix.plt <- function(data) {
 
 psycho.numfix.reg <- function(data) {
 
-  data <- data[data$fix_type=="Last",]
+  data <- data[data$LastFix==T,]
 
   results <- brm(
     fix_num ~ difficulty*Condition + (1+difficulty*Condition | subject),

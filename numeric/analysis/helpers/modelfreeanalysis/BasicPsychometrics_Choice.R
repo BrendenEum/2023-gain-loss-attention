@@ -2,7 +2,7 @@
 
 psycho.choice.plt <- function(data) {
 
-  pdata <- data[data$fix_type=="First",] %>%
+  pdata <- data[data$FirstFix==T,] %>%
     group_by(subject, Condition, vDiff) %>%
     summarize(
       choice.mean = mean(choice)
@@ -10,8 +10,8 @@ psycho.choice.plt <- function(data) {
     ungroup() %>%
     group_by(Condition, vDiff) %>%
     summarize(
-      y = mean(choice.mean),
-      se = std.error(choice.mean)
+      y = mean(choice.mean, na.rm=T),
+      se = std.error(choice.mean, na.rm=F)
     )
 
   plt <- ggplot(data=pdata, aes(x=vDiff, y=y, group=Condition)) +
@@ -20,7 +20,7 @@ psycho.choice.plt <- function(data) {
     geom_vline(xintercept=0, color="grey", alpha=0.75) +
     geom_line(aes(color=Condition), size=linesize) +
     geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
-    xlim(c(-1,1)) +
+    xlim(c(-4,4)) +
     ylim(c(0,1)) +
     labs(y="Pr(Choose Left)", x="Left - Right E[V]") +
     theme(
@@ -36,7 +36,7 @@ psycho.choice.plt <- function(data) {
 psycho.choice.reg <- function(data) {
 
   # Convert to Binomial data
-  data <- data[data$fix_type=="First",]
+  data <- data[data$FirstFix==T,]
   data <- data %>% mutate(n=1)
   data <-  data %>%
     group_by(subject, Condition, vDiff) %>%

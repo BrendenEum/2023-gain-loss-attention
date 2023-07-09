@@ -2,7 +2,7 @@
 
 fixprop.first.plt <- function(data) {
 
-  pdata <- data[data$fix_type=="First",] %>%
+  pdata <- data[data$FirstFix==T,] %>%
     group_by(subject, Condition, difficulty) %>%
     summarize(
       mid.mean = mean(fix_dur)
@@ -18,7 +18,7 @@ fixprop.first.plt <- function(data) {
     myPlot +
     geom_line(aes(color=Condition), size=linesize) +
     geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
-    xlim(c(0,1)) +
+    xlim(c(0,4)) +
     ylim(c(0,NA)) +
     labs(y="First Fix. Duration (s)", x="Best - Worst E[V]")
 
@@ -30,7 +30,7 @@ fixprop.first.plt <- function(data) {
 
 fixprop.first.reg <- function(data) {
 
-  data <- data[data$fix_type=="First",]
+  data <- data[data$FirstFix==T,]
 
   results <- brm(
     fix_dur ~ difficulty*Condition + (1+difficulty*Condition | subject),

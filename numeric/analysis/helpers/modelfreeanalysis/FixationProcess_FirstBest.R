@@ -2,10 +2,10 @@
 
 fixprop.prfirst.plt <- function(data) {
 
-  pdata <- data[data$fix_type=="First",] %>%
+  pdata <- data[data$FirstFix==T,] %>%
     group_by(subject, Condition, difficulty) %>%
     summarize(
-      firstbest.mean = mean(Location==better_option)
+      firstbest.mean = mean((as.numeric(Location)-1)==CorrectAnswer)
     ) %>%
     ungroup() %>%
     group_by(Condition, difficulty) %>%
@@ -14,12 +14,12 @@ fixprop.prfirst.plt <- function(data) {
       se = std.error(firstbest.mean)
     )
 
-  plt <- ggplot(data=pdata[pdata$difficulty>0,], aes(x=difficulty, y=y, group=Condition)) +
+  plt <- ggplot(data=pdata[pdata$difficulty>=0,], aes(x=difficulty, y=y, group=Condition)) +
     myPlot +
     geom_hline(yintercept=0.5, color="grey", alpha=0.75) +
     geom_line(aes(color=Condition), size=linesize) +
     geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
-    xlim(c(NA,1)) +
+    xlim(c(0,4)) +
     ylim(c(0,1)) +
     labs(y="Pr(First Fix. to Best)", x="Best - Worst E[V]") +
     theme(
@@ -34,8 +34,8 @@ fixprop.prfirst.plt <- function(data) {
 
 fixprop.prfirst.reg <- function(data) {
 
-  data <- data[data$fix_type=="First",]
-  data$firstBest <- data$Location==data$better_option
+  data <- data[data$FirstFix==T,]
+  data$firstBest <- data$Location==data$CorrectAnswer
   data <- data %>% mutate(n=1)
   data <-  data %>%
     group_by(subject, Condition, difficulty) %>%

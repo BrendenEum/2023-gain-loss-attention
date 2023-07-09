@@ -175,10 +175,13 @@ plt.last.sim <- ggplot(data=pdata, aes(x=vDiff, y=y, linetype=Location)) +
   geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
   xlim(c(-1,1)) +
   ylim(c(-.05,1.05)) +
-  labs(y="Pr(Choose Left)", x="Left - Right E[V]") +
+  labs(y="Pr(Choose Left)", x="Left - Right E[V]", linetype="Final Fixation") +
   theme(
-    legend.position=c(0.1,0.75)
+    legend.position = c(0.12,0.75),
+    legend.key.height = unit(.5, 'cm'),
+    legend.key.width = unit(1.5, 'cm')
   ) +
+  scale_linetype_manual(values=c("solid", "dashed")) +
   guides(linetype = guide_legend(override.aes = list(fill = c(NA, NA))))
 
 ggsave(file.path(out_path, "SimulatedLastFixBias_Discounting.pdf"), plot=plt.last.sim, width=figw, height=figh, units="in")
@@ -321,10 +324,13 @@ plt.last.sim <- ggplot(data=pdata, aes(x=vDiff, y=y, linetype=Location)) +
   geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
   xlim(c(-1,1)) +
   ylim(c(-.05,1.05)) +
-  labs(y="Pr(Choose Left)", x="Left - Right E[V]") +
+  labs(y="Pr(Choose Left)", x="Left - Right E[V]", linetype="Final Fixation") +
   theme(
-    legend.position=c(0.1,0.75)
+    legend.position = c(0.12,0.75),
+    legend.key.height = unit(.5, 'cm'),
+    legend.key.width = unit(1.5, 'cm')
   ) +
+  scale_linetype_manual(values=c("solid", "dashed")) +
   guides(linetype = guide_legend(override.aes = list(fill = c(NA, NA))))
 
 ggsave(file.path(out_path, "SimulatedLastFixBias_Amplification.pdf"), plot=plt.last.sim, width=figw, height=figh, units="in")

@@ -2,7 +2,7 @@
 
 bias.lastfix.plt <- function(data) {
 
-  pdata <- data[data$fix_type=="Last",] %>%
+  pdata <- data[data$LastFix==T,] %>%
     group_by(subject, Condition, Location, vDiff) %>%
     summarize(
       choice.mean = mean(choice)
@@ -20,7 +20,7 @@ bias.lastfix.plt <- function(data) {
     geom_vline(xintercept=0, color="grey", alpha=0.75) +
     geom_line(aes(color=Condition), size=linesize) +
     geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
-    xlim(c(-1,1)) +
+    xlim(c(-4,4)) +
     ylim(c(0,1)) +
     labs(y="Pr(Choose Left)", x="Left - Right E[V]") +
     theme(
@@ -36,7 +36,7 @@ bias.lastfix.plt <- function(data) {
 
 bias.lastfix.reg <- function(data) {
 
-  data <- data[data$fix_type=="Last",]
+  data <- data[data$LastFix==T,]
   data <- data %>% mutate(n=1)
   data <-  data %>%
     group_by(subject, Condition, Location, vDiff) %>%

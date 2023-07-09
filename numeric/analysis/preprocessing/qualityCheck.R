@@ -24,6 +24,7 @@
 # Preamble.
 
 rm(list=ls())
+library(plyr)
 library(dplyr)
 library(data.table)
 datadir <- "D:/OneDrive - California Institute of Technology/PhD/Rangel Lab/2023-gain-loss-attention/numeric/data/raw_data" # ! ! !
@@ -32,11 +33,17 @@ outdir <- datadir
 # Input data.
 # Each line in the datatable is one row in the .asc file, as a single string.
 
-subjectidnumber <- "101"
-fixfilename <- "101_GainLossTask_2023-06-23_16h33.23.918"                                        # ! ! !
-fixfilename <- paste0(subjectidnumber, "/", fixfilename, ".csv")
-subject_id <- as.integer(substr(fixfilename,1,3))
-rawdata <- read.csv(file.path(datadir, fixfilename))
+subject_id <- 204                                                                                    # ! ! !
+fixfilename <- paste0(toString(subject_id), "/", toString(subject_id), "_GainLossTask_")
+fixfilename1 <- paste0(fixfilename, "gain1.csv")
+fixfilename2 <- paste0(fixfilename, "gain2.csv")
+fixfilename3 <- paste0(fixfilename, "loss1.csv")
+fixfilename4 <- paste0(fixfilename, "loss2.csv")
+gain1 <- read.csv(file.path(datadir, fixfilename1))
+gain2 <- read.csv(file.path(datadir, fixfilename2))
+loss1 <- read.csv(file.path(datadir, fixfilename3))
+loss2 <- read.csv(file.path(datadir, fixfilename4))
+rawdata <- do.call("rbind.fill", list(gain1, gain2, loss1, loss2))
 
 # Trim the dataset down to the variables and observations that you want.
 

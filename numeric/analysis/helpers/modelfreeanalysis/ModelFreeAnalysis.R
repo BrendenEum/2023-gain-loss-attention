@@ -9,6 +9,7 @@ library(ggsci)
 input_path = Sys.getenv("INPUT_PATH")
 code_path = Sys.getenv("CODE_PATH")
 out_path = Sys.getenv("OUT_PATH")
+popt_path = Sys.getenv("POPT_PATH")
 
 #######################
 # Parse Input Arguments
@@ -27,54 +28,24 @@ opt = parse_args(opt_parser)
 #######################
 
 load(file.path(input_path, opt$data))
+cfr <- cfr[cfr$subject>200, ] # Version 2 of the experiment
 
 #######################
 # Plot Options
 #######################
 
-source(file.path(code_path, "GainLossColorPalette.R"))
-
-myPlot = list(
-  theme_bw(),
-  coord_cartesian(expand=F),
-  scale_color_gl("gain_loss_colors"),
-  scale_fill_gl("gain_loss_colors"),
-  theme(
-    legend.position="None",
-    legend.background=element_blank(),
-    legend.key = element_rect(fill = NA),
-    legend.spacing.x = unit(0.1, 'cm'),
-    legend.spacing.y = unit(0.1, 'cm'),
-    plot.margin = unit(c(.5,.5,.5,.5), "cm"),
-    panel.grid.major = element_blank(),
-    panel.grid.minor = element_blank(),
-    plot.title = element_text(size = 22),
-    axis.title = element_text(size = 18),
-    axis.text = element_text(size = 14),
-    legend.title = element_text(size = 12),
-    legend.text = element_text(size = 12)
-  ),
-  guides(
-    color = guide_legend(override.aes=list(fill=NA)),
-    fill = guide_legend(byrow = T)
-  )
-)
-
-linesize = 2
-markersize = .1
-ribbonalpha = 0.33
-figw = 6
-figh = 4
+source(file.path(popt_path, "GainLossColorPalette.R"))
+source(file.path(popt_path, "MyPlotOptions.R"))
 
 #######################
 # Useful Functions
 #######################
 
-std.error <- function(x) {
-  se = sd(x)/sqrt(length(x))
+std.error <- function(x, na.rm = T) {
+  se = sd(x, na.rm=na.rm)/sqrt(length(x))
   if (length(unique(x))==2) {
     if (all(unique(x)==c(0,1))) { # binomial
-      se = sqrt(length(x))*sqrt(mean(x)*(1-mean(x)))
+      se = sqrt(length(x))*sqrt(mean(x, na.rm=na.rm)*(1-mean(x, na.rm=na.rm)))
     }
   }
   return(se)

@@ -1,13 +1,13 @@
 bias.netfix.plt <- function(data) {
 
-  breaks <- seq(-1050,1050,100)/1000
-  labels <- seq(-1000,1000,100)/1000
+  breaks <- seq(-1625,1625,250)/1000
+  labels <- seq(-1500,1500,250)/1000
   print(breaks)
   data$net_fix <- cut(data$net_fix, breaks=breaks, labels=labels) %>%
     as.character() %>%
     as.numeric()
 
-  pdata <- data[data$fix_type=="First",] %>%
+  pdata <- data[data$FirstFix==T,] %>%
     group_by(subject, Condition, net_fix) %>%
     summarize(
       choice.mean = mean(choice.corr)
@@ -27,7 +27,7 @@ bias.netfix.plt <- function(data) {
     geom_line(aes(color=Condition), size=linesize) +
     geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
     labs(y="Corr. Pr(Choose Left)", x="Net Fixation (L-R, s)") +
-    xlim(c(-.5,.5)) +
+    xlim(c(-1.5,1.5)) +
     ylim(c(-0.4,0.4))
 
   return(plt)
@@ -38,7 +38,7 @@ bias.netfix.plt <- function(data) {
 
 bias.netfix.reg <- function(data) {
 
-  data <- data[data$fix_type=="First",]
+  data <- data[data$FirstFix==T,]
 
   results <- brm(
     choice.corr ~ net_fix*Condition + (1+net_fix*Condition | subject),

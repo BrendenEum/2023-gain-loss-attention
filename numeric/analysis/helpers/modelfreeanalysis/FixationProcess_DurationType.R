@@ -2,7 +2,7 @@
 
 fixprop.fixtype.plt <- function(data) {
 
-  pdata.F <- data[data$fix_type=="First",] %>%
+  pdata.F <- data[data$FirstFix==T,] %>%
     group_by(subject, Condition) %>%
     summarize(
       fix_dur.mean = mean(fix_dur)
@@ -14,7 +14,7 @@ fixprop.fixtype.plt <- function(data) {
       se = std.error(fix_dur.mean),
       x = 1
     )
-  pdata.M <- data[data$fix_type=="Middle",] %>%
+  pdata.M <- data[data$MiddleFix==T,] %>%
     group_by(subject, Condition) %>%
     summarize(
       fix_dur.mean = mean(fix_dur)
@@ -26,7 +26,7 @@ fixprop.fixtype.plt <- function(data) {
       se = std.error(fix_dur.mean),
       x = 2
     )
-  pdata.L <- data[data$fix_type=="Last",] %>%
+  pdata.L <- data[data$LastFix==T,] %>%
     group_by(subject, Condition) %>%
     summarize(
       fix_dur.mean = mean(fix_dur)
@@ -44,8 +44,8 @@ fixprop.fixtype.plt <- function(data) {
   plt <- ggplot(data=pdata, aes(x=x, y=y, group=Condition)) +
     myPlot +
     geom_bar(aes(fill=Condition), position=position_dodge(.9), stat="identity") +
-    geom_errorbar(aes(ymin=y-se, ymax=y+se), position=position_dodge(.9), color='black', width=markersize) +
-    ylim(c(0,NA)) +
+    geom_errorbar(aes(ymin=y-se, ymax=y+se), position=position_dodge(.9), color='black', width=0) +
+    ylim(c(0,.7)) +
     labs(y="Fixation Duration (s)", x="Fixation Type")
 
 
@@ -54,50 +54,55 @@ fixprop.fixtype.plt <- function(data) {
 
 ## Difference t-tests
 
-fixmean.F <- cfr[cfr$fix_type=="First",] %>%
-  group_by(subject, Condition) %>%
-  summarize(
-    fix_dur.mean = mean(fix_dur)
-  ) %>%
-  ungroup()
-t.test.F <- t.test(
-  fixmean.F[fixmean.F$Condition=="Gain",]$fix_dur.mean,
-  fixmean.F[fixmean.F$Condition=="Loss",]$fix_dur.mean
-)
-# cohen.d.F <- cohen.d(
-#   fixmean.F[fixmean.F$Condition=="Gain",]$fix_dur.mean,
-#   fixmean.F[fixmean.F$Condition=="Loss",]$fix_dur.mean
-# )
+fixprop.durationtype.ttest <- function(data) {
 
-fixmean.M <- cfr[cfr$fix_type=="Middle",] %>%
-  group_by(subject, Condition) %>%
-  summarize(
-    fix_dur.mean = mean(fix_dur)
-  ) %>%
-  ungroup()
-t.test.M <- t.test(
-  fixmean.M[fixmean.M$Condition=="Gain",]$fix_dur.mean,
-  fixmean.M[fixmean.M$Condition=="Loss",]$fix_dur.mean
-)
-# cohen.d.M <- cohen.d(
-#   fixmean.M[fixmean.M$Condition=="Gain",]$fix_dur.mean,
-#   fixmean.M[fixmean.M$Condition=="Loss",]$fix_dur.mean
-# )
+  fixmean.F <- data[data$FirstFix==T,] %>%
+    group_by(subject, Condition) %>%
+    summarize(
+      fix_dur.mean = mean(fix_dur)
+    ) %>%
+    ungroup()
+  t.test.F <- t.test(
+    fixmean.F[fixmean.F$Condition=="Gain",]$fix_dur.mean,
+    fixmean.F[fixmean.F$Condition=="Loss",]$fix_dur.mean
+  )
+  # cohen.d.F <- cohen.d(
+  #   fixmean.F[fixmean.F$Condition=="Gain",]$fix_dur.mean,
+  #   fixmean.F[fixmean.F$Condition=="Loss",]$fix_dur.mean
+  # )
 
-fixmean.L <- cfr[cfr$fix_type=="Last",] %>%
-  group_by(subject, Condition) %>%
-  summarize(
-    fix_dur.mean = mean(fix_dur)
-  ) %>%
-  ungroup()
-t.test.L <- t.test(
-  fixmean.L[fixmean.L$Condition=="Gain",]$fix_dur.mean,
-  fixmean.L[fixmean.L$Condition=="Loss",]$fix_dur.mean
-)
-# cohen.d.L <- cohen.d(
-#   fixmean.L[fixmean.L$Condition=="Gain",]$fix_dur.mean,
-#   fixmean.L[fixmean.L$Condition=="Loss",]$fix_dur.mean
-# )
+  fixmean.M <- data[data$MiddleFix==T,] %>%
+    group_by(subject, Condition) %>%
+    summarize(
+      fix_dur.mean = mean(fix_dur)
+    ) %>%
+    ungroup()
+  t.test.M <- t.test(
+    fixmean.M[fixmean.M$Condition=="Gain",]$fix_dur.mean,
+    fixmean.M[fixmean.M$Condition=="Loss",]$fix_dur.mean
+  )
+  # cohen.d.M <- cohen.d(
+  #   fixmean.M[fixmean.M$Condition=="Gain",]$fix_dur.mean,
+  #   fixmean.M[fixmean.M$Condition=="Loss",]$fix_dur.mean
+  # )
+
+  fixmean.L <- data[data$LastFix==T,] %>%
+    group_by(subject, Condition) %>%
+    summarize(
+      fix_dur.mean = mean(fix_dur)
+    ) %>%
+    ungroup()
+  t.test.L <- t.test(
+    fixmean.L[fixmean.L$Condition=="Gain",]$fix_dur.mean,
+    fixmean.L[fixmean.L$Condition=="Loss",]$fix_dur.mean
+  )
+  # cohen.d.L <- cohen.d(
+  #   fixmean.L[fixmean.L$Condition=="Gain",]$fix_dur.mean,
+  #   fixmean.L[fixmean.L$Condition=="Loss",]$fix_dur.mean
+  # )
+
+}
+
 
 ######################
 ## Exploratory

@@ -2,7 +2,7 @@
 
 fixprop.mid.plt <- function(data) {
 
-  pdata <- data[data$fix_type=="Middle",] %>%
+  pdata <- data[data$MiddleFix==T,] %>%
     group_by(subject, Condition, difficulty) %>%
     summarize(
       mid.mean = mean(fix_dur)
@@ -18,7 +18,7 @@ fixprop.mid.plt <- function(data) {
     myPlot +
     geom_line(aes(color=Condition), size=linesize) +
     geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
-    xlim(c(0,1)) +
+    xlim(c(0,4)) +
     ylim(c(0,NA)) +
     labs(y="Middle Fix. Duration (s)", x="Best - Worst E[V]")
 
@@ -31,7 +31,7 @@ fixprop.mid.plt <- function(data) {
 
 fixprop.mid.reg <- function(data) {
 
-  data <- data[data$fix_type=="Middle",]
+  data <- data[data$MiddleFix==T,]
 
   results <- brm(
     fix_dur ~ difficulty*Condition + (1+difficulty*Condition | subject),

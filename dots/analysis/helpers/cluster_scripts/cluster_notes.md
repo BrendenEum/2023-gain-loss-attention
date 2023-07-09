@@ -48,8 +48,7 @@ cd %CODE_PATH%
 docker run --rm -it -v %INPUT_PATH%:/input -v %CODE_PATH%:/code -v %OUT_PATH%:/out -e INPUT_PATH=/input -e CODE_PATH=/code -e OUT_PATH=/out brendeneum/modelfreeanalysis:0.0.1 Rscript --vanilla code/ModelFreeAnalysis.R --data cfr.RData
 ```
 
-aDDM analysis sections for aDDM papers.
-(aDDM)
+## aDDM analysis sections for aDDM papers.
 
 ```
 set PALETTE_PATH=%STUDY_DIR%\dots\analysis\helpers\modelfreeanalysis

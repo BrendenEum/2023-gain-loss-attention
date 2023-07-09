@@ -18,14 +18,17 @@ bias.lastfix.plt <- function(data) {
     myPlot +
     geom_hline(yintercept=0.5, color="grey", alpha=0.75) +
     geom_vline(xintercept=0, color="grey", alpha=0.75) +
-    geom_line(aes(color=Condition), size=linesize) +
+    geom_line(aes(color=Condition), linewidth=linesize) +
     geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
     xlim(c(-1,1)) +
     ylim(c(0,1)) +
-    labs(y="Pr(Choose Left)", x="Left - Right E[V]") +
+    labs(y="Pr(Choose Left)", x="Left - Right E[V]", linetype="Final Fixation") +
     theme(
-      legend.position=c(0.1,0.75)
+      legend.position = c(0.12,0.75),
+      legend.key.height = unit(.5, 'cm'),
+      legend.key.width = unit(1.5, 'cm')
     ) +
+    scale_linetype_manual(values=c("solid", "dashed")) +
     guides(linetype = guide_legend(override.aes = list(fill = c(NA, NA))))
 
 
