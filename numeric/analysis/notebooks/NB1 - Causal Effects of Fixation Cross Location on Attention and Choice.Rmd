@@ -1,0 +1,276 @@
+---
+title: "Effects of Fixation Cross Location"
+author: Brenden Eum
+date: June 29, 2023
+output: 
+  html_document: 
+    theme: united
+    toc: yes
+    toc_float: yes
+    toc_depth: 2
+    number_sections: yes
+    code_folding: hide
+    df_print: default
+---
+
+# Preamble
+
+```{r}
+
+rm(list=ls())
+library(dplyr)
+library(ggplot2)
+
+datadir = "../../data/processed_data/e"
+poptdir = "../helpers/plot_options"
+
+load(file.path(datadir, "cfr.RData"))
+cfr = cfr[cfr$subject>200,] # 200s: Version 2 of the task.
+cfr = cfr[cfr$Sanity==0,] # Non-sanity-check trials.
+
+```
+
+# Import plot options.
+
+```{r}
+source(file.path(poptdir, "GainLossColorPalette.R"))
+source(file.path(poptdir, "MyPlotOptions.R"))
+
+std.error <- function(x, na.rm = T) {
+  se = sd(x, na.rm=na.rm)/sqrt(length(x))
+  if (length(unique(x))==2) {
+    if (all(unique(x)==c(0,1))) { # binomial
+      se = sqrt(length(x))*sqrt(mean(x, na.rm=na.rm)*(1-mean(x, na.rm=na.rm)))
+    }
+  }
+  return(se)
+}
+```
+
+
+
+# Choice Biases
+
+## Last Fixation Bias
+
+```{r}
+
+data = cfr
+
+pdata <- data[data$LastFix==T,] %>%
+  group_by(subject, Condition, Location, FixCrossLoc, vDiff) %>%
+  summarize(
+    choice.mean = mean(choice)
+  ) %>%
+  ungroup() %>%
+  group_by(Condition, Location, FixCrossLoc, vDiff) %>%
+  summarize(
+    y = mean(choice.mean),
+    se = std.error(choice.mean)
+  )
+
+plt <- ggplot(data=pdata, aes(x=vDiff, y=y, linetype=Location)) +
+  myPlot +
+  geom_hline(yintercept=0.5, color="grey", alpha=0.75) +
+  geom_vline(xintercept=0, color="grey", alpha=0.75) +
+  geom_line(aes(color=Condition), size=linesize) +
+  geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
+  xlim(c(-4,4)) +
+  ylim(c(0,1)) +
+  labs(y="Pr(Choose Left)", x="Left - Right E[V]") +
+  theme(
+    legend.position=c(0.1,0.75)
+  ) +
+  guides(linetype = guide_legend(override.aes = list(fill = c(NA, NA)))) +
+  facet_grid(cols = vars(FixCrossLoc))
+
+plt
+
+```
+
+
+## Net Fixation Bias
+
+```{r}
+
+data = cfr
+
+breaks <- seq(-1050,1050,100)/1000
+labels <- seq(-1000,1000,100)/1000
+print(breaks)
+data$net_fix <- cut(data$net_fix, breaks=breaks, labels=labels) %>%
+  as.character() %>%
+  as.numeric()
+
+pdata <- data[data$FirstFix==T,] %>%
+  group_by(subject, Condition, FixCrossLoc, net_fix) %>%
+  summarize(
+    choice.mean = mean(choice.corr)
+  ) %>%
+  ungroup() %>%
+  group_by(Condition, FixCrossLoc, net_fix) %>%
+  summarize(
+    y = mean(choice.mean),
+    se = std.error(choice.mean)
+  )
+
+
+plt <- ggplot(data=pdata, aes(x=net_fix, y=y, group=Condition)) +
+  myPlot +
+  geom_hline(yintercept=0, color="grey", alpha=0.75) +
+  geom_vline(xintercept=0, color="grey", alpha=0.75) +
+  geom_line(aes(color=Condition), size=linesize) +
+  geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
+  labs(y="Corr. Pr(Choose Left)", x="Net Fixation (L-R, s)") +
+  xlim(c(-1.5,1.5)) +
+  ylim(c(-0.4,0.4)) +
+  facet_grid(cols = vars(FixCrossLoc))
+
+plt
+
+```
+
+## First Fixation Bias
+
+```{r}
+
+data = cfr
+
+breaks <- seq(-50,1250,100)/1000
+labels <- seq(0,1200,100)/1000
+data$fix_dur <- cut(data$fix_dur, breaks=breaks, labels=labels) %>%
+  as.character() %>%
+  as.numeric()
+
+pdata <- data[data$FirstFix==T,] %>%
+  group_by(subject, Condition, FixCrossLoc, fix_dur) %>%
+  summarize(
+    corrFirst.mean = mean(firstSeenChosen.corr, na.rm=T)
+  ) %>%
+  ungroup() %>%
+  group_by(Condition, FixCrossLoc, fix_dur) %>%
+  summarize(
+    y = mean(corrFirst.mean, na.rm=T),
+    se = std.error(corrFirst.mean, na.rm=T)
+  )
+
+plt <- ggplot(data=pdata, aes(x=fix_dur, y=y, group=Condition)) +
+  myPlot +
+  geom_hline(yintercept=0, color="grey", alpha=0.75) +
+  geom_line(aes(color=Condition), size=linesize) +
+  geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
+  labs(y="Corr. Pr(First Seen Chosen)", x="First Fixation Duration (s)")+
+  xlim(c(.1,1.5)) +
+  ylim(c(-0.4,0.4)) +
+  facet_grid(cols = vars(FixCrossLoc))
+
+plt
+
+```
+
+
+# Causal Choice Bias
+
+## Fix Cross Loc on First Fix Loc
+
+```{r}
+
+data = cfr[(cfr$FixCrossLoc=="Left" | cfr$FixCrossLoc=="Right"),]
+
+pdata <- data[data$FirstFix==T,] %>%
+  group_by(subject, Condition, FixCrossLoc, vDiff) %>%
+  summarize(
+    Location.mean = mean(-as.numeric(Location)+2, na.rm=T)
+  ) %>%
+  ungroup() %>%
+  group_by(Condition, FixCrossLoc, vDiff) %>%
+  summarize(
+    y = mean(Location.mean, na.rm=T),
+    se = std.error(Location.mean, na.rm=T)
+  )
+
+plt <- ggplot(data=pdata, aes(x=vDiff, y=y, group=Condition)) +
+  myPlot +
+  geom_hline(yintercept=0.5, color="grey", alpha=0.75) +
+  geom_vline(xintercept=0, color="grey", alpha=0.75) +
+  geom_line(aes(color=Condition), size=linesize) +
+  geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
+  xlim(c(-4,4)) +
+  ylim(c(0,1)) +
+  labs(y="Pr(Look Left First)", x="Left - Right E[V]") +
+  theme(
+    legend.position=c(0.1,0.8) 
+  ) +
+  facet_grid(cols = vars(FixCrossLoc))
+
+plt
+
+```
+
+## Fix Cross Loc on First Fix Dur
+
+```{r}
+
+data = cfr[(cfr$FixCrossLoc=="Left" | cfr$FixCrossLoc=="Right"),]
+
+pdata <- data[data$FirstFix==T,] %>%
+  group_by(subject, Condition, FixCrossLoc, difficulty) %>%
+  summarize(
+    mid.mean = mean(fix_dur)
+  ) %>%
+  ungroup() %>%
+  group_by(Condition, FixCrossLoc, difficulty) %>%
+  summarize(
+    y = mean(mid.mean),
+    se = std.error(mid.mean)
+  )
+
+plt <- ggplot(data=pdata, aes(x=difficulty, y=y, group=Condition)) +
+  myPlot +
+  geom_line(aes(color=Condition), size=linesize) +
+  geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
+  xlim(c(0,4)) +
+  ylim(c(0,NA)) +
+  labs(y="First Fix. Duration (s)", x="Best - Worst E[V]") +
+  facet_grid(cols = vars(FixCrossLoc))
+
+plt
+
+```
+
+## Fix Cross Loc on Choice
+
+```{r}
+
+data = cfr
+
+pdata <- data[data$FirstFix==T,] %>%
+  group_by(subject, Condition, FixCrossLoc, vDiff) %>%
+  summarize(
+    choice.mean = mean(choice, na.rm=T)
+  ) %>%
+  ungroup() %>%
+  group_by(Condition, FixCrossLoc, vDiff) %>%
+  summarize(
+    y = mean(choice.mean, na.rm=T),
+    se = std.error(choice.mean, na.rm=T)
+  )
+
+plt <- ggplot(data=pdata, aes(x=vDiff, y=y, group=Condition)) +
+  myPlot +
+  geom_hline(yintercept=0.5, color="grey", alpha=0.75) +
+  geom_vline(xintercept=0, color="grey", alpha=0.75) +
+  geom_line(aes(color=Condition), size=linesize) +
+  geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
+  xlim(c(-4,4)) +
+  ylim(c(0,1)) +
+  labs(y="Pr(Choose Left)", x="Left - Right E[V]") +
+  theme(
+    legend.position=c(0.1,0.8) 
+  ) +
+  facet_grid(cols = vars(FixCrossLoc))
+
+plt
+
+```
+
