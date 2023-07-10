@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 # ##################################################################################################
 # This script will read the data exported from PsychoPy and clean it into a dataset ready for
 # analysis. This Psychopy data already includes ROI ET data, so there is no need to process the EDF
@@ -65,7 +67,7 @@ subjects <- list.dirs(path = datadir, full.names = F, recursive = F)
 
 CombineAndSortFixations <- function(LeftData, RightData) { # Feed in On times only or Off times only.
   Ldt <- data.frame(time = LeftData)
-  try(Ldt$loc <- 1)
+  try(Ldt$loc <- 1) # need this in case subject only looked at one roi. dropped trial if subject didnt look at either roi.
   Rdt <- data.frame(time = RightData)
   try(Rdt$loc <- 0)
   fixData <- rbind(Ldt, Rdt)
@@ -143,10 +145,10 @@ for (subject_id in subjects) {
 
   # Drop trials with missing data. Record which trials (and how many) were dropped.
 
-  list_of_dropped_trials <- data[is.na(data$choice),][,c('trial')]
+  list_of_dropped_trials_choice_missing <- data[is.na(data$choice),][,c('trial')]
   data = na.omit(data)
-  filename = paste0("dropped_trials_", subject_id, ".RData")
-  save(list_of_dropped_trials, file=file.path(outdir, filename))
+  filename = paste0("dropped_trials_choice_missing_", subject_id, ".RData")
+  save(list_of_dropped_trials_choice_missing, file=file.path(outdir, filename))
 
   # Turn Condition into a factor
 
@@ -209,6 +211,7 @@ for (subject_id in subjects) {
   Roff <- strsplit(etdataraw$RROI.timesOff, split = ",")
 
   etdata <- data.frame()
+  list_of_dropped_trials_et_missing <- list()
 
   for (i in 1:nrow(etdataraw)) {
 
@@ -217,18 +220,25 @@ for (subject_id in subjects) {
     Ron[[i]] <- gsub("[^0-9.<>]", "", Ron[[i]])
     Roff[[i]] <- gsub("[^0-9.<>]", "", Roff[[i]])
 
-    temp.1 = CombineAndSortFixations(Lon[[i]], Ron[[i]])
-    temp.2 = CombineAndSortFixations(Loff[[i]], Roff[[i]])
-    temp.3 = data.frame(
-      trial = i,
-      fix_start = temp.1$time,
-      fix_end = temp.2$time,
-      Location = temp.1$loc
-    )
-
-    etdata <- rbind(etdata, temp.3)
-
+    if (length(Lon[[i]])==0 & length(Ron[[i]])==0) {
+      list_of_dropped_trials_et_missing <- append(list_of_dropped_trials_et_missing, i)
+    } else {
+      temp.1 = CombineAndSortFixations(Lon[[i]], Ron[[i]])
+      temp.2 = CombineAndSortFixations(Loff[[i]], Roff[[i]])
+      temp.3 = data.frame(
+        trial = i,
+        fix_start = temp.1$time,
+        fix_end = temp.2$time,
+        Location = temp.1$loc
+      )
+      etdata <- rbind(etdata, temp.3)
+    }
   }
+
+  # Save list of trials that were skipped cuz Eye tracking data missing
+
+  filename = paste0("dropped_trials_et_missing_", subject_id, ".RData")
+  save(list_of_dropped_trials_et_missing, file=file.path(outdir, filename))
 
   # Turn location into a factor variable
 

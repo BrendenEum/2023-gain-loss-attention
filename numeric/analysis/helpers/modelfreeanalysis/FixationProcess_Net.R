@@ -21,7 +21,7 @@ fixprop.net.plt <- function(data) {
     geom_line(aes(color=Condition), size=linesize) +
     geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
     xlim(c(-4,4)) +
-    ylim(c(-1.5,1.5)) +
+    ylim(c(-.5,.5)) +
     labs(y="Net Fix. Duration (L-R, s)", x="Left - Right E[V]")
 
 

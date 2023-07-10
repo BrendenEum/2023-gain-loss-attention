@@ -19,7 +19,7 @@ fixprop.prfirst.plt <- function(data) {
     geom_hline(yintercept=0.5, color="grey", alpha=0.75) +
     geom_line(aes(color=Condition), size=linesize) +
     geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
-    xlim(c(0,4)) +
+    xlim(c(1,4)) +
     ylim(c(0,1)) +
     labs(y="Pr(First Fix. to Best)", x="Best - Worst E[V]") +
     theme(
