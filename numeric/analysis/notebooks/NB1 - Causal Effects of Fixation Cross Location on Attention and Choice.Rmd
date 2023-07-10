@@ -23,6 +23,7 @@ library(ggplot2)
 
 datadir = "../../data/processed_data/e"
 poptdir = "../helpers/plot_options"
+tempdir = "../outputs/temp"
 
 load(file.path(datadir, "cfr.RData"))
 cfr = cfr[cfr$subject>200,] # 200s: Version 2 of the task.
@@ -85,6 +86,7 @@ plt <- ggplot(data=pdata, aes(x=vDiff, y=y, linetype=Location)) +
   facet_grid(cols = vars(FixCrossLoc))
 
 plt
+ggsave(file.path(tempdir, "E_ChoiceBiases_Last_FixCross.pdf"), plot=plt, width=figw*2, height=figh, units="in")
 
 ```
 
@@ -127,6 +129,7 @@ plt <- ggplot(data=pdata, aes(x=net_fix, y=y, group=Condition)) +
   facet_grid(cols = vars(FixCrossLoc))
 
 plt
+ggsave(file.path(tempdir, "E_ChoiceBiases_Net_FixCross.pdf"), plot=plt, width=figw*2, height=figh, units="in")
 
 ```
 
@@ -160,11 +163,12 @@ plt <- ggplot(data=pdata, aes(x=fix_dur, y=y, group=Condition)) +
   geom_line(aes(color=Condition), size=linesize) +
   geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
   labs(y="Corr. Pr(First Seen Chosen)", x="First Fixation Duration (s)")+
-  xlim(c(.1,1.5)) +
+  xlim(c(.1,1)) +
   ylim(c(-0.4,0.4)) +
   facet_grid(cols = vars(FixCrossLoc))
 
 plt
+ggsave(file.path(tempdir, "E_ChoiceBiases_First_FixCross.pdf"), plot=plt, width=figw*2, height=figh, units="in")
 
 ```
 
@@ -180,13 +184,13 @@ data = cfr[(cfr$FixCrossLoc=="Left" | cfr$FixCrossLoc=="Right"),]
 pdata <- data[data$FirstFix==T,] %>%
   group_by(subject, Condition, FixCrossLoc, vDiff) %>%
   summarize(
-    Location.mean = mean(-as.numeric(Location)+2, na.rm=T)
+    Location.mean = mean(-as.numeric(Location)+2, na.rm=F)
   ) %>%
   ungroup() %>%
   group_by(Condition, FixCrossLoc, vDiff) %>%
   summarize(
-    y = mean(Location.mean, na.rm=T),
-    se = std.error(Location.mean, na.rm=T)
+    y = mean(Location.mean, na.rm=F),
+    se = std.error(Location.mean, na.rm=F)
   )
 
 plt <- ggplot(data=pdata, aes(x=vDiff, y=y, group=Condition)) +
@@ -204,6 +208,7 @@ plt <- ggplot(data=pdata, aes(x=vDiff, y=y, group=Condition)) +
   facet_grid(cols = vars(FixCrossLoc))
 
 plt
+ggsave(file.path(tempdir, "E_AddFixProp_FirstLoc_FixCross.pdf"), plot=plt, width=figw*2, height=figh, units="in")
 
 ```
 
@@ -235,6 +240,7 @@ plt <- ggplot(data=pdata, aes(x=difficulty, y=y, group=Condition)) +
   facet_grid(cols = vars(FixCrossLoc))
 
 plt
+ggsave(file.path(tempdir, "E_AddFixProp_FirstDur_FixCross.pdf"), plot=plt, width=figw*2, height=figh, units="in")
 
 ```
 
@@ -271,6 +277,41 @@ plt <- ggplot(data=pdata, aes(x=vDiff, y=y, group=Condition)) +
   facet_grid(cols = vars(FixCrossLoc))
 
 plt
+ggsave(file.path(tempdir, "E_BasicPsychometrics_Choice_FixCross.pdf"), plot=plt, width=figw*2, height=figh, units="in")
+
+```
+
+## Fix Cross Loc on Net Fixation Duration wrt vDiff
+
+```{r}
+
+data = cfr
+
+pdata <- data[data$FirstFix==T,] %>%
+  group_by(subject, Condition, FixCrossLoc, vDiff) %>%
+  summarize(
+    net.mean = mean(net_fix, na.rm=T)
+  ) %>%
+  ungroup() %>%
+  group_by(Condition, FixCrossLoc, vDiff) %>%
+  summarize(
+    y = mean(net.mean, na.rm=T),
+    se = std.error(net.mean, na.rm=T)
+  )
+
+plt <- ggplot(data=pdata, aes(x=vDiff, y=y, group=Condition)) +
+  myPlot +
+  geom_hline(yintercept=0, color="grey", alpha=0.75) +
+  geom_vline(xintercept=0, color="grey", alpha=0.75) +
+  geom_line(aes(color=Condition), size=linesize) +
+  geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
+  xlim(c(-4,4)) +
+  ylim(c(-1,1)) +
+  labs(y="Net Fix. Duration (L-R, s)", x="Left - Right E[V]") +
+  facet_grid(cols = vars(FixCrossLoc))
+
+plt
+ggsave(file.path(tempdir, "E_FixationProcess_Net_FixCross.pdf"), plot=plt, width=figw*2, height=figh, units="in")
 
 ```
 
