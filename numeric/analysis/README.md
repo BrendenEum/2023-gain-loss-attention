@@ -16,15 +16,11 @@ For python one rudimentary way would be `pip freeze > requirement.txt`
 
 Everything will run through a virtual machine in order to ensure quick and easy reproducibility. When the project is near finished, I'll write a *_clusternotes.md file that walks you step-by-step through the entire analysis pipeline.
 
-For now, this will be a series of separate clusternotes, in the order that it needs to be run.
+Everything is in the order it needs to be run
 
 Author: Brenden Eum (2023)
 
-
-1. helpers/cluster_scripts/preprocessing_clusternotes.md
-
-    * Run this locally on your computer through a virtual machine. It doesn't take long and doesn't need a lot of computing power.
-
-2. helpers/cluster_scripts/modelfree_clusternotes.md
-
-    * Run this locally on your computer through a virtual machine. It doesn't take long and doesn't need a lot of computing power.
+1. preprocessing/cleanPsychopyData_local.R
+   1. Clean data and generate new variables
+2. NB1 - Model Free Analyses.Rmd
+3. NB2 - Causal Effects of Fixation Cross Location.Rmd

@@ -20,6 +20,7 @@ output:
 rm(list=ls())
 library(dplyr)
 library(ggplot2)
+library(plotrix)
 
 datadir = "../../data/processed_data/e"
 poptdir = "../helpers/plot_options"
@@ -36,16 +37,6 @@ cfr = cfr[cfr$Sanity==0,] # Non-sanity-check trials.
 ```{r}
 source(file.path(poptdir, "GainLossColorPalette.R"))
 source(file.path(poptdir, "MyPlotOptions.R"))
-
-std.error <- function(x, na.rm = T) {
-  se = sd(x, na.rm=na.rm)/sqrt(length(x))
-  if (length(unique(x))==2) {
-    if (all(unique(x)==c(0,1))) { # binomial
-      se = sqrt(length(x))*sqrt(mean(x, na.rm=na.rm)*(1-mean(x, na.rm=na.rm)))
-    }
-  }
-  return(se)
-}
 ```
 
 
