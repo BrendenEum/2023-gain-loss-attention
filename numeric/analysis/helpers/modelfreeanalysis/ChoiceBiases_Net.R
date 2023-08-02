@@ -27,8 +27,8 @@ bias.netfix.plt <- function(data) {
     geom_line(aes(color=Condition), size=linesize) +
     geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
     labs(y="Corr. Pr(Choose Left)", x="Net Fixation (L-R, s)") +
-    xlim(c(-1.5,1.5)) +
-    ylim(c(-0.4,0.4))
+    xlim(c(-1.25,1.25)) +
+    ylim(c(-0.2,0.2))
 
   return(plt)
 

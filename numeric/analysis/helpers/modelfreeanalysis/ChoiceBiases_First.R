@@ -24,7 +24,7 @@ bias.firstfix.plt <- function(data) {
     geom_line(aes(color=Condition), size=linesize) +
     geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
     labs(y="Corr. Pr(First Seen Chosen)", x="First Fixation Duration (s)")+
-    xlim(c(.2,.8)) +
+    xlim(c(.2,1)) +
     ylim(c(-0.4,0.4))
 
 
