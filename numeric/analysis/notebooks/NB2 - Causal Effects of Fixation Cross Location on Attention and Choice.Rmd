@@ -72,12 +72,8 @@ ggsave(file.path(tempdir, "E_ChoiceBiases_First_FixCross.pdf"), plot=plt, width=
 ## Fix Cross Loc on First Fix Loc
 
 ```{r}
-
-source(file.path(codedir, "FixationProcess_First.R"))
-
-plt
+source(file.path(codedir, "FixationProcess_FirstFixLoc.R"))
 ggsave(file.path(tempdir, "E_AddFixProp_FirstLoc_FixCross.pdf"), plot=plt, width=figw*2, height=figh, units="in")
-
 ```
 
 ## Fix Cross Loc on First Fix Dur
