@@ -52,14 +52,14 @@ library(tidyverse)
 
 # Note this will be run in docker container so make sure paths are mounted and defined in the env
 
-datadir = "D:/OneDrive - California Institute of Technology/PhD/Rangel Lab/2023-gain-loss-attention/numeric/data/raw_data/good"
-outdir = "D:/OneDrive - California Institute of Technology/PhD/Rangel Lab/2023-gain-loss-attention/numeric/data/processed_data/e"
+datadir = "../../data/raw_data/good"
+outdir = "../../data/processed_data/e/"
 
 # Get each subject that passed quality control.
 
 subjects <- list.dirs(path = datadir, full.names = F, recursive = F)
-if (length(subjects) > 25) { #exploratory only
-  subjects <- subjects[1:25]
+if (length(subjects) > 26) { #exploratory only
+  subjects <- subjects[1:26]
 }
 
 # Helpful functions before running loop.
