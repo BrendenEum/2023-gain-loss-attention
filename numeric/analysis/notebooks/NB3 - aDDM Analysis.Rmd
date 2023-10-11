@@ -188,57 +188,95 @@ ggsave(file.path(tempdir, "E_CompareIndividualAddmEstimates.pdf"), plt.compare.p
        width=figw, height=figh, units="in")
 ```
 
+# Goal Relevant
+
 ```{r}
 NumericGainNLL = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericGainNLL.csv", header=F)
-NumericGainNLL_GR = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericGainNLL_GR.csv", header=F)
+NumericGainNLL_RN = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericGainNLL_RN.csv", header=F)
 NumericLossNLL = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericLossNLL.csv", header=F)
-NumericLossNLL_GR = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericLossNLL_GR.csv", header=F)
+NumericLossNLL_RN = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericLossNLL_RN.csv", header=F)
 
 print(sum(NumericGainNLL))
-print(sum(NumericGainNLL_GR))
+print(sum(NumericGainNLL_RN))
 print(sum(NumericLossNLL))
-print(sum(NumericLossNLL_GR))
+print(sum(NumericLossNLL_RN))
 
-t.test(NumericGainNLL[,1] - NumericGainNLL_GR[,1])
-t.test(NumericLossNLL[,1] - NumericLossNLL_GR[,1])
+t.test(NumericGainNLL[,1] - NumericGainNLL_RN[,1])
+t.test(NumericLossNLL[,1] - NumericLossNLL_RN[,1])
 
 AIC_list = NumericLossNLL[,1]
-AIC_GR_list = NumericLossNLL_GR[,1]
+AIC_RN_list = NumericLossNLL_RN[,1]
 K = 4 # the number of free parameters
-getAIC <- function(K, L) {
-  return(2*K - 2*log(L))
+getAIC <- function(K, NLL) {
+  return(2*K - 2*(-NLL))
 }
 for (i in 1:length(NumericLossNLL[,1])){
   AIC_list[i] = getAIC(K, NumericLossNLL[i,1])
-  AIC_GR_list[i] = getAIC(K, NumericLossNLL_GR[i,1])
+  AIC_RN_list[i] = getAIC(K, NumericLossNLL_RN[i,1])
 }
-AIC_list
-t.test(AIC_list-AIC_GR_list)
+print(mean(AIC_list<AIC_RN_list))
+t.test(AIC_list-AIC_RN_list)
 ```
 
 ```{r}
-NumericGainFit_GR = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericGainFit_GR.csv")
-NumericLossFit_GR = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericLossFit_GR.csv")
+NumericGainFit_RN = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericGainFit_RN.csv")
+NumericLossFit_RN = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericLossFit_RN.csv")
 
 pdata = data.frame(
-  drift.gain = NumericGainFit_GR$d * 1000,
-  drift.loss = NumericLossFit_GR$d * 1000,
-  sig.gain = NumericGainFit_GR$s * 10,
-  sig.loss = NumericLossFit_GR$s * 10,
-  bias.gain = NumericGainFit_GR$b,
-  bias.loss = NumericLossFit_GR$b,
-  theta.gain = NumericGainFit_GR$t,
-  theta.loss = NumericLossFit_GR$t
+  drift.gain = NumericGainFit_RN$d * 100,
+  drift.loss = NumericLossFit_RN$d * 100,
+  sig.gain = NumericGainFit_RN$s * 10,
+  sig.loss = NumericLossFit_RN$s * 10,
+  bias.gain = NumericGainFit_RN$b,
+  bias.loss = NumericLossFit_RN$b,
+  theta.gain = NumericGainFit_RN$t,
+  theta.loss = NumericLossFit_RN$t
 )
 ```
 
 
 ```{r}
-NumericGainFit_GR = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericGainFit_GR.csv")
-NumericLossFit_GR = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericLossFit_GR.csv")
-pdata = data.frame(theta.gain = NumericGainNLL_GR[,1], theta.loss = NumericLossNLL_GR[,1])
 
-coord.lim <- 1
+coord.lim <- 3
+d_gradient <- expand.grid(x=seq(0,coord.lim,coord.lim/gradient_resolution), y=seq(0,coord.lim,coord.lim/gradient_resolution))
+plt.compare.d.e <- ggplot(data=pdata) +
+  geom_tile(data=d_gradient, aes(x=x, y=y, fill=abs(y-x))) + #add gradient background
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_point(aes(x=drift.gain, y=drift.loss), size=markersize) +
+  xlim(c(0,coord.lim)) +
+  ylim(c(0,coord.lim)) +
+  labs(x = TeX(r"(Gain $d$)"), y = TeX(r"(Loss $d$)")) +
+  scale_y_continuous(breaks = c(0, coord.lim/2, coord.lim)) +
+  scale_x_continuous(breaks = c(0, coord.lim/2, coord.lim))  
+
+coord.lim <- 1.5
+sig_gradient <- expand.grid(x=seq(0,coord.lim,coord.lim/gradient_resolution), y=seq(0,coord.lim,coord.lim/gradient_resolution))
+plt.compare.sig.e <- ggplot(data=pdata) +
+  geom_tile(data=sig_gradient, aes(x=x, y=y, fill=abs(y-x))) +
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_point(aes(x=sig.gain, y=sig.loss), size=markersize) +
+  xlim(c(0,coord.lim)) +
+  ylim(c(0,coord.lim)) +
+  labs(x = TeX(r"(Gain $\sigma$)"), y = TeX(r"(Loss $\sigma$)")) +
+  scale_y_continuous(breaks = c(0, coord.lim/2, coord.lim)) +
+  scale_x_continuous(breaks = c(0, coord.lim/2, coord.lim)) 
+
+coord.lim <- .4
+bias_gradient <- expand.grid(x=seq(-coord.lim,coord.lim,coord.lim/gradient_resolution), y=seq(-coord.lim,coord.lim,coord.lim/gradient_resolution))
+plt.compare.bias.e <- ggplot(data=pdata) +
+  geom_tile(data=bias_gradient, aes(x=x, y=y, fill=abs(y-x))) +
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_point(aes(x=bias.gain, y=bias.loss), size=markersize) +
+  xlim(c(-coord.lim,coord.lim)) +
+  ylim(c(-coord.lim,coord.lim)) +
+  labs(x = TeX(r"(Gain bias)"), y = TeX(r"(Loss bias)")) +
+  scale_y_continuous(breaks = c(-coord.lim, 0, coord.lim)) +
+  scale_x_continuous(breaks = c(-coord.lim, 0, coord.lim)) 
+
+coord.lim <- 1.5
 theta_gradient <- expand.grid(x=seq(0,coord.lim,coord.lim/gradient_resolution), y=seq(0,coord.lim,coord.lim/gradient_resolution))
 plt.compare.theta.e <- ggplot(data=pdata) +
   geom_tile(data=theta_gradient, aes(x=x, y=y, fill=abs(y-x))) +
@@ -246,12 +284,15 @@ plt.compare.theta.e <- ggplot(data=pdata) +
   geom_vline(xintercept = 1, color='grey30', alpha=.5) +
   geom_hline(yintercept = 1, color='grey30', alpha=.5) +
   #geom_abline(intercept=0, slope=1, color='grey30') +
-  geom_point(aes(x=theta.gain, y=theta.loss), size=markersize, alpha=.7) +
-  #xlim(c(0,coord.lim)) +
-  #ylim(c(0,coord.lim)) +
+  geom_point(aes(x=theta.gain, y=theta.loss), size=markersize) +
+  coord_cartesian(
+    xlim=c(0,coord.lim),
+    ylim=c(0,coord.lim),
+    expand=F
+  ) +
   labs(x = TeX(r"(Gain $\theta$)"), y = TeX(r"(Loss $\theta$)")) +
-  #scale_y_continuous(breaks = c(0, .5, coord.lim), labels=scaleFUN) +
-  #scale_x_continuous(breaks = c(0, .5, coord.lim), labels=scaleFUN) +
+  scale_y_continuous(breaks = c(0, 1, coord.lim), labels=scaleFUN) +
+  scale_x_continuous(breaks = c(0, 1, coord.lim), labels=scaleFUN) +
   theme(
     legend.position=c(.75,.8),
     legend.background=element_blank(),
@@ -260,9 +301,10 @@ plt.compare.theta.e <- ggplot(data=pdata) +
   ) +
   guides(fill="none")
 
-plot(plt.compare.theta.e)
-ggsave(file.path(tempdir, "E_CompareIndividualAddmEstimates_GR.pdf"), plt.compare.theta.e,
-       width=figw*.5, height=figh*.5, units="in")
+plt.compare.param.e <- grid.arrange(plt.compare.d.e, plt.compare.sig.e, plt.compare.bias.e, plt.compare.theta.e, nrow=2)
+
+ggsave(file.path(tempdir, "E_CompareIndividualAddmEstimates_RN.pdf"), plt.compare.param.e,
+       width=figw, height=figh, units="in")
 ```
 
 

@@ -353,18 +353,18 @@ plt.net.sim <- ggplot(data=pdata, aes(x=net_fix, y=y, group=Condition)) +
 ggsave(file.path(out_path, "SimulatedNetFixBias_Amplification.pdf"), plot=plt.net.sim, width=figw, height=figh, units="in")
 
 #######################
-# Simulate attentional biases with goal-relevant information
+# Simulate attentional biases with range normalized information
 #######################
 
 # Make data
 
 set.seed(4)
-source(file.path(code_path, "dot_GRaDDMSimFunctions.R"))
+source(file.path(code_path, "dot_RNaDDMSimFunctions.R"))
 
 # Get estimates
 
-estG = read.csv(file.path(toolbox_path, "NumericGainFit_GR.csv"))
-estL = read.csv(file.path(toolbox_path, "NumericLossFit_GR.csv"))
+estG = read.csv(file.path(toolbox_path, "NumericGainFit_RN.csv"))
+estL = read.csv(file.path(toolbox_path, "NumericLossFit_RN.csv"))
 
 gain.sims <- data.frame()
 loss.sims <- data.frame()
@@ -396,7 +396,8 @@ for (j in 1:nrow(est)) {
         s = sG,
         vL = vgain1[i],
         vR = vgain2[i],
-        vMin = 0,
+        vMin = 1,
+        vMax = 6,
         prFirstLeft = .8,
         firstFix = runif(100, 300, 500),
         middleFix = runif(100, 400, 600),
@@ -411,6 +412,7 @@ for (j in 1:nrow(est)) {
         vL = vloss1[i],
         vR = vloss2[i],
         vMin = -6,
+        vMax = -1,
         prFirstLeft = .8,
         firstFix = runif(100, 300, 500),
         middleFix = runif(100, 400, 600),
