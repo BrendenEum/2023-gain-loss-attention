@@ -1,4 +1,4 @@
-.RData
+*.RData
 .Rproj.user
 .Rhistory
 .Ruserdata
@@ -30,6 +30,7 @@ figure-html/
 test*
 *.asc
 *.edf
+*.EDF
 .vscode/
 *.db
 config.txt
