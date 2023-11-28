@@ -1,0 +1,95 @@
+---
+title: "Model Free Analyses"
+author: Brenden Eum
+date: June 29, 2023
+output: 
+  html_document: 
+    theme: united
+    toc: yes
+    toc_float: yes
+    toc_depth: 2
+    number_sections: yes
+    code_folding: hide
+    df_print: default
+---
+
+# Preamble
+
+```{r}
+library(tidyverse)
+library(effsize)
+library(plotrix)
+library(ggsci)
+
+datadir = "D:/OneDrive - California Institute of Technology/PhD/Rangel Lab/2023-gain-loss-attention/numeric/data/processed_data/e"
+codedir = "D:/OneDrive - California Institute of Technology/PhD/Rangel Lab/2023-gain-loss-attention/numeric/analysis/helpers/modelfreeanalysis"
+tempdir = "D:/OneDrive - California Institute of Technology/PhD/Rangel Lab/2023-gain-loss-attention/numeric/analysis/outputs/temp"
+optdir = "D:/OneDrive - California Institute of Technology/PhD/Rangel Lab/2023-gain-loss-attention/numeric/analysis/helpers/plot_options"
+
+source(file.path(optdir, "GainLossColorPalette.R"))
+source(file.path(optdir, "MyPlotOptions.R"))
+```
+
+# Load Data
+
+```{r}
+load(file.path(datadir, "cfr.RData"))
+cfr <- cfr[cfr$subject>200, ] # Version 2 of the experiment
+```
+
+# Basic Psychometrics
+
+```{r}
+# Choice
+source(file.path(codedir, "BasicPsychometrics_Choice.R"))
+ggsave(file.path(tempdir, "E_BasicPsychometrics_Choice.pdf"), plot=plt.choice.e, width=figw, height=figh, units="in")
+
+# RT
+source(file.path(codedir, "BasicPsychometrics_RT.R"))
+ggsave(file.path(tempdir, "E_BasicPsychometrics_RT.pdf"), plot=plt.rt.e, width=figw, height=figh, units="in")
+
+# Number of Fixations
+source(file.path(codedir, "BasicPsychometrics_NumberFixations.R"))
+ggsave(file.path(tempdir, "E_BasicPsychometrics_NumberFixations.pdf"), plot=plt.numfix.e, width=figw, height=figh, units="in")
+```
+
+# Fixation Process
+
+```{r}
+# First Fixation to Best
+source(file.path(codedir, "FixationProcess_FirstBest.R"))
+ggsave(file.path(tempdir, "E_FixationProcess_FirstBest.pdf"), plot=plt.prfirst.e, width=figw, height=figh, units="in")
+
+# Fixation Duration by Type
+source(file.path(codedir, "FixationProcess_DurationType.R"))
+ggsave(file.path(tempdir, "E_FixationProcess_DurationType.pdf"), plot=plt.fixtype.e, width=figw, height=figh, units="in")
+
+# Middle Fixation Duration by Difficulty
+source(file.path(codedir, "FixationProcess_Middle.R"))
+ggsave(file.path(tempdir, "E_FixationProcess_Middle.pdf"), plot=plt.mid.e, width=figw, height=figh, units="in")
+
+# First Fixation Duration by Difficulty
+source(file.path(codedir, "FixationProcess_First.R"))
+ggsave(file.path(tempdir, "E_FixationProcess_First.pdf"), plot=plt.first.e, width=figw, height=figh, units="in")
+
+# Net Fixation Duration by Value Difference
+source(file.path(codedir, "FixationProcess_Net.R"))
+ggsave(file.path(tempdir, "E_FixationProcess_Net.pdf"), plot=plt.net.e, width=figw, height=figh, units="in")
+```
+
+# Choice Biases
+
+```{r}
+# Last Fixation Bias
+source(file.path(codedir, "ChoiceBiases_Last.R"))
+ggsave(file.path(tempdir, "E_ChoiceBiases_Last.pdf"), plot=plt.lastfix.e, width=figw, height=figh, units="in")
+
+# Net Fixation Bias
+source(file.path(codedir, "ChoiceBiases_Net.R"))
+ggsave(file.path(tempdir, "E_ChoiceBiases_Net.pdf"), plot=plt.netfix.e, width=figw, height=figh, units="in")
+
+# First Fixation Bias
+source(file.path(codedir, "ChoiceBiases_First.R"))
+ggsave(file.path(tempdir, "E_ChoiceBiases_First.pdf"), plot=plt.firstfix.e, width=figw, height=figh, units="in")
+```
+
