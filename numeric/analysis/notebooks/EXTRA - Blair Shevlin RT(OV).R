@@ -1,11 +1,40 @@
+load("/Users/brenden/Desktop/2023-gain-loss-attention/numeric/data/processed_data/e/cfr.RData")
+
 cfr$ov = cfr$vL + cfr$vR
 data = cfr[cfr$Sanity==0,]
 data$ov = round(data$ov, digits = 0)
 
+data = data %>%
+  group_by(subject, Condition, trial) %>%
+  summarize(
+    rt = first(rt),
+    ov = first(ov),
+    vDiff = first(vDiff)
+  )
+data.gain = data[data$Condition=="Gain",]
+data.loss = data[data$Condition=="Loss",]
+
+fit.gain = lm(rt ~ vDiff, data.gain)
+fit.loss = lm(rt ~ vDiff, data.loss)
+
+df.gain = data.frame(
+  subject = data.gain$subject,
+  Condition = "Gain",
+  ov = data.gain$ov,
+  rt.residuals = fit.gain$residuals
+)
+df.loss = data.frame(
+  subject = data.loss$subject,
+  Condition = "Loss",
+  ov = data.loss$ov,
+  rt.residuals = fit.loss$residuals
+)
+data = rbind(df.gain, df.loss)
+
 pdata = data %>%
   group_by(subject, Condition, ov) %>%
   summarize(
-    rt.mean = mean(rt)
+    rt.mean = mean(rt.residuals)
   ) %>%
   ungroup() %>%
   group_by(Condition, ov) %>%
@@ -20,7 +49,6 @@ ggplot(data = pdata, aes(x=ov, y=y, group=Condition, color=Condition, fill=Condi
   geom_line() +
   labs(
     x = "Overall Value",
-    y = "Response Time (s)"
-  ) +
-  ylim(c(0,4))
+    y = "Residuals from RT ~ (L-R)"
+  ) 
   
