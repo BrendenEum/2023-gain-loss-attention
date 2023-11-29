@@ -1,0 +1,158 @@
+set.seed(3)
+library(tidyverse)
+library(ggplot2)
+library(latex2exp)
+
+# Trial data ############################################################################
+
+vL <- 1
+vR <- 1
+
+# Fixation properties ###################################################################
+
+prFirstLeft <- .831
+latency     <- ceiling(runif(1, min=50, max=250))
+firstFix_mean <- 346
+firstFix_sd <- 181
+middleFix_mean <- 707
+middleFix_sd <- 423
+transition_min <- 6
+transition_max <- 50
+
+# aDDM parameters ##########################################################################
+
+d <- .003
+sig    <- .02
+theta  <- .52
+bias   <- .02
+bounds <- 1
+
+# Simulate evidence process for a single trial ################################################
+
+evid_list <- c()
+loc_list  <- c()
+fix_num_list <- c()
+
+evid      <- bias
+time      <- 1
+fix_num   <- 0
+saccade   <- 0
+bound_hit <- 0
+loc_list[time]  <- 4 #4=nowhere
+evid_list[time] <- evid
+
+while (bound_hit==0) {
+  
+  #latency to first fixation
+  if (time<=latency) {
+    time <- time + 1
+    loc <- 4
+    evid <- evid + rnorm(1, mean=0, sd=sig)
+    loc_list[time] <- loc
+    evid_list[time] <- evid
+    if (abs(evid)>=bounds) {bound_hit=1}
+  }
+  
+  #first fixation
+  if (time>latency & fix_num==0 & bound_hit==0) {
+    fix_num <- fix_num + 1
+    saccade <- 1
+    loc <- rbinom(1,1,prFirstLeft)
+    fix_dur <- ceiling(rtruncnorm(1, a=1, b=Inf, mean=firstFix_mean, sd=firstFix_sd))
+    for (fix_time in c(1:fix_dur)) {
+      time <- time + 1
+      if (loc==1) { evid <- evid + d*(vL-theta*vR) + rnorm(1, mean=0, sd=sig) }
+      if (loc==0) { evid <- evid + d*(theta*vL-vR) + rnorm(1, mean=0, sd=sig) }
+      loc_list[time] <- loc
+      fix_num_list[time] <- fix_num
+      evid_list[time] <- evid
+      if (abs(evid)>=bounds) {break}
+    }
+    if (abs(evid)>=bounds) {bound_hit=1}
+  }
+  
+  #saccades
+  if (time>latency & saccade==1 & bound_hit==0) {
+    saccade <- 0
+    prevLoc <- loc
+    loc <- 4
+    fix_dur <- ceiling(runif(1, min=transition_min, max=transition_max))
+    for (fix_time in c(1:fix_dur)) {
+      time <- time + 1
+      evid <- evid + rnorm(1, mean=0, sd=sig)
+      loc_list[time] <- loc
+      evid_list[time] <- evid
+      if (abs(evid)>=bounds) {break}
+    }
+    if (abs(evid)>=bounds) {bound_hit=1}
+  }
+  
+  #middle fixations
+  if (time>latency & fix_num>0 & saccade==0 & bound_hit==0) {
+    fix_num <- fix_num + 1
+    saccade <- 1
+    loc <- abs(prevLoc-1) #0->1 and 1->0
+    fix_dur <- ceiling(rtruncnorm(1, a=1, b=Inf, mean=middleFix_mean, sd=middleFix_sd))
+    for (fix_time in c(1:fix_dur)) {
+      time <- time + 1
+      if (loc==1) { evid <- evid + d*(vL-theta*vR) + rnorm(1, mean=0, sd=sig) }
+      if (loc==0) { evid <- evid + d*(theta*vL-vR) + rnorm(1, mean=0, sd=sig) }
+      loc_list[time] <- loc
+      fix_num_list[time] <- fix_num
+      evid_list[time] <- evid
+      if (abs(evid)>=bounds) {break}
+    }
+    if (abs(evid)>=bounds) {bound_hit=1}
+  }
+  
+}
+
+# Transform into plot data ########################################################################
+
+pdata.exampleaDDM <- data.frame(time = c(1:length(evid_list)), loc = loc_list, fix_num = fix_num_list, evid = evid_list)
+pdata.fixations <- pdata.exampleaDDM %>%
+  na.omit() %>%
+  group_by(fix_num) %>%
+  summarise(
+    fix_start = first(time),
+    fix_end = last(time),
+    loc = first(loc)
+  )
+
+
+# Plot the results ########################################################################
+
+p.exampleaDDM <-
+  ggplot(data = pdata.exampleaDDM, aes(x=time, y=evid)) +
+  
+  annotate("rect", xmin = pdata.fixations$fix_start[1], xmax = pdata.fixations$fix_end[1], ymin = -.99, ymax = .99, alpha = .25, fill='purple') +
+  annotate(geom='text', x=mean(c(pdata.fixations$fix_start[1],pdata.fixations$fix_end[1])), y=.88, label='Left', size=7) +
+  annotate("rect", xmin = pdata.fixations$fix_start[2], xmax = pdata.fixations$fix_end[2], ymin = -.99, ymax = .99, alpha = .25, fill='yellow') +
+  annotate(geom='text', x=mean(c(pdata.fixations$fix_start[2],pdata.fixations$fix_end[2])), y=.88, label='Right', size=7) +
+  annotate("rect", xmin = pdata.fixations$fix_start[3], xmax = pdata.fixations$fix_end[3], ymin = -.99, ymax = .99, alpha = .25, fill='purple') +
+  annotate(geom='text', x=mean(c(pdata.fixations$fix_start[3],pdata.fixations$fix_end[3])), y=.88, label='Left', size=7) +
+  
+  geom_line(size=2) +
+  
+  coord_cartesian(ylim=c(-1.1,1.1)) +
+  xlim(c(-.01,1700)) +
+  geom_hline(yintercept=0, color='darkgrey', alpha=.6) +
+  geom_hline(yintercept=1, color='black', linetype='dashed') +
+  annotate(geom='text', x=140, y=1.09, label='Choice = Left', size=6) +
+  geom_hline(yintercept=-1, color='black', linetype='dashed') +
+  annotate(geom='text', x=150, y=-1.09, label='Choice = Right', size=6) +
+  theme_classic() +
+  theme(text=element_text(size=23)) +
+  ylab("Evidence") +
+  xlab("Time (ms)") +
+  
+  annotate(geom='text', x=1118 + 105, y= .20 - .28, label=TeX('$v_{left} = 1$'),  size=7) +
+  annotate(geom='text', x=1138 + 105, y= .03 - .28, label=TeX('$v_{right} = 1$'),  size=7) +
+  annotate(geom='text', x=1130 + 138, y=-.14 - .28, label=TeX('$d = .003$'),      size=7) +
+  annotate(geom='text', x=1110 + 138, y=-.29 - .28, label=TeX('$\\sigma = .02$'),  size=7) +
+  annotate(geom='text', x=1110 + 138, y=-.44 - .28, label=TeX('$\\theta = .52$'), size=7) +
+  annotate(geom='text', x=1110 + 138, y=-.59 - .28, label=TeX('$\\b = .02$'),     size=7) 
+
+plot(p.exampleaDDM)
+source(file.path(codedir,"set_j_dir.R"))
+ggsave(filename=file.path(figdir,"Fig_aDDM_example.pdf"), width=8, height=5, units=c('in'))

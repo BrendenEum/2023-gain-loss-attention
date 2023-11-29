@@ -27,13 +27,13 @@ rm(list=ls())
 library(plyr)
 library(dplyr)
 library(data.table)
-datadir <- "D:/OneDrive - California Institute of Technology/PhD/Rangel Lab/2023-gain-loss-attention/numeric/data/raw_data" # ! ! !
+datadir <- "/Users/brenden/Downloads" # ! ! !
 outdir <- datadir
 
 # Input data.
 # Each line in the datatable is one row in the .asc file, as a single string.
 
-subject_id <- 204                                                                                    # ! ! !
+subject_id <- 322
 fixfilename <- paste0(toString(subject_id), "/", toString(subject_id), "_GainLossTask_")
 fixfilename1 <- paste0(fixfilename, "gain1.csv")
 fixfilename2 <- paste0(fixfilename, "gain2.csv")

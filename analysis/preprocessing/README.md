@@ -1,5 +1,5 @@
-This is where all scripts for preprocessing would go.  
+qualityCheck.R: Ran immediately after collecting participant data. This tells us
+if participant passed pre-specified filters. If so, then we add them to the 
+dataset. Otherwise, their data is moved to a "Bad Data" folder and not used.
 
-Scripts in here can be sourced in files in `submitted_analyses>neuroecon_conf>poster_analsyes.R` to help with provenance of data and preprocessing steps in each submission.  
-
-Scripts in here would possibly be written after exploring the data and figure out what to do in interim `notebooks` beforehand.
+clean*Data.R: Does what it sounds like...
