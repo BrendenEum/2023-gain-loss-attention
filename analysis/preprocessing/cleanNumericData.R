@@ -20,7 +20,6 @@
 # Variables:
 #   trial: trial Number
 #   Participant: Participant Number
-#   Session: Session Number
 #   Condition: Gain or Loss
 #   choice: 1 is left, 0 is right
 #   rt: Response time in seconds
@@ -99,7 +98,6 @@ make_cfr = function(data_directory, list_of_subjects) {
     
     voi <- c(
       "participant",
-      "session",
       "TrialType",
       "Condition",
       "LProb",
@@ -123,9 +121,11 @@ make_cfr = function(data_directory, list_of_subjects) {
     data <- rawdata[rawdata$TrialType == "Trial", voi]
     data <- data %>% rename(
       "subject" = "participant",
-      "session" = "session",
       "choice" = "Response.keys",
-      "rt" = "Response.rt"
+      "rt" = "Response.rt",
+      "condition" = "Condition",
+      "fixCrossLoc" = "FixCrossLoc",
+      "sanity" = "Sanity"
     )
     
     
@@ -153,7 +153,7 @@ make_cfr = function(data_directory, list_of_subjects) {
     
     # Turn Condition into a factor
     
-    data$Condition <- data$Condition %>%
+    data$condition <- data$condition %>%
       factor(
         levels = c("gain","loss"),
         labels = c("Gain","Loss")
@@ -161,7 +161,7 @@ make_cfr = function(data_directory, list_of_subjects) {
     
     # Fixation Cross Location (left = 1, right = 0, center = 2)
     
-    data$FixCrossLoc <- data$FixCrossLoc %>%
+    data$fixCrossLoc <- data$fixCrossLoc %>%
       factor(
         levels = c("[-0.5, 0]","[0, 0]","[0.5, 0]"),
         labels = c("Left","Center","Right")
@@ -186,15 +186,19 @@ make_cfr = function(data_directory, list_of_subjects) {
     # Corrected choice
     
     data <- data %>%
-      group_by(subject, Condition, vDiff) %>%
+      group_by(subject, condition, vDiff) %>%
       mutate(
         choice.corr = choice - mean(choice)
       )
     
     # What's the correct answer and was the choice correct?
     
-    data$CorrectAnswer <- as.integer(data$vL >= data$vR)
-    data$Correct <- as.integer(data$CorrectAnswer == data$choice)
+    data$correctAnswer <- as.integer(data$vL >= data$vR) %>%
+      factor( 
+        levels=c(1,0), 
+        labels=c("Left","Right")
+      )
+    data$correct <- as.integer(data$correctAnswer == data$choice)
     
     ####################################################
     ## Transform ET data from list to long data. Clean it.
@@ -230,7 +234,7 @@ make_cfr = function(data_directory, list_of_subjects) {
           trial = i,
           fix_start = temp.1$time,
           fix_end = temp.2$time,
-          Location = temp.1$loc
+          location = temp.1$loc
         )
         etdata <- rbind(etdata, temp.3)
       }
@@ -243,8 +247,8 @@ make_cfr = function(data_directory, list_of_subjects) {
     
     # Turn location into a factor variable
     
-    etdata$Location <- factor(
-      etdata$Location,
+    etdata$location <- factor(
+      etdata$location,
       levels = c(1,0),
       labels = c("Left","Right")
     )
@@ -254,7 +258,7 @@ make_cfr = function(data_directory, list_of_subjects) {
     etdata <- etdata %>%
       group_by(trial) %>%
       mutate(
-        fix_num = with(rle(as.numeric(Location)), rep(seq_along(lengths), lengths))
+        fix_num = with(rle(as.numeric(location)), rep(seq_along(lengths), lengths))
       )
     
     # Combine those consecutive fixations into one fixation.
@@ -264,7 +268,7 @@ make_cfr = function(data_directory, list_of_subjects) {
       summarize(
         fix_start = first(fix_start),
         fix_end = last(fix_end),
-        Location = last(Location)
+        location = last(location)
       )
     
     # Convert to numeric data.
@@ -282,9 +286,8 @@ make_cfr = function(data_directory, list_of_subjects) {
     
     voi = c(
       "subject",
-      "session",
       "trial",
-      "Condition",
+      "condition",
       "choice",
       "choice.corr",
       "rt",
@@ -296,10 +299,10 @@ make_cfr = function(data_directory, list_of_subjects) {
       "LAmt",
       "RProb",
       "RAmt",
-      "Correct",
-      "CorrectAnswer",
-      "Sanity",
-      "FixCrossLoc"
+      "correct",
+      "correctAnswer",
+      "sanity",
+      "fixCrossLoc"
     )
     choicedata = data[, voi]
     
@@ -347,10 +350,18 @@ make_cfr = function(data_directory, list_of_subjects) {
     subject_cfr <- subject_cfr %>%
       group_by(trial) %>%
       mutate(LastFix = (fix_num==max(fix_num)))
+    subject_cfr <- subject_cfr %>%
+      mutate(
+        fix_type = factor(
+          1*FirstFix + 2*MiddleFix + 3*LastFix,
+          levels = c(1,2,3),
+          labels = c("First","Middle","Last")
+        )
+      )
     
     # Net fixation (L-R).
     
-    numericLocation = -as.numeric(subject_cfr$Location) + 2
+    numericLocation = -as.numeric(subject_cfr$location) + 2
     subject_cfr$temp_fix_dur <- subject_cfr$fix_dur * (numericLocation*2-1) # Makes L positive and R negative
     subject_cfr <- subject_cfr %>%
       group_by(trial) %>%
@@ -361,13 +372,16 @@ make_cfr = function(data_directory, list_of_subjects) {
     
     subject_cfr <- subject_cfr %>%
       group_by(trial) %>%
-      mutate(firstSeenChosen = ((as.numeric(first(Location))-1)==first(choice))) %>%
+      mutate(firstSeenChosen = ((as.numeric(first(location))-1)==first(choice))) %>%
       ungroup()
     subject_cfr <- subject_cfr %>%
       group_by(vDiff) %>%
       mutate(firstSeenChosen.corr = firstSeenChosen - mean(firstSeenChosen)) %>%
       ungroup()
     
+    # Drop some columns
+    
+    subject_cfr <- subject_cfr[, !(colnames(subject_cfr) %in% c("drop", "FirstFix", "MiddleFix", "LastFix", "temp_fix_dur"))]
     # Save.
     
     subject_cfr <- subject_cfr[order(subject_cfr$trial, subject_cfr$fix_num),]
@@ -379,6 +393,7 @@ make_cfr = function(data_directory, list_of_subjects) {
   # Save one cfr file with everyone's data
   
   cfr <- do.call("rbind", cfr_list)
+  cfr$dataset <- "numeric"
   
   return(cfr)
 }
@@ -387,19 +402,19 @@ make_cfr = function(data_directory, list_of_subjects) {
 # Exploratory
 #####################
 
-cfr = make_cfr(rawdatadir, exploratory_subs)
-save(cfr, file=file.path(edatadir, "cfr.Rdata"))
+cfr_numeric = make_cfr(rawdatadir, exploratory_subs)
+save(cfr_numeric, file=file.path(edatadir, "cfr_numeric.Rdata"))
 
 #####################
 # Confirmatory
 #####################
 
-cfr = make_cfr(rawdatadir, confirmatory_subs)
-save(cfr, file=file.path(cdatadir, "cfr.Rdata"))
+cfr_numeric = make_cfr(rawdatadir, confirmatory_subs)
+save(cfr_numeric, file=file.path(cdatadir, "cfr_numeric.Rdata"))
 
 #####################
 # Joint
 #####################
 
-cfr = make_cfr(rawdatadir, exploratory_subs)
-save(cfr, file=file.path(jdatadir, "cfr.Rdata"))
+cfr_numeric = make_cfr(rawdatadir, exploratory_subs)
+save(cfr_numeric, file=file.path(jdatadir, "cfr_numeric.Rdata"))

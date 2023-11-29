@@ -79,40 +79,58 @@ clean.choices <- function(choices) {
     mutate(
       subject = subject_ID,
       trial = trial_number,
-      Condition = factor(
+      condition = factor(
         ifelse(trial_type == "win", 1, 0),
         levels = c(0, 1),
         labels = c("Loss", "Gain")
       ),
-      potentialoutcome = ifelse(Condition=="Gain", 10, -10),
-      vL = p_left/10*potentialoutcome,
-      vR = p_right/10*potentialoutcome,
+      LProb = p_left/100,
+      LAmt = ifelse(condition=="Gain", 10, -10),
+      RProb = p_right/100,
+      RAmt = ifelse(condition=="Gain", 10, -10),
+      vL = LProb*LAmt,
+      vR = RProb*RAmt,
       vDiff = round(vL-vR, 1),
       difficulty= abs(vDiff),
       choice = ifelse(choice == "left", 1, 0),
+      correctAnswer = factor(
+        ifelse(vDiff>=0, 1, 0), 
+        levels=c(1,0), 
+        labels=c("Left","Right")
+      ),
+      correct = ifelse(choice==correctAnswer, 1, 0),
       better_option = factor(
         ifelse(vDiff<0, 0, 1),
         levels=c(0,1),
         labels=c("Right","Left")
       ),
-      rt = RT
+      rt = RT,
+      sanity = 0, #to match numeric data
+      fixCrossLoc = "Center"
     ) %>%
-    group_by(subject, Condition, vDiff) %>%
+    group_by(subject, condition, vDiff) %>%
     mutate(
       choice.corr = choice - mean(choice)
     ) %>%
     subset(select = c(
       subject,
       trial,
-      Condition,
+      condition,
       vL,
       vR,
+      LProb,
+      LAmt,
+      RProb,
+      RAmt,
       vDiff,
       difficulty,
       choice,
+      rt,
       choice.corr,
-      better_option,
-      rt
+      correctAnswer,
+      correct,
+      sanity,
+      fixCrossLoc
     ))
   return(choices)
 }
@@ -124,12 +142,12 @@ clean.fixations <- function(fixations) {
     mutate(
       subject = subject_ID,
       trial = trial_number,
-      Condition = factor(
+      condition = factor(
         ifelse(condition == "win", 1, 0),
         levels = c(0, 1),
         labels = c("Loss", "Gain")
       ),
-      Location = factor(
+      location = factor(
         location, 
         levels=c(1,2), 
         labels=c("Left","Right")
@@ -141,7 +159,7 @@ clean.fixations <- function(fixations) {
     mutate(
       middleFix = ifelse(fix_num > 1 & fix_num != max(fix_num), 1, 0),
       lastFix = ifelse(fix_num == max(fix_num) & fix_num > 1, 1, 0),
-      net_fix = sum( fix_dur * ifelse(Location=="Left",1,-1) )
+      net_fix = sum( fix_dur * ifelse(location=="Left",1,-1) )
     ) %>%
     ungroup() %>%
     mutate(
@@ -155,11 +173,13 @@ clean.fixations <- function(fixations) {
       select = c(
         subject,
         trial,
-        Condition,
-        Location,
+        condition,
+        location,
         net_fix,
         fix_num,
         fix_dur,
+        fix_start,
+        fix_end,
         fix_type
       )
     )
@@ -169,17 +189,23 @@ clean.fixations <- function(fixations) {
 # Combine choices and fixations
 
 make.cfr <- function(choices, fixations) {
-  cfr <- merge(choices, fixations, by=c("subject","trial","Condition"))
-  cfr <- cfr[order(cfr$subject,cfr$trial,cfr$Condition,cfr$fix_num),]
+  cfr <- merge(choices, fixations, by=c("subject","trial","condition"))
+  cfr <- cfr[order(cfr$subject,cfr$trial,cfr$condition,cfr$fix_num),]
   cfr <- cfr %>%
     mutate(
-      subject = as.integer(factor(subject))
+      subject = as.integer(factor(subject)),
+      dataset = "dots",
+      trial = ifelse(condition=="Loss", trial+200, trial) # just doing this out of convenience
     ) %>%
-    group_by(subject, Condition, trial) %>%
+    group_by(subject, condition, trial) %>%
     mutate(
-      firstSeenChosen = first(Location)==better_option,
-      ndt = rt - sum(fix_dur)
-    ) 
+      firstSeenChosen = first(location)==correctAnswer,
+    ) %>%
+    group_by(vDiff) %>%
+    mutate(firstSeenChosen.corr = firstSeenChosen - mean(firstSeenChosen))
+  
+  
+  
   return(cfr)
 }
 
@@ -191,12 +217,12 @@ make.cfr <- function(choices, fixations) {
 choices_and_fixations = read_choices_and_fixations_data(rawdatadir, exploratory_subs)
 choices = clean.choices(choices_and_fixations$choices)
 fixations = clean.fixations(choices_and_fixations$fixations)
-cfr = make.cfr(choices, fixations)
-cfr_even = cfr[cfr$trial%%2==0,]
-cfr_odd = cfr[cfr$trial%%2!=0,]
-save(cfr, file = file.path(edatadir, "cfr.RData"))
-save(cfr_even, file = file.path(edatadir, "cfr_even.RData"))
-save(cfr_odd, file = file.path(edatadir, "cfr_odd.RData"))
+cfr_dots = make.cfr(choices, fixations)
+cfr_even = cfr_dots[cfr_dots$trial%%2==0,]
+cfr_odd = cfr_dots[cfr_dots$trial%%2!=0,]
+save(cfr_dots, file = file.path(edatadir, "cfr_dots.RData"))
+#save(cfr_even, file = file.path(edatadir, "cfr_even.RData"))
+#save(cfr_odd, file = file.path(edatadir, "cfr_odd.RData"))
 
 
 #####################
@@ -206,12 +232,12 @@ save(cfr_odd, file = file.path(edatadir, "cfr_odd.RData"))
 choices_and_fixations = read_choices_and_fixations_data(rawdatadir, confirmatory_subs)
 choices = clean.choices(choices_and_fixations$choices)
 fixations = clean.fixations(choices_and_fixations$fixations)
-cfr = make.cfr(choices, fixations)
-cfr_even = cfr[cfr$trial%%2==0,]
-cfr_odd = cfr[cfr$trial%%2!=0,]
-save(cfr, file = file.path(cdatadir, "cfr.RData"))
-save(cfr_even, file = file.path(cdatadir, "cfr_even.RData"))
-save(cfr_odd, file = file.path(cdatadir, "cfr_odd.RData"))
+cfr_dots = make.cfr(choices, fixations)
+cfr_even = cfr_dots[cfr_dots$trial%%2==0,]
+cfr_odd = cfr_dots[cfr_dots$trial%%2!=0,]
+save(cfr_dots, file = file.path(cdatadir, "cfr_dots.RData"))
+#save(cfr_even, file = file.path(cdatadir, "cfr_even.RData"))
+#save(cfr_odd, file = file.path(cdatadir, "cfr_odd.RData"))
 
 #####################
 # Joint
@@ -220,9 +246,9 @@ save(cfr_odd, file = file.path(cdatadir, "cfr_odd.RData"))
 choices_and_fixations = read_choices_and_fixations_data(rawdatadir, joint_subs)
 choices = clean.choices(choices_and_fixations$choices)
 fixations = clean.fixations(choices_and_fixations$fixations)
-cfr = make.cfr(choices, fixations)
-cfr_even = cfr[cfr$trial%%2==0,]
-cfr_odd = cfr[cfr$trial%%2!=0,]
-save(cfr, file = file.path(jdatadir, "cfr.RData"))
-save(cfr_even, file = file.path(jdatadir, "cfr_even.RData"))
-save(cfr_odd, file = file.path(jdatadir, "cfr_odd.RData"))
+cfr_dots = make.cfr(choices, fixations)
+cfr_even = cfr_dots[cfr_dots$trial%%2==0,]
+cfr_odd = cfr_dots[cfr_dots$trial%%2!=0,]
+save(cfr_dots, file = file.path(jdatadir, "cfr_dots.RData"))
+#save(cfr_even, file = file.path(jdatadir, "cfr_even.RData"))
+#save(cfr_odd, file = file.path(jdatadir, "cfr_odd.RData"))
