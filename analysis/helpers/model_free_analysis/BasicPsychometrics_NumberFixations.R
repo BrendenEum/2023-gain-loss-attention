@@ -1,24 +1,24 @@
 ## Plot function
 
-psycho.numfix.plt <- function(data) {
+psycho.numfix.plt <- function(data, xlim) {
 
-  pdata <- data[data$LastFix==T,] %>%
-    group_by(subject, Condition, difficulty) %>%
+  pdata <- data[data$fix_type=="Last",] %>%
+    group_by(subject, condition, difficulty) %>%
     summarize(
       fix_num.mean = mean(fix_num)
     ) %>%
     ungroup() %>%
-    group_by(Condition, difficulty) %>%
+    group_by(condition, difficulty) %>%
     summarize(
       y = mean(fix_num.mean),
       se = std.error(fix_num.mean)
     )
 
-  plt <- ggplot(data=pdata, aes(x=difficulty, y=y, group=Condition)) +
+  plt <- ggplot(data=pdata, aes(x=difficulty, y=y)) +
     myPlot +
-    geom_line(aes(color=Condition), size=linesize) +
-    geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
-    xlim(c(0,4)) +
+    geom_line(aes(color=condition), size=linesize) +
+    geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=condition), alpha=ribbonalpha, show.legend=F) +
+    xlim(c(xlim[1],xlim[2])) +
     ylim(c(0,NA)) +
     labs(y="Number of Fixations", x="Best - Worst E[V]")
 
@@ -47,8 +47,8 @@ psycho.numfix.reg <- function(data) {
 ## Exploratory
 ######################
 
-plt.numfix.e <- psycho.numfix.plt(cfr)
+#plt.numfix.e <- psycho.numfix.plt(cfr)
 #reg.numfix.e <- psycho.numfix.reg(cfr)
 
-plt.numfix.e
+#plt.numfix.e
 #fixef(reg.numfix.e)[,c('Estimate', 'Q2.5', 'Q97.5')]

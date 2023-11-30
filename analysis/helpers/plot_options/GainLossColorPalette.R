@@ -1,6 +1,6 @@
 # Color palette
 my_colors = list(
-  gain_loss_colors = c("green4", "red3", "blue2", "purple2", "orange2", "deeppink", "cyan3", "bisque3")
+  gain_loss_colors = c("red3", "green4", "blue2", "purple2", "orange2", "deeppink", "cyan3", "bisque3")
 )
 cvi_palettes = function(name, n, all_palettes = my_colors, type = c("discrete", "continuous")) {
   palette = all_palettes[[name]]

@@ -1,4 +1,4 @@
-bias.netfix.plt <- function(data) {
+bias.netfix.plt <- function(data, xlim) {
 
   breaks <- seq(-1625,1625,250)/1000
   labels <- seq(-1500,1500,250)/1000
@@ -7,28 +7,31 @@ bias.netfix.plt <- function(data) {
     as.character() %>%
     as.numeric()
 
-  pdata <- data[data$FirstFix==T,] %>%
-    group_by(subject, Condition, net_fix) %>%
+  pdata <- data[data$fix_type=="First",] %>%
+    group_by(subject, condition, net_fix) %>%
     summarize(
-      choice.mean = mean(choice.corr)
+      choice.mean = mean(choice.corr, na.rm=T)
     ) %>%
     ungroup() %>%
-    group_by(Condition, net_fix) %>%
+    group_by(condition, net_fix) %>%
     summarize(
       y = mean(choice.mean),
       se = std.error(choice.mean)
-    )
+    ) %>%
+    na.omit()
+  
+  print(pdata,n=40)
 
 
-  plt <- ggplot(data=pdata, aes(x=net_fix, y=y, group=Condition)) +
+  plt <- ggplot(data=pdata, aes(x=net_fix, y=y)) +
     myPlot +
     geom_hline(yintercept=0, color="grey", alpha=0.75) +
     geom_vline(xintercept=0, color="grey", alpha=0.75) +
-    geom_line(aes(color=Condition), size=linesize) +
-    geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
+    geom_line(aes(color=condition), size=linesize) +
+    geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=condition), alpha=ribbonalpha, show.legend=F) +
     labs(y="Corr. Pr(Choose Left)", x="Net Fixation (L-R, s)") +
-    xlim(c(-1.25,1.25)) +
-    ylim(c(-0.2,0.2))
+    xlim(c(xlim[1],xlim[2])) +
+    ylim(c(-0.41,0.41))
 
   return(plt)
 
@@ -54,8 +57,8 @@ bias.netfix.reg <- function(data) {
 ## Exploratory
 ######################
 
-plt.netfix.e <- bias.netfix.plt(cfr)
+#plt.netfix.e <- bias.netfix.plt(cfr)
 #reg.netfix.e <- bias.netfix.reg(cfr)
 
-plt.netfix.e
+#plt.netfix.e
 #fixef(reg.netfix.e)[,c('Estimate', 'Q2.5', 'Q97.5')]

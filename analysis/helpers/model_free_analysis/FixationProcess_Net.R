@@ -1,26 +1,26 @@
 ## Plot function
 
-fixprop.net.plt <- function(data) {
+fixprop.net.plt <- function(data, xlim) {
 
-  pdata <- data[data$FirstFix==T,] %>%
-    group_by(subject, Condition, vDiff) %>%
+  pdata <- data[data$fix_type=="First",] %>%
+    group_by(subject, condition, vDiff) %>%
     summarize(
       net.mean = mean(net_fix, na.rm=T)
     ) %>%
     ungroup() %>%
-    group_by(Condition, vDiff) %>%
+    group_by(condition, vDiff) %>%
     summarize(
       y = mean(net.mean, na.rm=T),
       se = std.error(net.mean, na.rm=T)
     )
 
-  plt <- ggplot(data=pdata, aes(x=vDiff, y=y, group=Condition)) +
+  plt <- ggplot(data=pdata, aes(x=vDiff, y=y, group=condition)) +
     myPlot +
     geom_hline(yintercept=0, color="grey", alpha=0.75) +
     geom_vline(xintercept=0, color="grey", alpha=0.75) +
-    geom_line(aes(color=Condition), size=linesize) +
-    geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
-    xlim(c(-4,4)) +
+    geom_line(aes(color=condition), size=linesize) +
+    geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=condition), alpha=ribbonalpha, show.legend=F) +
+    xlim(c(xlim[1],xlim[2])) +
     ylim(c(-.5,.5)) +
     labs(y="Net Fix. Duration (L-R, s)", x="Left - Right E[V]")
 
@@ -51,8 +51,8 @@ fixprop.net.reg <- function(data) {
 ## Exploratory
 ######################
 
-plt.net.e <- fixprop.net.plt(cfr)
+#plt.net.e <- fixprop.net.plt(cfr)
 #reg.net.e <- fixprop.net.reg(cfr)
 
-plt.net.e
+#plt.net.e
 #fixef(reg.net.e)[,c('Estimate', 'Q2.5', 'Q97.5')]

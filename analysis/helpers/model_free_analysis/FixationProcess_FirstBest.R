@@ -1,27 +1,30 @@
 ## Plot function
 
-fixprop.prfirst.plt <- function(data) {
+fixprop.prfirst.plt <- function(data, xlim) {
 
-  pdata <- data[data$FirstFix==T,] %>%
-    group_by(subject, Condition, difficulty) %>%
+  pdata <- data[data$fix_type=="First",] %>%
+    group_by(subject, condition, difficulty) %>%
     summarize(
-      firstbest.mean = mean((as.numeric(Location)-1)==CorrectAnswer)
+      firstbest.mean = mean(location==correctAnswer)
     ) %>%
     ungroup() %>%
-    group_by(Condition, difficulty) %>%
+    group_by(condition, difficulty) %>%
     summarize(
       y = mean(firstbest.mean),
       se = std.error(firstbest.mean)
-    )
+    ) %>%
+    na.omit()
+  
+  print(pdata, n=100)
 
-  plt <- ggplot(data=pdata[pdata$difficulty>=0,], aes(x=difficulty, y=y, group=Condition)) +
+  plt <- ggplot(data=pdata[pdata$difficulty>=0,], aes(x=difficulty, y=y)) +
     myPlot +
     geom_hline(yintercept=0.5, color="grey", alpha=0.75) +
-    geom_line(aes(color=Condition), size=linesize) +
-    geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
-    xlim(c(1,4)) +
+    geom_line(aes(color=condition), size=linesize) +
+    geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=condition), alpha=ribbonalpha, show.legend=F) +
+    xlim(c(xlim[1], xlim[2])) +
     ylim(c(0,1)) +
-    labs(y="Pr(First Fix. to Best)", x="Best - Worst E[V]") +
+    labs(y="Pr(First Fix. to Best)", x="Best - Worst E[V]", color="Condition") +
     theme(
       legend.position = c(0.1,0.85)
     )
@@ -56,8 +59,8 @@ fixprop.prfirst.reg <- function(data) {
 ## Exploratory
 ######################
 
-plt.prfirst.e <- fixprop.prfirst.plt(cfr)
+#plt.prfirst.e <- fixprop.prfirst.plt(cfr)
 #reg.prfirst.e <- fixprop.prfirst.reg(cfr)
 
-plt.prfirst.e
+#plt.prfirst.e
 #fixef(reg.prfirst.e)[,c('Estimate', 'Q2.5', 'Q97.5')]

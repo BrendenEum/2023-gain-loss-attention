@@ -1,30 +1,32 @@
 ## Plot function
 
-bias.lastfix.plt <- function(data) {
+bias.lastfix.plt <- function(data, xlim) {
 
-  pdata <- data[data$LastFix==T,] %>%
-    group_by(subject, Condition, Location, vDiff) %>%
+  pdata <- data[data$fix_type=="Last",] %>%
+    group_by(subject, condition, location, vDiff) %>%
     summarize(
       choice.mean = mean(choice)
     ) %>%
     ungroup() %>%
-    group_by(Condition, Location, vDiff) %>%
+    group_by(condition, location, vDiff) %>%
     summarize(
       y = mean(choice.mean),
       se = std.error(choice.mean)
-    )
+    ) %>%
+    na.omit()
 
-  plt <- ggplot(data=pdata, aes(x=vDiff, y=y, linetype=Location)) +
+  plt <- ggplot(data=pdata, aes(x=vDiff, y=y, linetype=location)) +
     myPlot +
     geom_hline(yintercept=0.5, color="grey", alpha=0.75) +
     geom_vline(xintercept=0, color="grey", alpha=0.75) +
-    geom_line(aes(color=Condition), size=linesize) +
-    geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
-    xlim(c(-4,4)) +
+    geom_line(aes(color=condition), size=linesize) +
+    geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=condition), alpha=ribbonalpha, show.legend=F) +
+    xlim(c(xlim[1],xlim[2])) +
     ylim(c(0,1)) +
-    labs(y="Pr(Choose Left)", x="Left - Right E[V]") +
+    labs(y="Pr(Choose Left)", x="Left - Right E[V]", linetype="Last Fixation", color="Condition") +
     theme(
-      legend.position=c(0.1,0.75)
+      legend.position=c(0.1,0.75),
+      legend.key.width=unit(1,"cm")
     ) +
     guides(linetype = guide_legend(override.aes = list(fill = c(NA, NA))))
 
@@ -57,8 +59,8 @@ bias.lastfix.reg <- function(data) {
 ## Exploratory
 ######################
 
-plt.lastfix.e <- bias.lastfix.plt(cfr)
+#plt.lastfix.e <- bias.lastfix.plt(cfr)
 #reg.lastfix.e <- bias.lastfix.reg(cfr)
 
-plt.lastfix.e
+#plt.lastfix.e
 #fixef(reg.lastfix.e)[,c('Estimate', 'Q2.5', 'Q97.5')]

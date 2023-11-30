@@ -1,26 +1,26 @@
 ## Plot function
 
-fixprop.mid.plt <- function(data) {
+fixprop.mid.plt <- function(data, xlim) {
 
-  pdata <- data[data$MiddleFix==T,] %>%
-    group_by(subject, Condition, difficulty) %>%
+  pdata <- data[data$fix_type=="Middle",] %>%
+    group_by(subject, condition, difficulty) %>%
     summarize(
       mid.mean = mean(fix_dur)
     ) %>%
     ungroup() %>%
-    group_by(Condition, difficulty) %>%
+    group_by(condition, difficulty) %>%
     summarize(
       y = mean(mid.mean),
       se = std.error(mid.mean)
     )
 
-  plt <- ggplot(data=pdata, aes(x=difficulty, y=y, group=Condition)) +
+  plt <- ggplot(data=pdata, aes(x=difficulty, y=y)) +
     myPlot +
-    geom_line(aes(color=Condition), size=linesize) +
-    geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
-    xlim(c(0,4)) +
+    geom_line(aes(color=condition), size=linesize) +
+    geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=condition), alpha=ribbonalpha, show.legend=F) +
+    xlim(c(xlim[1],xlim[2])) +
     ylim(c(0,NA)) +
-    labs(y="Middle Fix. Duration (s)", x="Best - Worst E[V]")
+    labs(y="Middle Fix. Duration (s)", x="Best - Worst E[V]", color="Condition")
 
 
   return(plt)
@@ -51,8 +51,8 @@ fixprop.mid.reg <- function(data) {
 ## Exploratory
 ######################
 
-plt.mid.e <- fixprop.mid.plt(cfr)
+#plt.mid.e <- fixprop.mid.plt(cfr)
 #reg.mid.e <- fixprop.mid.reg(cfr)
 
-plt.mid.e
+#plt.mid.e
 #fixef(reg.mid.e)[,c('Estimate', 'Q2.5', 'Q97.5')]

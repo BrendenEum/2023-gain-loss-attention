@@ -19,14 +19,14 @@
 # Preamble
 
 library(tidyverse)
-rawdatadir <- file.path("../../data/raw_data/good/dots")
 edatadir <- file.path(rawdatadir, "../../../processed_data/dots/e")
 cdatadir <- file.path(rawdatadir, "../../../processed_data/dots/c")
 jdatadir <- file.path(rawdatadir, "../../../processed_data/dots/j")
+tempdir = file.path("../outputs/temp")
 
 # Get list of exploratory and confirmatory subjects
 
-raw_subs <- list.files(path=rawdatadir)
+raw_subs <- read.csv(file.path(tempdir, "dots_subject_list.csv"))[,2] # second column is subject ID
 exploratory_subs <- raw_subs[1:floor(length(raw_subs)/2)]
 confirmatory_subs <- raw_subs[(floor(length(raw_subs)/2)+1):length(raw_subs)]
 joint_subs <- raw_subs

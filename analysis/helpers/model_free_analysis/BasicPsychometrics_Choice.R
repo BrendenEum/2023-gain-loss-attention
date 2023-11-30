@@ -1,28 +1,29 @@
 ## Plot function
 
-psycho.choice.plt <- function(data) {
+psycho.choice.plt <- function(data, xlim=c(-1,1)) {
 
-  pdata <- data[data$FirstFix==T,] %>%
-    group_by(subject, Condition, vDiff) %>%
+  pdata <- data[data$fix_type=="First",] %>%
+    group_by(subject, condition, vDiff) %>%
     summarize(
       choice.mean = mean(choice)
     ) %>%
     ungroup() %>%
-    group_by(Condition, vDiff) %>%
+    group_by(condition, vDiff) %>%
     summarize(
       y = mean(choice.mean, na.rm=T),
       se = std.error(choice.mean, na.rm=F)
-    )
-
-  plt <- ggplot(data=pdata, aes(x=vDiff, y=y, group=Condition)) +
+    ) %>%
+    na.omit()
+  
+  plt <- ggplot(data=pdata, aes(x=vDiff, y=y))+#, group=condition)) +
     myPlot +
     geom_hline(yintercept=0.5, color="grey", alpha=0.75) +
     geom_vline(xintercept=0, color="grey", alpha=0.75) +
-    geom_line(aes(color=Condition), size=linesize) +
-    geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=Condition), alpha=ribbonalpha) +
-    xlim(c(-4,4)) +
+    geom_line(aes(color=condition), size=linesize) +
+    geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=condition), alpha=ribbonalpha, show.legend=F) +
+    xlim(c(xlim[1],xlim[2])) +
     ylim(c(0,1)) +
-    labs(y="Pr(Choose Left)", x="Left - Right E[V]") +
+    labs(y="Pr(Choose Left)", x="Left - Right E[V]", color="Condition") +
     theme(
       legend.position=c(0.1,0.8)
     )
@@ -60,5 +61,5 @@ psycho.choice.reg <- function(data) {
 
 ## Choice probabilities
 
-plt.choice.e <- psycho.choice.plt(cfr)
+plt.choice.e <- psycho.choice.plt(ecfr)
 #reg.choice.e <- psycho.choice.reg(cfr)
