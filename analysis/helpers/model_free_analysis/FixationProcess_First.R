@@ -28,20 +28,19 @@ fixprop.first.plt <- function(data, xlim) {
 
 ## Regression function
 
-fixprop.first.reg <- function(data) {
+fixprop.first.reg <- function(data, study="error", dataset="error") {
 
-  data <- data[data$FirstFix==T,]
+  data <- data[data$fix_type=="First",]
 
   results <- brm(
-    fix_dur ~ difficulty*Condition + (1+difficulty*Condition | subject),
+    fix_dur ~ difficulty*condition + (1+difficulty*condition | subject),
     data=data,
     family = gaussian(),
     prior = c(
       prior(normal(0,700), class=Intercept),
-      prior(normal(0,100), class=b)
-    ),
-    file = file.path(tempdir, "fixprop.first")
-  )
+      prior(normal(0,100), class=b)),
+    file = file.path(tempregdir, paste0(study, "_FixationProcess_First_", dataset)))
+  
   return(results)
 
 }

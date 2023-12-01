@@ -29,20 +29,19 @@ fixprop.mid.plt <- function(data, xlim) {
 
 ## Regression function
 
-fixprop.mid.reg <- function(data) {
+fixprop.mid.reg <- function(data, study="error", dataset="error") {
 
-  data <- data[data$MiddleFix==T,]
+  data <- data[data$fix_type=="Middle",]
 
   results <- brm(
-    fix_dur ~ difficulty*Condition + (1+difficulty*Condition | subject),
+    fix_dur ~ difficulty*condition + (1+difficulty*condition | subject),
     data=data,
     family = gaussian(),
     prior = c(
       prior(normal(0,800), class=Intercept),
-      prior(normal(0,50), class=b)
-    ),
-    file = file.path(tempdir, "fixprop.mid")
-  )
+      prior(normal(0,50), class=b)),
+    file = file.path(tempregdir, paste0(study, "_FixationProcess_Middle_", dataset)))
+  
   return(results)
 
 }

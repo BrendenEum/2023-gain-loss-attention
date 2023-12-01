@@ -29,16 +29,16 @@ psycho.numfix.plt <- function(data, xlim) {
 
 ## Regression function
 
-psycho.numfix.reg <- function(data) {
+psycho.numfix.reg <- function(data, study="error", dataset="error") {
 
-  data <- data[data$LastFix==T,]
+  data <- data[data$fix_type=="Last",]
 
   results <- brm(
-    fix_num ~ difficulty*Condition + (1+difficulty*Condition | subject),
+    fix_num ~ difficulty*condition + (1+difficulty*condition | subject),
     data=data,
     family = gaussian(),
-    file = file.path(tempdir, "psycho.numfix")
-  )
+    file = file.path(tempregdir, paste0(study, "_BasicPsychometrics_NumberFixations_", dataset)))
+  
   return(results)
 
 }

@@ -34,22 +34,22 @@ psycho.choice.plt <- function(data, xlim=c(-1,1)) {
 
 ## Regression function
 
-psycho.choice.reg <- function(data) {
+psycho.choice.reg <- function(data, study="error", dataset="error") {
 
   # Convert to Binomial data
-  data <- data[data$FirstFix==T,]
+  data <- data[data$fix_type=="First",]
   data <- data %>% mutate(n=1)
   data <-  data %>%
-    group_by(subject, Condition, vDiff) %>%
-    summarize(n = sum(n),
-              choice = sum(choice))
+    group_by(subject, condition, vDiff) %>%
+    summarize(
+      n = sum(n),
+      choice = sum(choice))
 
   results <- brm(
-    choice | trials(n) ~ vDiff*Condition + (1+vDiff*Condition | subject),
+    choice | trials(n) ~ vDiff*condition + (1+vDiff*condition | subject),
     data = data,
     family = binomial(link='logit'),
-    file = file.path(tempdir, "psycho.choice")
-  )
+    file = file.path(tempregdir, paste0(study, "_BasicPsychometrics_Choice_", dataset)))
 
   return(results)
 
@@ -61,5 +61,5 @@ psycho.choice.reg <- function(data) {
 
 ## Choice probabilities
 
-plt.choice.e <- psycho.choice.plt(ecfr)
+#plt.choice.e <- psycho.choice.plt(ecfr)
 #reg.choice.e <- psycho.choice.reg(cfr)

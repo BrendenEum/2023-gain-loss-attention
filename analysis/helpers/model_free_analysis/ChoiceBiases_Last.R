@@ -36,21 +36,21 @@ bias.lastfix.plt <- function(data, xlim) {
 
 ## Regression function
 
-bias.lastfix.reg <- function(data) {
+bias.lastfix.reg <- function(data, study="error", dataset="error") {
 
-  data <- data[data$LastFix==T,]
+  data <- data[data$fix_type=="Last",]
   data <- data %>% mutate(n=1)
   data <-  data %>%
-    group_by(subject, Condition, Location, vDiff) %>%
+    group_by(subject, condition, location, vDiff) %>%
     summarize(n = sum(n),
               choice = sum(choice))
 
   results <- brm(
-    choice | trials(n) ~ vDiff*Condition*Location + (1+vDiff*Condition*Location | subject),
+    choice | trials(n) ~ vDiff*condition*location + (1+vDiff*condition*location | subject),
     data=data,
     family = binomial(link="logit"),
-    file = file.path(tempdir, "bias.lastfix")
-  )
+    file = file.path(tempregdir, paste0(study, "_ChoiceBiases_Last_", dataset)))
+  
   return(results)
 
 }

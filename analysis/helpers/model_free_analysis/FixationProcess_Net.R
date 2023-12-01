@@ -30,19 +30,18 @@ fixprop.net.plt <- function(data, xlim) {
 
 ## Regression function
 
-fixprop.net.reg <- function(data) {
+fixprop.net.reg <- function(data, study="error", dataset="error") {
 
-  data <- data[data$FirstFix==T,]
+  data <- data[data$fix_type=="First",]
 
   results <- brm(
-    net_fix ~ vDiff*Condition + (1+vDiff*Condition | subject),
+    net_fix ~ vDiff*condition + (1+vDiff*condition | subject),
     data=data,
     family = gaussian(),
     prior = c(
-      prior(normal(0,1000), class=b)
-    ),
-    file = file.path(tempdir, "fixprop.net")
-  )
+      prior(normal(0,1000), class=b)),
+    file = file.path(tempregdir, paste0(study, "_FixationProcess_Net_", dataset)))
+  
   return(results)
 
 }

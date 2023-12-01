@@ -19,8 +19,6 @@ bias.netfix.plt <- function(data, xlim) {
       se = std.error(choice.mean)
     ) %>%
     na.omit()
-  
-  print(pdata,n=40)
 
 
   plt <- ggplot(data=pdata, aes(x=net_fix, y=y)) +
@@ -39,16 +37,16 @@ bias.netfix.plt <- function(data, xlim) {
 
 ## Regression function
 
-bias.netfix.reg <- function(data) {
+bias.netfix.reg <- function(data, study="error", dataset="error") {
 
-  data <- data[data$FirstFix==T,]
+  data <- data[data$fix_type=="First",]
 
   results <- brm(
-    choice.corr ~ net_fix*Condition + (1+net_fix*Condition | subject),
+    choice.corr ~ net_fix*condition + (1+net_fix*condition | subject),
     data=data,
     family = gaussian(),
-    file = file.path(tempdir, "bias.netfix")
-  )
+    file = file.path(tempregdir, paste0(study, "_ChoiceBiases_Net_", dataset)))
+  
   return(results)
 
 }

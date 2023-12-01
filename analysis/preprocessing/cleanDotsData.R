@@ -19,9 +19,10 @@
 # Preamble
 
 library(tidyverse)
-edatadir <- file.path(rawdatadir, "../../../processed_data/dots/e")
-cdatadir <- file.path(rawdatadir, "../../../processed_data/dots/c")
-jdatadir <- file.path(rawdatadir, "../../../processed_data/dots/j")
+rawdatadir = file.path("../../data/raw_data/good/dots")
+edatadir <- file.path("../../data/processed_data/dots/e")
+cdatadir <- file.path("../../data/processed_data/dots/c")
+jdatadir <- file.path("../../data/processed_data/dots/j")
 tempdir = file.path("../outputs/temp")
 
 # Get list of exploratory and confirmatory subjects
@@ -106,7 +107,8 @@ clean.choices <- function(choices) {
       ),
       rt = RT,
       sanity = 0, #to match numeric data
-      fixCrossLoc = "Center"
+      rawFixCrossLoc = 2,
+      fixCrossLoc = factor(rawFixCrossLoc, levels=c(1,2,3), labels=c("Left", "Center", "Right"))
     ) %>%
     group_by(subject, condition, vDiff) %>%
     mutate(

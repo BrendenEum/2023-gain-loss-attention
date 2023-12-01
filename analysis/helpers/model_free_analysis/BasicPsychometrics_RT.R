@@ -28,16 +28,15 @@ psycho.rt.plt <- function(data, xlim) {
 
 ## Regression function
 
-psycho.rt.reg <- function(data) {
+psycho.rt.reg <- function(data, study="error", dataset="error") {
 
-  data <- data[data$FirstFix==T,]
+  data <- data[data$fix_type=="First",]
 
   results <- brm(
-    rt ~ difficulty*Condition + (1+difficulty*Condition | subject),
+    rt ~ difficulty*condition + (1+difficulty*condition | subject),
     data=data,
     family = gaussian(),
-    file = file.path(tempdir, "psycho.rt")
-  )
+    file = file.path(tempregdir, paste0(study, "_BasicPsychometrics_RT_", dataset)))
 
   return(results)
 

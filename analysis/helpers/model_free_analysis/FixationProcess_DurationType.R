@@ -55,52 +55,54 @@ fixprop.fixtype.plt <- function(data) {
 
 ## Difference t-tests
 
-fixprop.durationtype.ttest <- function(data) {
+fixprop.durationtype.ttest <- function(data, study="error", dataset="error") {
 
-  fixmean.F <- data[data$FirstFix==T,] %>%
-    group_by(subject, Condition) %>%
+  # First Fixations
+  fixmean.F <- data[data$fix_type=="First",] %>%
+    group_by(subject, condition) %>%
     summarize(
       fix_dur.mean = mean(fix_dur)
     ) %>%
     ungroup()
+  
   t.test.F <- t.test(
-    fixmean.F[fixmean.F$Condition=="Gain",]$fix_dur.mean,
-    fixmean.F[fixmean.F$Condition=="Loss",]$fix_dur.mean
-  )
-  # cohen.d.F <- cohen.d(
-  #   fixmean.F[fixmean.F$Condition=="Gain",]$fix_dur.mean,
-  #   fixmean.F[fixmean.F$Condition=="Loss",]$fix_dur.mean
-  # )
+    fixmean.F[fixmean.F$condition=="Gain",]$fix_dur.mean,
+    fixmean.F[fixmean.F$condition=="Loss",]$fix_dur.mean)
+  
+  cohen.d.F <- cohen.d(
+    fixmean.F[fixmean.F$condition=="Gain",]$fix_dur.mean,
+    fixmean.F[fixmean.F$condition=="Loss",]$fix_dur.mean)
 
-  fixmean.M <- data[data$MiddleFix==T,] %>%
-    group_by(subject, Condition) %>%
+  #Middle Fixations
+  fixmean.M <- data[data$fix_type=="Middle",] %>%
+    group_by(subject, condition) %>%
     summarize(
       fix_dur.mean = mean(fix_dur)
     ) %>%
     ungroup()
+  
   t.test.M <- t.test(
-    fixmean.M[fixmean.M$Condition=="Gain",]$fix_dur.mean,
-    fixmean.M[fixmean.M$Condition=="Loss",]$fix_dur.mean
-  )
-  # cohen.d.M <- cohen.d(
-  #   fixmean.M[fixmean.M$Condition=="Gain",]$fix_dur.mean,
-  #   fixmean.M[fixmean.M$Condition=="Loss",]$fix_dur.mean
-  # )
+    fixmean.M[fixmean.M$condition=="Gain",]$fix_dur.mean,
+    fixmean.M[fixmean.M$condition=="Loss",]$fix_dur.mean)
+  cohen.d.M <- cohen.d(
+    fixmean.M[fixmean.M$condition=="Gain",]$fix_dur.mean,
+    fixmean.M[fixmean.M$condition=="Loss",]$fix_dur.mean)
 
-  fixmean.L <- data[data$LastFix==T,] %>%
-    group_by(subject, Condition) %>%
+  #Last Fixations
+  fixmean.L <- data[data$fix_type=="Last",] %>%
+    group_by(subject, condition) %>%
     summarize(
       fix_dur.mean = mean(fix_dur)
     ) %>%
     ungroup()
+  
   t.test.L <- t.test(
-    fixmean.L[fixmean.L$Condition=="Gain",]$fix_dur.mean,
-    fixmean.L[fixmean.L$Condition=="Loss",]$fix_dur.mean
-  )
-  # cohen.d.L <- cohen.d(
-  #   fixmean.L[fixmean.L$Condition=="Gain",]$fix_dur.mean,
-  #   fixmean.L[fixmean.L$Condition=="Loss",]$fix_dur.mean
-  # )
+    fixmean.L[fixmean.L$condition=="Gain",]$fix_dur.mean,
+    fixmean.L[fixmean.L$condition=="Loss",]$fix_dur.mean)
+  
+  cohen.d.L <- cohen.d(
+    fixmean.L[fixmean.L$condition=="Gain",]$fix_dur.mean,
+    fixmean.L[fixmean.L$condition=="Loss",]$fix_dur.mean)
 
 }
 

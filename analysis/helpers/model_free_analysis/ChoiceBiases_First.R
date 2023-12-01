@@ -33,20 +33,21 @@ bias.firstfix.plt <- function(data, xlim) {
 
 ## Regression function
 
-bias.firstfix.reg <- function(data) {
+bias.firstfix.reg <- function(data, study="error", dataset="error") {
 
-  data <- data[data$FirstFix==T,] %>%
-    group_by(subject, Condition, vDiff) %>%
-    mutate(
-      firstSeenChosen.corr = firstSeenChosen - mean(firstSeenChosen),
-    )
+  data <- data[data$fix_type=="First",] 
+  # %>%
+  #   group_by(subject, condition, vDiff) %>%
+  #   mutate(
+  #     firstSeenChosen.corr = firstSeenChosen - mean(firstSeenChosen),
+  #   )
 
   results <- brm(
-    firstSeenChosen.corr ~ fix_dur*Condition + (1+fix_dur*Condition | subject),
+    firstSeenChosen.corr ~ fix_dur*condition + (1+fix_dur*condition | subject),
     data=data,
     family = gaussian(),
-    file = file.path(tempdir, "bias.firstfix")
-  )
+    file = file.path(tempregdir, paste0(study, "_ChoiceBiases_First_", dataset)))
+  
   return(results)
 
 }
@@ -55,8 +56,8 @@ bias.firstfix.reg <- function(data) {
 ## Exploratory
 ######################
 
-plt.firstfix.e <- bias.firstfix.plt(cfr)
+#plt.firstfix.e <- bias.firstfix.plt(cfr)
 #reg.firstfix.e <- bias.firstfix.reg(cfr)
 
-plt.firstfix.e
+#plt.firstfix.e
 #fixef(reg.firstfix.e)[,c('Estimate', 'Q2.5', 'Q97.5')]
