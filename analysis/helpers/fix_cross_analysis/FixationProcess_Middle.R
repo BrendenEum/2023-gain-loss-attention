@@ -1,8 +1,8 @@
 ## Plot function
 
-fixCross.first.plt <- function(data, xlim) {
+fixCross.mid.plt <- function(data, xlim) {
 
-  pdata <- data[data$fix_type=="First",] %>%
+  pdata <- data[data$fix_type=="Middle",] %>%
     group_by(subject, condition, fixCrossLoc, difficulty) %>%
     summarize(
       mid.mean = mean(fix_dur)
@@ -21,27 +21,28 @@ fixCross.first.plt <- function(data, xlim) {
     geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=condition), alpha=ribbonalpha, show.legend=F) +
     xlim(c(xlim[1],xlim[2])) +
     ylim(c(0,NA)) +
-    labs(y="First Fix. Duration (s)", x="Best - Worst E[V]", color="Condition") +
+    labs(y="Middle Fix. Duration (s)", x="Best - Worst E[V]", color="Condition")+
     facet_grid(cols = vars(fixCrossLoc))
 
 
   return(plt)
+
 }
 
 ## Regression function
 
-fixCross.first.reg <- function(data, study="error", dataset="error") {
+fixCross.mid.reg <- function(data, study="error", dataset="error") {
 
-  data <- data[data$fix_type=="First",]
+  data <- data[data$fix_type=="Middle",]
 
   results <- brm(
     fix_dur ~ difficulty*condition*fixCrossLoc + (1+difficulty*condition*fixCrossLoc | subject),
     data=data,
     family = gaussian(),
     prior = c(
-      prior(normal(0,700), class=Intercept),
-      prior(normal(0,100), class=b)),
-    file = file.path(tempregdir, paste0(study, "_FixCross_FixationProcess_First_", dataset)))
+      prior(normal(0,800), class=Intercept),
+      prior(normal(0,50), class=b)),
+    file = file.path(tempregdir, paste0(study, "FixCross_FixationProcess_Middle_", dataset)))
   
   return(results)
 
@@ -51,8 +52,8 @@ fixCross.first.reg <- function(data, study="error", dataset="error") {
 ## Exploratory
 ######################
 
-#plt.first.e <- fixprop.first.plt(cfr)
-#reg.first.e <- fixprop.first.reg(cfr)
+#plt.mid.e <- fixprop.mid.plt(cfr)
+#reg.mid.e <- fixprop.mid.reg(cfr)
 
-#plt.first.e
-#fixef(reg.first.e)[,c('Estimate', 'Q2.5', 'Q97.5')]
+#plt.mid.e
+#fixef(reg.mid.e)[,c('Estimate', 'Q2.5', 'Q97.5')]

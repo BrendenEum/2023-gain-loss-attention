@@ -16,7 +16,8 @@ fixCross.firstfix.plt <- function(data, xlim) {
     summarize(
       y = mean(corrFirst.mean),
       se = std.error(corrFirst.mean)
-    )
+    ) %>%
+    na.omit()
 
   plt <- ggplot(data=pdata, aes(x=fix_dur, y=y)) +
     myPlot +
@@ -25,7 +26,7 @@ fixCross.firstfix.plt <- function(data, xlim) {
     geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=condition), alpha=ribbonalpha, show.legend=F) +
     labs(y="Corr. Pr(First Seen Chosen)", x="First Fixation Duration (s)")+
     xlim(c(xlim[1],xlim[2])) +
-    ylim(c(-0.4,0.4)) +
+    ylim(c(-0.5,0.5)) +
     facet_grid(cols = vars(fixCrossLoc))
 
 

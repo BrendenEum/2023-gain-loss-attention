@@ -12,7 +12,8 @@ fixCross.rt.plt <- function(data, xlim) {
     summarize(
       y = mean(rt.mean),
       se = std.error(rt.mean)
-    )
+    ) %>%
+    na.omit()
 
   plt <- ggplot(data=pdata, aes(x=difficulty, y=y)) +
     myPlot +

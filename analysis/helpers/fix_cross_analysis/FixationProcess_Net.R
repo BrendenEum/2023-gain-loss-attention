@@ -12,7 +12,8 @@ fixCross.net.plt <- function(data, xlim) {
     summarize(
       y = mean(net.mean, na.rm=T),
       se = std.error(net.mean, na.rm=T)
-    )
+    ) %>%
+    na.omit()
 
   plt <- ggplot(data=pdata, aes(x=vDiff, y=y, group=condition)) +
     myPlot +
@@ -21,7 +22,7 @@ fixCross.net.plt <- function(data, xlim) {
     geom_line(aes(color=condition), size=linesize) +
     geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=condition), alpha=ribbonalpha, show.legend=F) +
     xlim(c(xlim[1],xlim[2])) +
-    ylim(c(-.5,.5)) +
+    ylim(c(-.75,.75)) +
     labs(y="Net Fix. Duration (L-R, s)", x="Left - Right E[V]") +
     facet_grid(cols = vars(fixCrossLoc))
 
