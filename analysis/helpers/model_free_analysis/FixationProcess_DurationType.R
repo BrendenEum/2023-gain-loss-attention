@@ -2,7 +2,7 @@
 
 fixprop.fixtype.plt <- function(data) {
 
-  pdata.F <- data[data$fix_type=="First",] %>%
+  pdata.F <- data[data$firstFix==T,] %>%
     group_by(subject, condition) %>%
     summarize(
       fix_dur.mean = mean(fix_dur)
@@ -14,7 +14,7 @@ fixprop.fixtype.plt <- function(data) {
       se = std.error(fix_dur.mean),
       x = 1
     )
-  pdata.M <- data[data$fix_type=="Middle",] %>%
+  pdata.M <- data[data$middleFix==T,] %>%
     group_by(subject, condition) %>%
     summarize(
       fix_dur.mean = mean(fix_dur)
@@ -26,7 +26,7 @@ fixprop.fixtype.plt <- function(data) {
       se = std.error(fix_dur.mean),
       x = 2
     )
-  pdata.L <- data[data$fix_type=="Last",] %>%
+  pdata.L <- data[data$lastFix==T,] %>%
     group_by(subject, condition) %>%
     summarize(
       fix_dur.mean = mean(fix_dur)
@@ -58,7 +58,7 @@ fixprop.fixtype.plt <- function(data) {
 fixprop.durationtype.ttest <- function(data, study="error", dataset="error") {
 
   # First Fixations
-  fixmean.F <- data[data$fix_type=="First",] %>%
+  fixmean.F <- data[data$firstFix==T,] %>%
     group_by(subject, condition) %>%
     summarize(
       fix_dur.mean = mean(fix_dur)
@@ -74,7 +74,7 @@ fixprop.durationtype.ttest <- function(data, study="error", dataset="error") {
     fixmean.F[fixmean.F$condition=="Loss",]$fix_dur.mean)
 
   #Middle Fixations
-  fixmean.M <- data[data$fix_type=="Middle",] %>%
+  fixmean.M <- data[data$middleFix==T,] %>%
     group_by(subject, condition) %>%
     summarize(
       fix_dur.mean = mean(fix_dur)
@@ -89,7 +89,7 @@ fixprop.durationtype.ttest <- function(data, study="error", dataset="error") {
     fixmean.M[fixmean.M$condition=="Loss",]$fix_dur.mean)
 
   #Last Fixations
-  fixmean.L <- data[data$fix_type=="Last",] %>%
+  fixmean.L <- data[data$lastFix==T,] %>%
     group_by(subject, condition) %>%
     summarize(
       fix_dur.mean = mean(fix_dur)

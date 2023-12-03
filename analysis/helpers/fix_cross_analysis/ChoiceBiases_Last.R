@@ -2,7 +2,7 @@
 
 fixCross.lastfix.plt <- function(data, xlim) {
 
-  pdata <- data[data$fix_type=="Last",] %>%
+  pdata <- data[data$lastFix==T,] %>%
     group_by(subject, condition, location, fixCrossLoc, vDiff) %>%
     summarize(
       choice.mean = mean(choice)
@@ -39,7 +39,7 @@ fixCross.lastfix.plt <- function(data, xlim) {
 
 fixCross.lastfix.reg <- function(data, study="error", dataset="error") {
 
-  data <- data[data$fix_type=="Last",]
+  data <- data[data$lastFix==T,]
   data <- data %>% mutate(n=1)
   data <-  data %>%
     group_by(subject, condition, location, fixCrossLoc, vDiff) %>%

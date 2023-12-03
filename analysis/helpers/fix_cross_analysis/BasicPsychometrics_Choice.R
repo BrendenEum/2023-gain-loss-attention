@@ -2,7 +2,7 @@
 
 fixCross.choice.plt <- function(data, xlim=c(-1,1)) {
 
-  pdata <- data[data$fix_type=="First",] %>%
+  pdata <- data[data$firstFix==T,] %>%
     group_by(subject, condition, fixCrossLoc, vDiff) %>%
     summarize(
       choice.mean = mean(choice)
@@ -38,7 +38,7 @@ fixCross.choice.plt <- function(data, xlim=c(-1,1)) {
 fixCross.choice.reg <- function(data, study="error", dataset="error") {
 
   # Convert to Binomial data
-  data <- data[data$fix_type=="First",]
+  data <- data[data$firstFix==T,]
   data <- data %>% mutate(n=1)
   data <-  data %>%
     group_by(subject, condition, fixCrossLoc, vDiff) %>%

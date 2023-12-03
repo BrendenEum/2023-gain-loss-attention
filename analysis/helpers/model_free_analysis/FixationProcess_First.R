@@ -2,7 +2,7 @@
 
 fixprop.first.plt <- function(data, xlim) {
 
-  pdata <- data[data$fix_type=="First",] %>%
+  pdata <- data[data$firstFix==T,] %>%
     group_by(subject, condition, difficulty) %>%
     summarize(
       mid.mean = mean(fix_dur)
@@ -30,7 +30,7 @@ fixprop.first.plt <- function(data, xlim) {
 
 fixprop.first.reg <- function(data, study="error", dataset="error") {
 
-  data <- data[data$fix_type=="First",]
+  data <- data[data$firstFix==T,]
 
   results <- brm(
     fix_dur ~ difficulty*condition + (1+difficulty*condition | subject),

@@ -85,5 +85,10 @@ Generate the 3-panel figures to look at the influence of fixation cross location
 analysis/helpers/fix_cross_analysis/fix_cross_analysis_figures.R
 ```
 
+Fit the various versions of aDDM to the data. Converting cfr to aDDM data takes a little bit of time since I couldn't think of a clever way to do it, so I use a roundabout way with a bunch of for loops. Sue me.
 
+```
+analysis/helpers/aDDM/cfr_to_addmdata.R
+analysis/helpers/aDDM/fit_aDDM.jl
+```
 

@@ -156,6 +156,8 @@ clean.fixations <- function(fixations) {
       ),
       fix_dur = fix_dur/1000,
       firstFix = ifelse(fix_num == 1, 1, 0),
+      fix_start = fix_start/1000,
+      fix_end = fix_end/1000
     ) %>%
     group_by(subject, trial, condition) %>%
     mutate(
@@ -164,13 +166,6 @@ clean.fixations <- function(fixations) {
       net_fix = sum( fix_dur * ifelse(location=="Left",1,-1) )
     ) %>%
     ungroup() %>%
-    mutate(
-      fix_type = factor(
-        1*firstFix + 2*middleFix + 3*lastFix,
-        levels = c(1,2,3),
-        labels = c("First","Middle","Last")
-      )
-    ) %>%
     subset(
       select = c(
         subject,
@@ -182,7 +177,9 @@ clean.fixations <- function(fixations) {
         fix_dur,
         fix_start,
         fix_end,
-        fix_type
+        firstFix,
+        middleFix,
+        lastFix
       )
     )
   return(fixations)

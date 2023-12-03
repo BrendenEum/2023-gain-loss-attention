@@ -2,7 +2,7 @@
 
 fixCross.mid.plt <- function(data, xlim) {
 
-  pdata <- data[data$fix_type=="Middle",] %>%
+  pdata <- data[data$middleFix==T,] %>%
     group_by(subject, condition, fixCrossLoc, difficulty) %>%
     summarize(
       mid.mean = mean(fix_dur)
@@ -33,7 +33,7 @@ fixCross.mid.plt <- function(data, xlim) {
 
 fixCross.mid.reg <- function(data, study="error", dataset="error") {
 
-  data <- data[data$fix_type=="Middle",]
+  data <- data[data$middleFix==T,]
 
   results <- brm(
     fix_dur ~ difficulty*condition*fixCrossLoc + (1+difficulty*condition*fixCrossLoc | subject),

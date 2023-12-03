@@ -2,7 +2,7 @@
 
 fixCross.prfirst.plt <- function(data, xlim) {
 
-  pdata <- data[data$fix_type=="First",] %>%
+  pdata <- data[data$firstFix==T,] %>%
     group_by(subject, condition, fixCrossLoc, difficulty) %>%
     summarize(
       firstbest.mean = mean(location==correctAnswer)
@@ -36,7 +36,7 @@ fixCross.prfirst.plt <- function(data, xlim) {
 
 fixCross.prfirst.reg <- function(data, study="error", dataset="error") {
 
-  data <- data[data$fix_type=="First",]
+  data <- data[data$firstFix==T,]
   data$firstBest <- data$location==data$correctAnswer
   data <- data %>% mutate(n=1)
   data <-  data %>%

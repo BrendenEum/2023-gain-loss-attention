@@ -33,7 +33,7 @@ outdir <- datadir
 # Input data.
 # Each line in the datatable is one row in the .asc file, as a single string.
 
-subject_id <- 324
+subject_id <- 325
 fixfilename <- paste0(toString(subject_id), "/", toString(subject_id), "_GainLossTask_")
 fixfilename1 <- paste0(fixfilename, "gain1.csv")
 fixfilename2 <- paste0(fixfilename, "gain2.csv")

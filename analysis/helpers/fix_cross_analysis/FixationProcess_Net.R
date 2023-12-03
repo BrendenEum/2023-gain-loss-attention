@@ -2,7 +2,7 @@
 
 fixCross.net.plt <- function(data, xlim) {
 
-  pdata <- data[data$fix_type=="First",] %>%
+  pdata <- data[data$firstFix==T,] %>%
     group_by(subject, condition, fixCrossLoc, vDiff) %>%
     summarize(
       net.mean = mean(net_fix, na.rm=T)
@@ -34,7 +34,7 @@ fixCross.net.plt <- function(data, xlim) {
 
 fixCross.net.reg <- function(data, study="error", dataset="error") {
 
-  data <- data[data$fix_type=="First",]
+  data <- data[data$firstFix==T,]
 
   results <- brm(
     net_fix ~ vDiff*condition*fixCrossLoc + (1+vDiff*condition*fixCrossLoc | subject),

@@ -2,7 +2,7 @@
 
 psycho.numfix.plt <- function(data, xlim) {
 
-  pdata <- data[data$fix_type=="Last",] %>%
+  pdata <- data[data$lastFix==T,] %>%
     group_by(subject, condition, difficulty) %>%
     summarize(
       fix_num.mean = mean(fix_num)
@@ -31,7 +31,7 @@ psycho.numfix.plt <- function(data, xlim) {
 
 psycho.numfix.reg <- function(data, study="error", dataset="error") {
 
-  data <- data[data$fix_type=="Last",]
+  data <- data[data$lastFix==T,]
 
   results <- brm(
     fix_num ~ difficulty*condition + (1+difficulty*condition | subject),

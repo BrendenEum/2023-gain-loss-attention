@@ -6,7 +6,7 @@ bias.firstfix.plt <- function(data, xlim) {
     as.character() %>%
     as.numeric()
 
-  pdata <- data[data$fix_type=="First",] %>%
+  pdata <- data[data$firstFix==T,] %>%
     group_by(subject, condition, fix_dur) %>%
     summarize(
       corrFirst.mean = mean(firstSeenChosen.corr)
@@ -35,7 +35,7 @@ bias.firstfix.plt <- function(data, xlim) {
 
 bias.firstfix.reg <- function(data, study="error", dataset="error") {
 
-  data <- data[data$fix_type=="First",] 
+  data <- data[data$firstFix==T,] 
   # %>%
   #   group_by(subject, condition, vDiff) %>%
   #   mutate(

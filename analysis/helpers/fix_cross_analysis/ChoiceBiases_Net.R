@@ -7,7 +7,7 @@ fixCross.netfix.plt <- function(data, xlim) {
     as.character() %>%
     as.numeric()
 
-  pdata <- data[data$fix_type=="First",] %>%
+  pdata <- data[data$firstFix==T,] %>%
     group_by(subject, condition, fixCrossLoc, net_fix) %>%
     summarize(
       choice.mean = mean(choice.corr, na.rm=T)
@@ -40,7 +40,7 @@ fixCross.netfix.plt <- function(data, xlim) {
 
 fixCross.netfix.reg <- function(data, study="error", dataset="error") {
 
-  data <- data[data$fix_type=="First",]
+  data <- data[data$firstFix==T,]
 
   results <- brm(
     choice.corr ~ net_fix*condition*fixCrossLoc + (1+net_fix*condition*fixCrossLoc | subject),

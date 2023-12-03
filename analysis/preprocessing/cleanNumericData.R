@@ -343,21 +343,13 @@ make_cfr = function(data_directory, list_of_subjects) {
     
     subject_cfr <- subject_cfr %>%
       group_by(trial) %>%
-      mutate(FirstFix = (fix_num==min(fix_num)))
+      mutate(firstFix = (fix_num==min(fix_num)))
     subject_cfr <- subject_cfr %>%
       group_by(trial) %>%
-      mutate(MiddleFix = ((fix_num!=min(fix_num)) & (fix_num !=max(fix_num))) )
+      mutate(middleFix = ((fix_num!=min(fix_num)) & (fix_num !=max(fix_num))) )
     subject_cfr <- subject_cfr %>%
       group_by(trial) %>%
-      mutate(LastFix = (fix_num==max(fix_num)))
-    subject_cfr <- subject_cfr %>%
-      mutate(
-        fix_type = factor(
-          1*FirstFix + 2*MiddleFix + 3*LastFix,
-          levels = c(1,2,3),
-          labels = c("First","Middle","Last")
-        )
-      )
+      mutate(lastFix = (fix_num==max(fix_num)))
     
     # Net fixation (L-R).
     
@@ -381,7 +373,12 @@ make_cfr = function(data_directory, list_of_subjects) {
     
     # Drop some columns
     
-    subject_cfr <- subject_cfr[, !(colnames(subject_cfr) %in% c("drop", "FirstFix", "MiddleFix", "LastFix", "temp_fix_dur"))]
+    subject_cfr <- subject_cfr[, !(colnames(subject_cfr) %in% c("drop", "temp_fix_dur"))]
+    
+    # Drop sanity check trials.
+    
+    subject_cfr = subject_cfr[subject_cfr$sanity==0,]
+    
     # Save.
     
     subject_cfr <- subject_cfr[order(subject_cfr$trial, subject_cfr$fix_num),]
