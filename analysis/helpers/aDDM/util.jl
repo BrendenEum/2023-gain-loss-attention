@@ -96,30 +96,30 @@ function load_data_from_csv(expdataFileName, fixationsFileName; convertItemValue
     
     df = DataFrame(CSV.File(expdataFileName, delim=","))
     
-    if (!("parcode" in names(df)) || !("trial" in names(df)) || !("rt" in names(df)) || !("choice" in names(df))
-        || !("item_left" in names(df)) || !("item_right" in names(df)))
-        throw(error("Missing field in experimental data file. Fields required: parcode, trial, rt, choice, item_left, item_right"))
+    if (!("parcode" in names(df)) || !("trial" in names(df)) || !("rt" in names(df)) || !("choice" in names(df)) || !("item_left" in names(df)) || !("item_right" in names(df)) || !("minValue" in names(df)) || !("maxValue" in names(df)))
+        throw(error("Missing field in experimental data file. Fields required: parcode, trial, rt, choice, item_left, item_right, minValue, maxValue"))
     end
     
     data = Dict()
     subjectIds = unique(df.parcode)
     for subjectId in subjectIds
         data[subjectId] = aDDMTrial[]
-        parcode_df = df[df.parcode .== subjectId, [:trial, :rt, :choice, :item_left, :item_right]]
+        parcode_df = df[df.parcode .== subjectId, [:trial, :rt, :choice, :item_left, :item_right, :minValue, :maxValue]]
         dataSubject = Matrix(parcode_df)
         trialIds = unique(dataSubject[:,1])
         for trialId in trialIds
-            trial_df = parcode_df[parcode_df.trial .== trialId, [:rt, :choice, :item_left, :item_right]]
+            trial_df = parcode_df[parcode_df.trial .== trialId, [:rt, :choice, :item_left, :item_right, :minValue, :maxValue]]
             dataTrial = Matrix(trial_df)
             itemLeft = dataTrial[1,3]
             itemRight = dataTrial[1,4]
+            minValue = dataTrial[1,5]
+            maxValue = dataTrial[1,6]
             if convertItemValues != nothing
                 push!(data[subjectId], aDDMTrial(Number[], dataTrial[1,1], dataTrial[1,2], 
                                                    convertItemValues(itemLeft),
                                                    convertItemValues(itemRight)))
             else
-                push!(data[subjectId], aDDMTrial(Number[], dataTrial[1,1], dataTrial[1,2],
-                                                   itemLeft, itemRight))
+                push!(data[subjectId], aDDMTrial(Number[], dataTrial[1,1], dataTrial[1,2], itemLeft, itemRight; minValue, maxValue))
             end
         end
     end

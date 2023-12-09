@@ -87,8 +87,19 @@ analysis/helpers/fix_cross_analysis/fix_cross_analysis_figures.R
 
 Fit the various versions of aDDM to the data. Converting cfr to aDDM data takes a little bit of time since I couldn't think of a clever way to do it, so I use a roundabout way with a bunch of for loops. Sue me.
 
+Note that in fit_all_models.jl, you'll need to change the directory on line 15. It "cd"s into a folder specific to my computer.
+
+- Input:
+  - data/processed_data/{study}/{e,c,j}/expdata*.csv
+  - data/processed_data/{study}/{e,c,j}/fixations*.csv
+
+- Output:
+  - analysis/outputs/temp/{study}_GainFit_{E,C,J}.csv
+  - analysis/outputs/temp/{study}_LossFit_{E,C,J}.csv
+
 ```
 analysis/helpers/aDDM/cfr_to_addmdata.R
-analysis/helpers/aDDM/fit_aDDM.jl
+analysis/helpers/aDDM/fit_all_models.jl
+analysis/helpers/aDDM/model_comparison.R
 ```
 

@@ -1,0 +1,71 @@
+---
+title: "Num4 - Breaking Range Normalization"
+output: html_notebook
+---
+
+```{r}
+rm(list=ls())
+library(tidyverse)
+library(ggplot2)
+library(plotrix)
+optdir = "../helpers/plot_options"
+source(file.path(optdir, "MyPlotOptions test.R"))
+load("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/numeric/e/cfr_numeric.Rdata")
+data = cfr_numeric
+```
+
+```{r}
+data$vL = round(data$vL)
+data$vR = round(data$vR)
+data$v = abs(data$vL)
+
+pdata <- data[data$firstFix==T & data$vL==data$vR,] %>%
+    group_by(subject, condition, v) %>%
+    summarize(
+      rt.mean = mean(rt)
+    ) %>%
+    ungroup() %>%
+    group_by(condition, v) %>%
+    summarize(
+      y = mean(rt.mean),
+      se = std.error(rt.mean)
+    )
+
+  plt <- ggplot(data=pdata, aes(x=v, y=y)) +
+    myPlot +
+    geom_line(aes(color=condition), linewidth=linesize) +
+    geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=condition), alpha=ribbonalpha, show.legend=F) +
+    labs(y="Response Time (s)", x="Abs(Equal Value Left and Right)") +
+    theme(
+      legend.position = c(.1, .9)
+    )
+
+plt
+```
+
+```{r}
+data$overallValue = round(data$vL + data$vR)
+
+pdata <- data[data$firstFix==T,] %>%
+    group_by(subject, condition, overallValue) %>%
+    summarize(
+      rt.mean = mean(rt)
+    ) %>%
+    ungroup() %>%
+    group_by(condition, overallValue) %>%
+    summarize(
+      y = mean(rt.mean),
+      se = std.error(rt.mean)
+    )
+
+  plt <- ggplot(data=pdata, aes(x=overallValue, y=y)) +
+    myPlot +
+    geom_line(aes(color=condition), linewidth=linesize) +
+    geom_ribbon(aes(ymin=y-se, ymax=y+se, fill=condition), alpha=ribbonalpha, show.legend=F) +
+    labs(y="Response Time (s)", x="Overall Value") +
+    theme(
+      legend.position = c(.9,.9)
+    )
+
+plt
+```

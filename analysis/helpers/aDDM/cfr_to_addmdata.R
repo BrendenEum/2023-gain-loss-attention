@@ -11,7 +11,9 @@ food_datadir = file.path(datadir, "food")
 
 
 ##########################################################################################
-# FUNCTION: expdata [parcode, trial, rt, choice, item_left, item_right]
+# FUNCTION: expdata [parcode, trial, rt, choice, item_left, item_right, minValue, maxValue]
+# item_left/right: value of left or right item.
+# min/maxValue: the min/max value seen in this condition so far.
 ##########################################################################################
 
 make_expdata = function(data, studydir="error", dataset="error") {
@@ -25,14 +27,20 @@ make_expdata = function(data, studydir="error", dataset="error") {
     parcode = data.gain$subject,
     trial = data.gain$trial,
     rt = floor(data.gain$rt*1000),
+    choice = (data.gain$choice*2-1)*-1, #L:-1, R:1... Tavares toolbox.
     item_left = data.gain$vL,
-    item_right = data.gain$vR)
+    item_right = data.gain$vR,
+    minValue = data.gain$minValue,
+    maxValue = data.gain$maxValue)
   expdataLoss = data.frame(
     parcode = data.loss$subject,
     trial = data.loss$trial,
     rt = floor(data.loss$rt*1000),
+    choice = (data.loss$choice*2-1)*-1,
     item_left = data.loss$vL,
-    item_right = data.loss$vR)
+    item_right = data.loss$vR,
+    minValue = data.loss$minValue,
+    maxValue = data.loss$maxValue)
   write.csv(
     expdataGain,
     file=file.path(studydir, paste0(dataset, "/expdataGain.csv")), 

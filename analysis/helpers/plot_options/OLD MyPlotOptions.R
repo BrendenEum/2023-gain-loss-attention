@@ -1,10 +1,8 @@
-gainlosscolors = c("Gain" = "Green4", "Loss" = "Red3", "blue2", "deeppink", "purple2", "orange2", "cyan3", "bisque")
-
 myPlot = list(
   theme_bw(),
   coord_cartesian(expand=F),
-  scale_color_manual(values=gainlosscolors),
-  scale_fill_manual(values=gainlosscolors),
+  scale_color_gl("gain_loss_colors"),
+  scale_fill_gl("gain_loss_colors"),
   theme(
     legend.position="None",
     legend.background=element_blank(),

@@ -1,8 +1,8 @@
 ##################################################################
-# FUNCTION: aDDM fitting using custom grid
+# FUNCTION: Fitting using custom grid
 ##################################################################
 
-function fit_aDDM_custom_resolution(addm::aDDM, data::Dict{String, Vector{aDDMTrial}}, dGrid::Vector{Any}, σGrid::Vector{Any}, θGrid::Vector{Any}, bGrid::Vector{Any}, subjectCount::Number)
+function fit_RNaDDM_custom_resolution(addm::aDDM, data::Dict{String, Vector{aDDMTrial}}, dGrid::Vector{Any}, σGrid::Vector{Any}, θGrid::Vector{Any}, bGrid::Vector{Any}, subjectCount::Number; minValue::Number=-6, maxValue::Number=-1)
     """
     """
 
@@ -18,7 +18,7 @@ function fit_aDDM_custom_resolution(addm::aDDM, data::Dict{String, Vector{aDDMTr
     ind = 1
     @showprogress for subject in collect(keys(data))
 
-        dEst, σEst, θEst, bEst, NLL_Indiv = aDDM_grid_search(addm, data, dGrid[ind], σGrid[ind], θGrid[ind], bGrid[ind], subject)
+        dEst, σEst, θEst, bEst, NLL_Indiv = RNaDDM_grid_search(addm, data, minValue, maxValue, dGrid[ind], σGrid[ind], θGrid[ind], bGrid[ind], subject)
     
         dList[ind] = dEst[1]
         σList[ind] = σEst[1]
@@ -41,16 +41,16 @@ function fit_aDDM_custom_resolution(addm::aDDM, data::Dict{String, Vector{aDDMTr
 end
 
 ##################################################################
-# FUNCTION: Fit the aDDM, iterate until ΔNLL<threshold
+# FUNCTION: Fit, iterate until ΔNLL<threshold
 ##################################################################
 
-function fit_aDDM(; study::String = "error", dataset::String = "error")
+function fit_RNaDDM(; study::String = "error", dataset::String = "error")
 
     ########
     # Prep
     ########
 
-    println("aDDM"); println(study); println(dataset);
+    println("RNaDDM"); println(study); println(dataset);
 
     addm = aDDM(.005, .07, .3); # These can be anything. They exist because you need an aDDM object. (d, s, t).
 
@@ -65,9 +65,10 @@ function fit_aDDM(; study::String = "error", dataset::String = "error")
 
     pChangeNLLThreshold = 0.001 # How little should NLL change in order for us to stop zooming in with grid search? 0.1%
 
-    dStepSize = .0025 # Step sizes for the grids.
+    dStepSize = .005 # Step sizes for the grids.
     σStepSize = .03
-    θStepSize = .5
+    θStepSize = .25
+
     bStepSize = .1
 
     dInitialGrid = Any[]
@@ -75,7 +76,7 @@ function fit_aDDM(; study::String = "error", dataset::String = "error")
     θInitialGrid = Any[]
     bInitialGrid = Any[]
     for subject in collect(keys(dataGain))
-        push!(dInitialGrid, [0.0001:dStepSize:.008;])   # d from .0001 to .008
+        push!(dInitialGrid, [0.0001:dStepSize:.0401;])   # d from .0001 to .008
         push!(σInitialGrid, [0.01:σStepSize:.1;])      # σ from .01 to .1
         push!(θInitialGrid, float([0:θStepSize:2;]))    # θ from 0 to 2
         push!(bInitialGrid, [-.2:bStepSize:.2;])      # b from -.2 to .2
@@ -92,7 +93,7 @@ function fit_aDDM(; study::String = "error", dataset::String = "error")
 
     println("Gain")
 
-    oldGainEstimates, oldNLLs = fit_aDDM_custom_resolution(addm, dataGain, dInitialGrid, σInitialGrid, θInitialGrid, bInitialGrid, subjectCount)
+    oldGainEstimates, oldNLLs = fit_RNaDDM_custom_resolution(addm, dataGain, dInitialGrid, σInitialGrid, θInitialGrid, bInitialGrid, subjectCount; minValue=1, maxValue=6)
     oldNLL = sum(oldNLLs)
     println("Iteration 1"); print("Old NLL missing"); print("New NLL "); println(oldNLL); print("Percent Change missing"); println(oldGainEstimates);
 
@@ -101,24 +102,24 @@ function fit_aDDM(; study::String = "error", dataset::String = "error")
     while Δ > grid_search_terminate_threshold
         
         dGrid, σGrid, θGrid, bGrid = make_new_grid(oldGainEstimates, dataGain, dStepSize, σStepSize, θStepSize, bStepSize, iteration; bounded_theta=false)
-        newGainEstimates, newNLLs = fit_aDDM_custom_resolution(addm, dataGain, dGrid, σGrid, θGrid, bGrid, subjectCount)
+        newGainEstimates, newNLLs = fit_RNaDDM_custom_resolution(addm, dataGain, dGrid, σGrid, θGrid, bGrid, subjectCount; minValue=1, maxValue=6)
         newNLL = sum(newNLLs)
         Δ = (oldNLL-newNLL)/oldNLL
         if Δ < 0
-            global gainEstimates = oldGainEstimates
+            global gainEstimates_RN = oldGainEstimates
             global NLL = oldNLLs
         else
-            global gainEstimates = newGainEstimates
+            global gainEstimates_RN = newGainEstimates
             global NLL = newNLLs
         end
 
-        print("Iteration "); println(iteration); print("Old NLL "); println(oldNLL); print("New NLL "); println(newNLL); print("Percent Change "); println(Δ); println(gainEstimates); iteration += 1; oldGainEstimates = newGainEstimates; oldNLL = newNLL;
+        print("Iteration "); println(iteration); print("Old NLL "); println(oldNLL); print("New NLL "); println(newNLL); print("Percent Change "); println(Δ); println(gainEstimates_RN); iteration += 1; oldGainEstimates = newGainEstimates; oldNLL = newNLL; 
 
     end
 
     gainOutPath = "../../outputs/temp/" * study * "_"
-    CSV.write(gainOutPath * "aDDM_GainEst_" * dataset * ".csv", gainEstimates)
-    CSV.write(gainOutPath * "aDDM_GainNLL_" * dataset * ".csv", Tables.table(NLL), writeheader=false)
+    CSV.write(gainOutPath * "RNaDDM_GainEst_" * dataset * ".csv", gainEstimates_RN)
+    CSV.write(gainOutPath * "RNaDDM_GainNLL_" * dataset * ".csv", Tables.table(NLL), writeheader=false)
 
     ########
     # Loss Data Fit: loop until small change in NLL
@@ -126,7 +127,7 @@ function fit_aDDM(; study::String = "error", dataset::String = "error")
 
     println("Loss")
 
-    oldLossEstimates, oldNLLs = fit_aDDM_custom_resolution(addm, dataLoss, dInitialGrid, σInitialGrid, θInitialGrid, bInitialGrid, subjectCount)
+    oldLossEstimates, oldNLLs = fit_RNaDDM_custom_resolution(addm, dataLoss, dInitialGrid, σInitialGrid, θInitialGrid, bInitialGrid, subjectCount)
     oldNLL = sum(oldNLLs)
     println("Iteration 1"); print("Old NLL missing"); print("New NLL "); println(oldNLL); print("Percent Change missing"); println(oldLossEstimates);
 
@@ -135,25 +136,22 @@ function fit_aDDM(; study::String = "error", dataset::String = "error")
     while Δ > grid_search_terminate_threshold
         
         dGrid, σGrid, θGrid, bGrid = make_new_grid(oldLossEstimates, dataLoss, dStepSize, σStepSize, θStepSize, bStepSize, iteration; bounded_theta=false)
-        newLossEstimates, newNLLs = fit_aDDM_custom_resolution(addm, dataLoss, dGrid, σGrid, θGrid, bGrid, subjectCount)
+        newLossEstimates, newNLLs = fit_RNaDDM_custom_resolution(addm, dataLoss, dGrid, σGrid, θGrid, bGrid, subjectCount)
         newNLL = sum(newNLLs)
         Δ = (oldNLL-newNLL)/oldNLL
         if Δ < 0
-            global lossEstimates = oldLossEstimates
+            global lossEstimates_RN = oldLossEstimates
             global NLL = oldNLLs
         else
-            global lossEstimates = newLossEstimates
+            global lossEstimates_RN = newLossEstimates
             global NLL = newNLLs
         end
 
-        print("Iteration "); println(iteration); print("Old NLL "); println(oldNLL); print("New NLL "); println(newNLL); print("Percent Change "); println(Δ); println(lossEstimates); iteration += 1; oldLossEstimates = newLossEstimates; oldNLL = newNLL; 
+        print("Iteration "); println(iteration); print("Old NLL "); println(oldNLL); print("New NLL "); println(newNLL); print("Percent Change "); println(Δ); println(lossEstimates_RN); iteration += 1; oldLossEstimates = newLossEstimates; oldNLL = newNLL; 
 
     end
 
     lossOutPath = "../../outputs/temp/" * study * "_"
-    CSV.write(lossOutPath * "aDDM_LossEst_" * dataset * ".csv", lossEstimates)
-    CSV.write(lossOutPath * "aDDM_LossNLL_" * dataset * ".csv", Tables.table(NLL), writeheader=false)
-
-    CSV.write("NumericLossFit.csv", lossEstimates)
-    CSV.write("NumericLossNLL.csv", Tables.table(NLL), writeheader=false)
+    CSV.write(lossOutPath * "RNaDDM_LossEst_" * dataset * ".csv", lossEstimates_RN)
+    CSV.write(lossOutPath * "RNaDDM_LossNLL_" * dataset * ".csv", Tables.table(NLL), writeheader=false)
 end

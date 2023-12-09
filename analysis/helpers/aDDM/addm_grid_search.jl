@@ -77,27 +77,6 @@ function addDDM_grid_search(addm::aDDM, addmTrials::Dict{String, Vector{aDDMTria
     return dMin, σMin, θMin, bMin, NNL
 end
 
-# Range Normalization (0 to 1)
-
-function RNaDDM_grid_search(addm::aDDM, addmTrials::Dict{String, Vector{aDDMTrial}}, minValue::Number, maxValue::Number,
-    dList::Vector{Float64}, σList::Vector{Float64}, θList::Vector{Float64}, bList::Vector{Float64}, subject::String)
-    """
-    """
-
-    # Create an array of tuples for all parameter combinations.
-    param_combinations = [(d, σ, θ, b) for d in dList, σ in σList, θ in θList, b in bList]
-
-    # Vectorized calculation of negative log-likelihood for all parameter combinations
-    neg_log_like_array = [RNaDDM_negative_log_likelihood_threads(addm, addmTrials[subject], minValue, maxValue, d, σ, θ, b) for (d, σ, θ, b) in param_combinations]
-
-    # Find the index of the minimum negative log-likelihood and obtain the MLE parameters
-    minIdx = argmin(neg_log_like_array)
-    dMin, σMin, θMin, bMin = param_combinations[minIdx]
-    NNL = minimum(neg_log_like_array)
-
-    return dMin, σMin, θMin, bMin, NNL
-end
-
 # Divisive Normalization (simplified)
 
 function DNaDDM_grid_search(addm::aDDM, addmTrials::Dict{String, Vector{aDDMTrial}},
@@ -119,6 +98,49 @@ function DNaDDM_grid_search(addm::aDDM, addmTrials::Dict{String, Vector{aDDMTria
     return dMin, σMin, θMin, bMin, NNL
 end
 
+# Divisive Normalization Plus (k, k+1)
+
+function DNPaDDM_grid_search(addm::aDDM, addmTrials::Dict{String, Vector{aDDMTrial}},
+    dList::Vector{Float64}, σList::Vector{Float64}, θList::Vector{Float64}, bList::Vector{Float64}, kList::Vector{Float64}, subject::String)
+    """
+    """
+
+    # Create an array of tuples for all parameter combinations.
+    param_combinations = [(d, σ, θ, b, k) for d in dList, σ in σList, θ in θList, b in bList, k in kList]
+
+    # Vectorized calculation of negative log-likelihood for all parameter combinations
+    neg_log_like_array = [DNPaDDM_negative_log_likelihood_threads(addm, addmTrials[subject], d, σ, θ, b, k) for (d, σ, θ, b, k) in param_combinations]
+
+    # Find the index of the minimum negative log-likelihood and obtain the MLE parameters
+    minIdx = argmin(neg_log_like_array)
+    dMin, σMin, θMin, bMin, kMin = param_combinations[minIdx]
+    NNL = minimum(neg_log_like_array)
+
+    return dMin, σMin, θMin, bMin, kMin, NNL
+end
+
+
+# Range Normalization (0 to 1)
+
+function RNaDDM_grid_search(addm::aDDM, addmTrials::Dict{String, Vector{aDDMTrial}}, minValue::Number, maxValue::Number,
+    dList::Vector{Float64}, σList::Vector{Float64}, θList::Vector{Float64}, bList::Vector{Float64}, subject::String)
+    """
+    """
+
+    # Create an array of tuples for all parameter combinations.
+    param_combinations = [(d, σ, θ, b) for d in dList, σ in σList, θ in θList, b in bList]
+
+    # Vectorized calculation of negative log-likelihood for all parameter combinations
+    neg_log_like_array = [RNaDDM_negative_log_likelihood_threads(addm, addmTrials[subject], minValue, maxValue, d, σ, θ, b) for (d, σ, θ, b) in param_combinations]
+
+    # Find the index of the minimum negative log-likelihood and obtain the MLE parameters
+    minIdx = argmin(neg_log_like_array)
+    dMin, σMin, θMin, bMin = param_combinations[minIdx]
+    NNL = minimum(neg_log_like_array)
+
+    return dMin, σMin, θMin, bMin, NNL
+end
+
 # Range Normalized Plus (range between 0+K to 1+K)
 
 function RNPaDDM_grid_search(addm::aDDM, addmTrials::Dict{String, Vector{aDDMTrial}}, minValue::Number, maxValue::Number,
@@ -131,6 +153,27 @@ function RNPaDDM_grid_search(addm::aDDM, addmTrials::Dict{String, Vector{aDDMTri
 
     # Vectorized calculation of negative log-likelihood for all parameter combinations
     neg_log_like_array = [RNPaDDM_negative_log_likelihood_threads(addm, addmTrials[subject], minValue, maxValue, d, σ, θ, b, k) for (d, σ, θ, b, k) in param_combinations]
+
+    # Find the index of the minimum negative log-likelihood and obtain the MLE parameters
+    minIdx = argmin(neg_log_like_array)
+    dMin, σMin, θMin, bMin, kMin = param_combinations[minIdx]
+    NNL = minimum(neg_log_like_array)
+
+    return dMin, σMin, θMin, bMin, kMin, NNL
+end
+
+# Dynamic Range Normalized Plus (range between 0+K to 1+K) (min and max adjust trial-by-trial)
+
+function DRNPaDDM_grid_search(addm::aDDM, addmTrials::Dict{String, Vector{aDDMTrial}},
+    dList::Vector{Float64}, σList::Vector{Float64}, θList::Vector{Float64}, bList::Vector{Float64}, kList::Vector{Float64}, subject::String)
+    """
+    """
+
+    # Create an array of tuples for all parameter combinations.
+    param_combinations = [(d, σ, θ, b, k) for d in dList, σ in σList, θ in θList, b in bList, k in kList]
+
+    # Vectorized calculation of negative log-likelihood for all parameter combinations
+    neg_log_like_array = [DRNPaDDM_negative_log_likelihood_threads(addm, addmTrials[subject], d, σ, θ, b, k) for (d, σ, θ, b, k) in param_combinations]
 
     # Find the index of the minimum negative log-likelihood and obtain the MLE parameters
     minIdx = argmin(neg_log_like_array)

@@ -54,8 +54,8 @@ jdatadir <- file.path(rawdatadir, "../../../processed_data/numeric/j")
 # Get each subject that passed quality control.
 
 raw_subs <- list.dirs(path = rawdatadir, full.names = F, recursive = F)
-exploratory_subs <- raw_subs[1:26]#raw_subs[1:floor(length(raw_subs)/2)]
-confirmatory_subs <- raw_subs[(floor(length(raw_subs)/2)+1):length(raw_subs)]
+exploratory_subs <- raw_subs[1:25]#raw_subs[1:floor(length(raw_subs)/2)]
+confirmatory_subs <- raw_subs[26:50]
 joint_subs <- raw_subs
 
 # Helpful functions before running loop.
@@ -128,6 +128,10 @@ make_cfr = function(data_directory, list_of_subjects) {
       "sanity" = "Sanity"
     )
     
+    # Drop sanity check trials.
+    
+    data = data[data$sanity==0,]
+    
     
     ####################################################
     ## Make New Variables or Transform Old Ones
@@ -199,6 +203,28 @@ make_cfr = function(data_directory, list_of_subjects) {
         labels=c("Left","Right")
       )
     data$correct <- as.integer(data$correctAnswer == data$choice)
+    
+    # What's the minimum and maximum value seen so far per subject-condition?
+    # This is excluding sanity check trials.
+    
+    data$minValue = NA
+    data$maxValue = NA
+    choicesSubjectList = list()
+    ind = 1
+    for (i in unique(data$subject)) {
+      choicesSubject = data[data$subject==i,]
+      choicesG = choicesSubject[choicesSubject$condition=="Gain",]
+      choicesL = choicesSubject[choicesSubject$condition=="Loss",]
+      for (i in c(1:nrow(choicesG))){
+        choicesG$minValue[i] = min(c(choicesG$vL[1:i], choicesG$vR[1:i]))
+        choicesG$maxValue[i] = max(c(choicesG$vL[1:i], choicesG$vR[1:i]))}
+      for (i in c(1:nrow(choicesL))){
+        choicesL$minValue[i] = min(c(choicesL$vL[1:i], choicesL$vR[1:i]))
+        choicesL$maxValue[i] = max(c(choicesL$vL[1:i], choicesL$vR[1:i]))}
+      choicesSubjectList[[ind]] = rbind(choicesG, choicesL)
+      ind = ind + 1
+    }
+    data = do.call("rbind", choicesSubjectList)
     
     ####################################################
     ## Transform ET data from list to long data. Clean it.
@@ -301,6 +327,8 @@ make_cfr = function(data_directory, list_of_subjects) {
       "RAmt",
       "correct",
       "correctAnswer",
+      "minValue",
+      "maxValue",
       "sanity",
       "fixCrossLoc"
     )
@@ -374,10 +402,6 @@ make_cfr = function(data_directory, list_of_subjects) {
     # Drop some columns
     
     subject_cfr <- subject_cfr[, !(colnames(subject_cfr) %in% c("drop", "temp_fix_dur"))]
-    
-    # Drop sanity check trials.
-    
-    subject_cfr = subject_cfr[subject_cfr$sanity==0,]
     
     # Save.
     
