@@ -1,4 +1,5 @@
-load("/Users/brenden/Desktop/2023-gain-loss-attention/numeric/data/processed_data/e/cfr.RData")
+library(tidyverse)
+load("../data/processed_data/ecfr.RData")
 
 cfr$ov = cfr$vL + cfr$vR
 data = cfr[cfr$Sanity==0,]

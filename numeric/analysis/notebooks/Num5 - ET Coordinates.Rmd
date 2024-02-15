@@ -1,0 +1,36 @@
+---
+title: "Trying to look at raw ET coordinates in Numeric Study"
+output: html_notebook
+---
+
+We know dots is good.
+
+I want to see if we should be considering a multi-attribute aDDM instead of
+treating expected value as value signals. To do this, I need to see if I can
+pull the raw eye-tracking data from the study.
+
+```{r}
+rm(list=ls())
+set.seed(4)
+library(tidyverse)
+library(eyelinker)
+rawdatadir = "../../data/raw_data/good/numeric"
+```
+
+```{r}
+#setwd(file.path(rawdatadir,"201"))
+#ascfile <- system.file("201_GainLossTask_gain1.asc", package = "eyelinker")
+asc <- read.asc(file.path(rawdatadir,"201/201_GainLossTask_gain1.asc"), samples=F)
+str(asc, max.level = 1)
+```
+
+```{r}
+dplyr::select(asc$info, c(model, mount, sample.rate, cr))
+```
+
+```{r}
+asc$fix
+```
+
+
+

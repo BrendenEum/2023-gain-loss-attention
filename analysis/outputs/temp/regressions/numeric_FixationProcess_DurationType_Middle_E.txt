@@ -1,0 +1,12 @@
+
+	One Sample t-test
+
+data:  fixmean.M[fixmean.M$condition == "Gain", ]$fix_dur.mean - fixmean.M[fixmean.M$condition == "Loss", ]$fix_dur.mean
+t = -2.6683, df = 24, p-value = 0.01345
+alternative hypothesis: true mean is not equal to 0
+95 percent confidence interval:
+ -0.08586174 -0.01096672
+sample estimates:
+  mean of x 
+-0.04841423 
+

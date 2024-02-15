@@ -1,0 +1,667 @@
+---
+title: "aDDM Analysis"
+author: Brenden Eum
+date: September 29, 2023
+output: 
+  html_document: 
+    theme: united
+    toc: yes
+    toc_float: yes
+    toc_depth: 2
+    number_sections: yes
+    code_folding: hide
+    df_print: default
+---
+
+# Preamble
+
+```{r}
+library(tidyverse)
+library(effsize)
+library(plotrix)
+library(ggsci)
+library(ggplot2)
+library(latex2exp)
+library(gridExtra)
+
+datadir = "../../data/processed_data/e"
+codedir = "../helpers/modelfreeanalysis"
+tempdir = "../outputs/temp"
+optdir = "../helpers/plot_options"
+
+source(file.path(optdir, "GainLossColorPalette.R"))
+source(file.path(optdir, "MyPlotOptions.R"))
+```
+
+# Plot options
+
+```{r}
+# Color palette
+my_colors = list(
+  #gain_loss_colors = c("red3", "green4", "blue2", "purple2", "orange2", "deeppink", "cyan3", "bisque3")
+  gain_loss_colors = c("dodgerblue3", "deeppink4", "orange2", "deeppink", "blue2", "bisque3")
+)
+cvi_palettes = function(name, n, all_palettes = my_colors, type = c("discrete", "continuous")) {
+  palette = all_palettes[[name]]
+  if (missing(n)) {
+    n = length(palette)
+  }
+  type = match.arg(type)
+  out = switch(type,
+               continuous = grDevices::colorRampPalette(palette)(n),
+               discrete = palette[1:n]
+  )
+  structure(out, name = name, class = "palette")
+}
+scale_color_glcolor = function(name) {
+  ggplot2::scale_colour_manual(values = cvi_palettes(name,
+                                                    type = "discrete"))
+}
+scale_fill_glcolor = function(name) {
+  ggplot2::scale_fill_manual(values = cvi_palettes(name,
+                                                    type = "discrete"))
+}
+
+# ggplot options
+ggplot <- function(...) ggplot2::ggplot(...) + 
+  theme_bw() +
+  scale_color_glcolor("gain_loss_colors") +
+  scale_fill_glcolor("gain_loss_colors") +
+  coord_cartesian(expand=FALSE) +
+  theme(
+    legend.position="None",
+    plot.margin = unit(c(.5,.5,.5,.5), "cm"),
+    text = element_text(size=12),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank()
+  ) +
+  guides(color=guide_legend(override.aes=list(fill=NA)))
+  
+# make axis labels have 2 decimals
+scaleFUN <- function(x) sprintf("%.2f", x)
+
+linesize = 2
+markersize = 1.5
+ribbonalpha = 0.33
+
+# # graph options # # # #
+gradient_resolution = 100
+exact = 'grey40'
+close = 'grey70'
+far = 'white'
+# # # # # # # # # # # # #
+```
+
+
+# Load and transform for plotting
+
+```{r}
+NumericGainFit = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericGainFit.csv")
+NumericLossFit = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericLossFit.csv")
+
+NumericAddmEstimates = data.frame(
+  drift.gain = NumericGainFit$d * 1000,
+  drift.loss = NumericLossFit$d * 1000,
+  sig.gain = NumericGainFit$s * 10,
+  sig.loss = NumericLossFit$s * 10,
+  bias.gain = NumericGainFit$b,
+  bias.loss = NumericLossFit$b,
+  theta.gain = NumericGainFit$t,
+  theta.loss = NumericLossFit$t
+)
+NumericAddmEstimates$dataset = "Numeric"
+
+load("../../../dots/data/processed_data/e/2022-MAP-indiv.RData")
+DotsAddmEstimates = MAP.indiv[,c("drift.gain", "drift.loss", "sig.gain", "sig.loss", "bias.gain", "bias.loss", "theta.gain", "theta.loss")]
+DotsAddmEstimates$dataset = "Dots" 
+pdata = rbind(NumericAddmEstimates, DotsAddmEstimates)
+```
+
+
+```{r}
+## plot
+
+coord.lim <- 7
+d_gradient <- expand.grid(x=seq(0,coord.lim,coord.lim/gradient_resolution), y=seq(0,coord.lim,coord.lim/gradient_resolution))
+plt.compare.d.e <- ggplot(data=pdata) +
+  geom_tile(data=d_gradient, aes(x=x, y=y, fill=abs(y-x))) + #add gradient background
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_point(aes(x=drift.gain, y=drift.loss, color=dataset), size=markersize, alpha=.7) +
+  xlim(c(0,coord.lim)) +
+  ylim(c(0,coord.lim)) +
+  labs(x = TeX(r"(Gain $d$)"), y = TeX(r"(Loss $d$)")) +
+  scale_y_continuous(breaks = c(0, coord.lim/2, coord.lim)) +
+  scale_x_continuous(breaks = c(0, coord.lim/2, coord.lim))  
+
+coord.lim <- 1.5
+sig_gradient <- expand.grid(x=seq(0,coord.lim,coord.lim/gradient_resolution), y=seq(0,coord.lim,coord.lim/gradient_resolution))
+plt.compare.sig.e <- ggplot(data=pdata) +
+  geom_tile(data=sig_gradient, aes(x=x, y=y, fill=abs(y-x))) +
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_point(aes(x=sig.gain, y=sig.loss, color=dataset), size=markersize, alpha=.7) +
+  xlim(c(0,coord.lim)) +
+  ylim(c(0,coord.lim)) +
+  labs(x = TeX(r"(Gain $\sigma$)"), y = TeX(r"(Loss $\sigma$)")) +
+  scale_y_continuous(breaks = c(0, coord.lim/2, coord.lim)) +
+  scale_x_continuous(breaks = c(0, coord.lim/2, coord.lim)) 
+
+coord.lim <- .4
+bias_gradient <- expand.grid(x=seq(-coord.lim,coord.lim,coord.lim/gradient_resolution), y=seq(-coord.lim,coord.lim,coord.lim/gradient_resolution))
+plt.compare.bias.e <- ggplot(data=pdata) +
+  geom_tile(data=bias_gradient, aes(x=x, y=y, fill=abs(y-x))) +
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_point(aes(x=bias.gain, y=bias.loss, color=dataset), size=markersize, alpha=.7) +
+  xlim(c(-coord.lim,coord.lim)) +
+  ylim(c(-coord.lim,coord.lim)) +
+  labs(x = TeX(r"(Gain bias)"), y = TeX(r"(Loss bias)")) +
+  scale_y_continuous(breaks = c(-coord.lim, 0, coord.lim)) +
+  scale_x_continuous(breaks = c(-coord.lim, 0, coord.lim)) 
+
+coord.lim <- 3
+theta_gradient <- expand.grid(x=seq(0,coord.lim,coord.lim/gradient_resolution), y=seq(0,coord.lim,coord.lim/gradient_resolution))
+plt.compare.theta.e <- ggplot(data=pdata) +
+  geom_tile(data=theta_gradient, aes(x=x, y=y, fill=abs(y-x))) +
+  scale_fill_gradient(low='orange', high=far) +
+  geom_vline(xintercept = 1, color='grey30', alpha=.5) +
+  geom_hline(yintercept = 1, color='grey30', alpha=.5) +
+  #geom_abline(intercept=0, slope=1, color='grey30') +
+  geom_point(aes(x=theta.gain, y=theta.loss, color=dataset), size=markersize, alpha=.7) +
+  xlim(c(0,coord.lim)) +
+  ylim(c(0,coord.lim)) +
+  labs(x = TeX(r"(Gain $\theta$)"), y = TeX(r"(Loss $\theta$)")) +
+  scale_y_continuous(breaks = c(0, 1, coord.lim), labels=scaleFUN) +
+  scale_x_continuous(breaks = c(0, 1, coord.lim), labels=scaleFUN) +
+  theme(
+    legend.position=c(.75,.8),
+    legend.background=element_blank(),
+    legend.key=element_blank(),
+    legend.title= element_blank()
+  ) +
+  guides(fill="none")
+
+plt.compare.param.e <- grid.arrange(plt.compare.d.e, plt.compare.sig.e, plt.compare.bias.e, plt.compare.theta.e, nrow=2)
+
+ggsave(file.path(tempdir, "E_CompareIndividualAddmEstimates.pdf"), plt.compare.param.e,
+       width=figw, height=figh, units="in")
+```
+
+# Additive
+
+```{r}
+NumericGainNLL = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericGainNLL.csv", header=F)
+NumericGainNLL_Add = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericGainNLL_Add.csv", header=F)
+NumericLossNLL = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericLossNLL.csv", header=F)
+NumericLossNLL_Add = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericLossNLL_Add.csv", header=F)
+
+print(sum(NumericGainNLL))
+print(sum(NumericGainNLL_Add))
+print(sum(NumericLossNLL))
+print(sum(NumericLossNLL_Add))
+
+AIC_gainlist = NumericLossNLL[,1]
+AIC_Add_gainlist = NumericLossNLL_Add[,1]
+AIC_losslist = NumericLossNLL[,1]
+AIC_Add_losslist = NumericLossNLL_Add[,1]
+K = 4 # the number of free parameters
+getAIC <- function(K, NLL) {
+  return(2*K - 2*(-NLL))
+}
+for (i in 1:length(NumericLossNLL[,1])){
+  AIC_gainlist[i] = getAIC(K, NumericGainNLL[i,1])
+  AIC_Add_gainlist[i] = getAIC(K, NumericGainNLL_Add[i,1])
+  AIC_losslist[i] = getAIC(K, NumericLossNLL[i,1])
+  AIC_Add_losslist[i] = getAIC(K, NumericLossNLL_Add[i,1])
+}
+print(mean(AIC_gainlist>AIC_Add_gainlist))
+t.test(AIC_gainlist-AIC_Add_gainlist)
+print(mean(AIC_losslist>AIC_Add_losslist))
+t.test(AIC_losslist-AIC_Add_losslist)
+```
+
+# Goal Relevant
+
+```{r}
+NumericGainNLL = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericGainNLL.csv", header=F)
+NumericGainNLL_GR = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericGainNLL_GR.csv", header=F)
+NumericLossNLL = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericLossNLL.csv", header=F)
+NumericLossNLL_GR = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericLossNLL_GR.csv", header=F)
+
+print(sum(NumericGainNLL))
+print(sum(NumericGainNLL_GR))
+print(sum(NumericLossNLL))
+print(sum(NumericLossNLL_GR))
+
+#t.test(NumericGainNLL[,1] - NumericGainNLL_RN[,1])
+#t.test(NumericLossNLL[,1] - NumericLossNLL_RN[,1])
+
+
+AIC_gainlist = NumericLossNLL[,1]
+AIC_GR_gainlist = NumericLossNLL_GR[,1]
+AIC_losslist = NumericLossNLL[,1]
+AIC_GR_losslist = NumericLossNLL_GR[,1]
+K = 4 # the number of free parameters
+getAIC <- function(K, NLL) {
+  return(2*K - 2*(-NLL))
+}
+for (i in 1:length(NumericLossNLL[,1])){
+  AIC_gainlist[i] = getAIC(K, NumericGainNLL[i,1])
+  AIC_GR_gainlist[i] = getAIC(K, NumericGainNLL_GR[i,1])
+  AIC_losslist[i] = getAIC(K, NumericLossNLL[i,1])
+  AIC_GR_losslist[i] = getAIC(K, NumericLossNLL_GR[i,1])
+}
+print(mean(AIC_gainlist>AIC_GR_gainlist))
+t.test(AIC_gainlist-AIC_GR_gainlist)
+print(mean(AIC_losslist>AIC_GR_losslist))
+t.test(AIC_losslist-AIC_GR_losslist)
+```
+
+# Range Normalization
+
+```{r}
+NumericGainNLL = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericGainNLL.csv", header=F)
+NumericGainNLL_RN = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericGainNLL_RN.csv", header=F)
+NumericLossNLL = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericLossNLL.csv", header=F)
+NumericLossNLL_RN = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericLossNLL_RN.csv", header=F)
+
+print(sum(NumericGainNLL))
+print(sum(NumericGainNLL_RN))
+print(sum(NumericLossNLL))
+print(sum(NumericLossNLL_RN))
+
+#t.test(NumericGainNLL[,1] - NumericGainNLL_RN[,1])
+#t.test(NumericLossNLL[,1] - NumericLossNLL_RN[,1])
+
+
+AIC_gainlist = NumericLossNLL[,1]
+AIC_RN_gainlist = NumericLossNLL_RN[,1]
+AIC_losslist = NumericLossNLL[,1]
+AIC_RN_losslist = NumericLossNLL_RN[,1]
+K = 4 # the number of free parameters
+getAIC <- function(K, NLL) {
+  return(2*K - 2*(-NLL))
+}
+for (i in 1:length(NumericLossNLL[,1])){
+  AIC_gainlist[i] = getAIC(K, NumericGainNLL[i,1])
+  AIC_RN_gainlist[i] = getAIC(K, NumericGainNLL_RN[i,1])
+  AIC_losslist[i] = getAIC(K, NumericLossNLL[i,1])
+  AIC_RN_losslist[i] = getAIC(K, NumericLossNLL_RN[i,1])
+}
+print(mean(AIC_gainlist>AIC_RN_gainlist))
+t.test(AIC_gainlist-AIC_RN_gainlist)
+print(mean(AIC_losslist>AIC_RN_losslist))
+t.test(AIC_losslist-AIC_RN_losslist)
+```
+
+```{r}
+NumericGainFit_RN = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericGainFit_RN.csv")
+NumericLossFit_RN = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericLossFit_RN.csv")
+
+pdata = data.frame(
+  drift.gain = NumericGainFit_RN$d * 100,
+  drift.loss = NumericLossFit_RN$d * 100,
+  sig.gain = NumericGainFit_RN$s * 10,
+  sig.loss = NumericLossFit_RN$s * 10,
+  bias.gain = NumericGainFit_RN$b,
+  bias.loss = NumericLossFit_RN$b,
+  theta.gain = NumericGainFit_RN$t,
+  theta.loss = NumericLossFit_RN$t
+)
+```
+
+
+```{r}
+
+coord.lim <- 3
+d_gradient <- expand.grid(x=seq(0,coord.lim,coord.lim/gradient_resolution), y=seq(0,coord.lim,coord.lim/gradient_resolution))
+plt.compare.d.e <- ggplot(data=pdata) +
+  geom_tile(data=d_gradient, aes(x=x, y=y, fill=abs(y-x))) + #add gradient background
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_point(aes(x=drift.gain, y=drift.loss), size=markersize) +
+  xlim(c(0,coord.lim)) +
+  ylim(c(0,coord.lim)) +
+  labs(x = TeX(r"(Gain $d$)"), y = TeX(r"(Loss $d$)")) +
+  scale_y_continuous(breaks = c(0, coord.lim/2, coord.lim)) +
+  scale_x_continuous(breaks = c(0, coord.lim/2, coord.lim))  
+
+coord.lim <- 1.5
+sig_gradient <- expand.grid(x=seq(0,coord.lim,coord.lim/gradient_resolution), y=seq(0,coord.lim,coord.lim/gradient_resolution))
+plt.compare.sig.e <- ggplot(data=pdata) +
+  geom_tile(data=sig_gradient, aes(x=x, y=y, fill=abs(y-x))) +
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_point(aes(x=sig.gain, y=sig.loss), size=markersize) +
+  xlim(c(0,coord.lim)) +
+  ylim(c(0,coord.lim)) +
+  labs(x = TeX(r"(Gain $\sigma$)"), y = TeX(r"(Loss $\sigma$)")) +
+  scale_y_continuous(breaks = c(0, coord.lim/2, coord.lim)) +
+  scale_x_continuous(breaks = c(0, coord.lim/2, coord.lim)) 
+
+coord.lim <- .4
+bias_gradient <- expand.grid(x=seq(-coord.lim,coord.lim,coord.lim/gradient_resolution), y=seq(-coord.lim,coord.lim,coord.lim/gradient_resolution))
+plt.compare.bias.e <- ggplot(data=pdata) +
+  geom_tile(data=bias_gradient, aes(x=x, y=y, fill=abs(y-x))) +
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_point(aes(x=bias.gain, y=bias.loss), size=markersize) +
+  xlim(c(-coord.lim,coord.lim)) +
+  ylim(c(-coord.lim,coord.lim)) +
+  labs(x = TeX(r"(Gain bias)"), y = TeX(r"(Loss bias)")) +
+  scale_y_continuous(breaks = c(-coord.lim, 0, coord.lim)) +
+  scale_x_continuous(breaks = c(-coord.lim, 0, coord.lim)) 
+
+coord.lim <- 1.5
+theta_gradient <- expand.grid(x=seq(0,coord.lim,coord.lim/gradient_resolution), y=seq(0,coord.lim,coord.lim/gradient_resolution))
+plt.compare.theta.e <- ggplot(data=pdata) +
+  geom_tile(data=theta_gradient, aes(x=x, y=y, fill=abs(y-x))) +
+  scale_fill_gradient(low='orange', high=far) +
+  geom_vline(xintercept = 1, color='grey30', alpha=.5) +
+  geom_hline(yintercept = 1, color='grey30', alpha=.5) +
+  #geom_abline(intercept=0, slope=1, color='grey30') +
+  geom_point(aes(x=theta.gain, y=theta.loss), size=markersize) +
+  coord_cartesian(
+    xlim=c(0,coord.lim),
+    ylim=c(0,coord.lim),
+    expand=F
+  ) +
+  labs(x = TeX(r"(Gain $\theta$)"), y = TeX(r"(Loss $\theta$)")) +
+  scale_y_continuous(breaks = c(0, 1, coord.lim), labels=scaleFUN) +
+  scale_x_continuous(breaks = c(0, 1, coord.lim), labels=scaleFUN) +
+  theme(
+    legend.position=c(.75,.8),
+    legend.background=element_blank(),
+    legend.key=element_blank(),
+    legend.title= element_blank()
+  ) +
+  guides(fill="none")
+
+plt.compare.param.e <- grid.arrange(plt.compare.d.e, plt.compare.sig.e, plt.compare.bias.e, plt.compare.theta.e, nrow=2)
+
+ggsave(file.path(tempdir, "E_CompareIndividualAddmEstimates_RN.pdf"), plt.compare.param.e,
+       width=figw, height=figh, units="in")
+```
+
+# Divisive Normalization
+
+```{r}
+NumericGainNLL = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericGainNLL.csv", header=F)
+NumericGainNLL_DN = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericGainNLL_DN.csv", header=F)
+NumericLossNLL = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericLossNLL.csv", header=F)
+NumericLossNLL_DN = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericLossNLL_DN.csv", header=F)
+
+print(sum(NumericGainNLL))
+print(sum(NumericGainNLL_DN))
+print(sum(NumericLossNLL))
+print(sum(NumericLossNLL_DN))
+
+#t.test(NumericGainNLL[,1] - NumericGainNLL_DN[,1])
+#t.test(NumericLossNLL[,1] - NumericLossNLL_DN[,1])
+
+AIC_gainlist = NumericLossNLL[,1]
+AIC_DN_gainlist = NumericLossNLL_DN[,1]
+AIC_losslist = NumericLossNLL[,1]
+AIC_DN_losslist = NumericLossNLL_DN[,1]
+K = 4 # the number of free parameters
+getAIC <- function(K, NLL) {
+  return(2*K - 2*(-NLL))
+}
+for (i in 1:length(NumericLossNLL[,1])){
+  AIC_gainlist[i] = getAIC(K, NumericGainNLL[i,1])
+  AIC_DN_gainlist[i] = getAIC(K, NumericGainNLL_DN[i,1])
+  AIC_losslist[i] = getAIC(K, NumericLossNLL[i,1])
+  AIC_DN_losslist[i] = getAIC(K, NumericLossNLL_DN[i,1])
+}
+print(mean(AIC_gainlist>AIC_DN_gainlist))
+t.test(AIC_gainlist-AIC_DN_gainlist)
+print(mean(AIC_losslist>AIC_DN_losslist))
+t.test(AIC_losslist-AIC_DN_losslist)
+```
+
+```{r}
+NumericGainFit_DN = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericGainFit_DN.csv")
+NumericLossFit_DN = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericLossFit_DN.csv")
+
+pdata = data.frame(
+  drift.gain = NumericGainFit_DN$d * 100,
+  drift.loss = NumericLossFit_DN$d * 100,
+  sig.gain = NumericGainFit_DN$s * 10,
+  sig.loss = NumericLossFit_DN$s * 10,
+  bias.gain = NumericGainFit_DN$b,
+  bias.loss = NumericLossFit_DN$b,
+  theta.gain = NumericGainFit_DN$t,
+  theta.loss = NumericLossFit_DN$t
+)
+```
+
+
+```{r}
+
+coord.lim <- 4
+d_gradient <- expand.grid(x=seq(0,coord.lim,coord.lim/gradient_resolution), y=seq(0,coord.lim,coord.lim/gradient_resolution))
+plt.compare.d.e <- ggplot(data=pdata) +
+  geom_tile(data=d_gradient, aes(x=x, y=y, fill=abs(y-x))) + #add gradient background
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_point(aes(x=drift.gain, y=drift.loss), size=markersize) +
+  xlim(c(0,coord.lim)) +
+  ylim(c(0,coord.lim)) +
+  labs(x = TeX(r"(Gain $d$)"), y = TeX(r"(Loss $d$)")) +
+  scale_y_continuous(breaks = c(0, coord.lim/2, coord.lim)) +
+  scale_x_continuous(breaks = c(0, coord.lim/2, coord.lim))  
+
+coord.lim <- 1.5
+sig_gradient <- expand.grid(x=seq(0,coord.lim,coord.lim/gradient_resolution), y=seq(0,coord.lim,coord.lim/gradient_resolution))
+plt.compare.sig.e <- ggplot(data=pdata) +
+  geom_tile(data=sig_gradient, aes(x=x, y=y, fill=abs(y-x))) +
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_point(aes(x=sig.gain, y=sig.loss), size=markersize) +
+  xlim(c(0,coord.lim)) +
+  ylim(c(0,coord.lim)) +
+  labs(x = TeX(r"(Gain $\sigma$)"), y = TeX(r"(Loss $\sigma$)")) +
+  scale_y_continuous(breaks = c(0, coord.lim/2, coord.lim)) +
+  scale_x_continuous(breaks = c(0, coord.lim/2, coord.lim)) 
+
+coord.lim <- .4
+bias_gradient <- expand.grid(x=seq(-coord.lim,coord.lim,coord.lim/gradient_resolution), y=seq(-coord.lim,coord.lim,coord.lim/gradient_resolution))
+plt.compare.bias.e <- ggplot(data=pdata) +
+  geom_tile(data=bias_gradient, aes(x=x, y=y, fill=abs(y-x))) +
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_point(aes(x=bias.gain, y=bias.loss), size=markersize) +
+  xlim(c(-coord.lim,coord.lim)) +
+  ylim(c(-coord.lim,coord.lim)) +
+  labs(x = TeX(r"(Gain bias)"), y = TeX(r"(Loss bias)")) +
+  scale_y_continuous(breaks = c(-coord.lim, 0, coord.lim)) +
+  scale_x_continuous(breaks = c(-coord.lim, 0, coord.lim)) 
+
+coord.lim <- 3
+theta_gradient <- expand.grid(x=seq(0,coord.lim,coord.lim/gradient_resolution), y=seq(0,coord.lim,coord.lim/gradient_resolution))
+plt.compare.theta.e <- ggplot(data=pdata) +
+  geom_tile(data=theta_gradient, aes(x=x, y=y, fill=abs(y-x))) +
+  scale_fill_gradient(low='orange', high=far) +
+  geom_vline(xintercept = 1, color='grey30', alpha=.5) +
+  geom_hline(yintercept = 1, color='grey30', alpha=.5) +
+  #geom_abline(intercept=0, slope=1, color='grey30') +
+  geom_point(aes(x=theta.gain, y=theta.loss), size=markersize) +
+  coord_cartesian(
+    xlim=c(0,coord.lim),
+    ylim=c(0,coord.lim),
+    expand=F
+  ) +
+  labs(x = TeX(r"(Gain $\theta$)"), y = TeX(r"(Loss $\theta$)")) +
+  scale_y_continuous(breaks = c(0, 1, coord.lim), labels=scaleFUN) +
+  scale_x_continuous(breaks = c(0, 1, coord.lim), labels=scaleFUN) +
+  theme(
+    legend.position=c(.75,.8),
+    legend.background=element_blank(),
+    legend.key=element_blank(),
+    legend.title= element_blank()
+  ) +
+  guides(fill="none")
+
+plt.compare.param.e <- grid.arrange(plt.compare.d.e, plt.compare.sig.e, plt.compare.bias.e, plt.compare.theta.e, nrow=2)
+
+ggsave(file.path(tempdir, "E_CompareIndividualAddmEstimates_DN.pdf"), plt.compare.param.e,
+       width=figw, height=figh, units="in")
+```
+
+# Range Normalization Plus
+
+Range normalization but with an additional parameter for the starting point of the range.
+
+```{r}
+NumericGainNLL = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericGainNLL.csv", header=F)
+NumericGainNLL_RN = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericGainNLL_RNP.csv", header=F)
+NumericLossNLL = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericLossNLL.csv", header=F)
+NumericLossNLL_RN = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericLossNLL_RNP.csv", header=F)
+
+print(sum(NumericGainNLL))
+print(sum(NumericGainNLL_RN))
+print(sum(NumericLossNLL))
+print(sum(NumericLossNLL_RN))
+
+#t.test(NumericGainNLL[,1] - NumericGainNLL_RN[,1])
+#t.test(NumericLossNLL[,1] - NumericLossNLL_RN[,1])
+
+
+AIC_gainlist = NumericLossNLL[,1]
+AIC_RN_gainlist = NumericLossNLL_RN[,1]
+AIC_losslist = NumericLossNLL[,1]
+AIC_RN_losslist = NumericLossNLL_RN[,1]
+K = 5 # the number of free parameters
+getAIC <- function(K, NLL) {
+  return(2*K - 2*(-NLL))
+}
+for (i in 1:length(NumericLossNLL[,1])){
+  AIC_gainlist[i] = getAIC(K, NumericGainNLL[i,1])
+  AIC_RN_gainlist[i] = getAIC(K, NumericGainNLL_RN[i,1])
+  AIC_losslist[i] = getAIC(K, NumericLossNLL[i,1])
+  AIC_RN_losslist[i] = getAIC(K, NumericLossNLL_RN[i,1])
+}
+print(mean(AIC_gainlist>AIC_RN_gainlist))
+t.test(AIC_gainlist-AIC_RN_gainlist)
+print(mean(AIC_losslist>AIC_RN_losslist))
+t.test(AIC_losslist-AIC_RN_losslist)
+
+t.test(AIC_GR_gainlist-AIC_RN_gainlist)
+t.test(AIC_GR_losslist-AIC_RN_losslist)
+```
+
+```{r}
+NumericGainFit_RNP = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericGainFit_RNP.csv")
+NumericLossFit_RNP = read.csv("/Users/brenden/Toolboxes/ADDM.jl/docs/src/NumericLossFit_RNP.csv")
+
+pdata = data.frame(
+  drift.gain = NumericGainFit_RNP$d * 100,
+  drift.loss = NumericLossFit_RNP$d * 100,
+  sig.gain = NumericGainFit_RNP$s * 10,
+  sig.loss = NumericLossFit_RNP$s * 10,
+  bias.gain = NumericGainFit_RNP$b,
+  bias.loss = NumericLossFit_RNP$b,
+  theta.gain = NumericGainFit_RNP$t,
+  theta.loss = NumericLossFit_RNP$t,
+  k.gain = NumericGainFit_RNP$k,
+  k.loss = NumericLossFit_RNP$k
+)
+```
+
+Range Normalization Plus plot without the constant
+
+```{r}
+
+coord.lim <- 3
+d_gradient <- expand.grid(x=seq(0,coord.lim,coord.lim/gradient_resolution), y=seq(0,coord.lim,coord.lim/gradient_resolution))
+plt.compare.d.e <- ggplot(data=pdata) +
+  geom_tile(data=d_gradient, aes(x=x, y=y, fill=abs(y-x))) + #add gradient background
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_point(aes(x=drift.gain, y=drift.loss), size=markersize) +
+  xlim(c(0,coord.lim)) +
+  ylim(c(0,coord.lim)) +
+  labs(x = TeX(r"(Gain $d$)"), y = TeX(r"(Loss $d$)")) +
+  scale_y_continuous(breaks = c(0, coord.lim/2, coord.lim)) +
+  scale_x_continuous(breaks = c(0, coord.lim/2, coord.lim))  
+
+coord.lim <- 1.5
+sig_gradient <- expand.grid(x=seq(0,coord.lim,coord.lim/gradient_resolution), y=seq(0,coord.lim,coord.lim/gradient_resolution))
+plt.compare.sig.e <- ggplot(data=pdata) +
+  geom_tile(data=sig_gradient, aes(x=x, y=y, fill=abs(y-x))) +
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_point(aes(x=sig.gain, y=sig.loss), size=markersize) +
+  xlim(c(0,coord.lim)) +
+  ylim(c(0,coord.lim)) +
+  labs(x = TeX(r"(Gain $\sigma$)"), y = TeX(r"(Loss $\sigma$)")) +
+  scale_y_continuous(breaks = c(0, coord.lim/2, coord.lim)) +
+  scale_x_continuous(breaks = c(0, coord.lim/2, coord.lim)) 
+
+coord.lim <- .4
+bias_gradient <- expand.grid(x=seq(-coord.lim,coord.lim,coord.lim/gradient_resolution), y=seq(-coord.lim,coord.lim,coord.lim/gradient_resolution))
+plt.compare.bias.e <- ggplot(data=pdata) +
+  geom_tile(data=bias_gradient, aes(x=x, y=y, fill=abs(y-x))) +
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_point(aes(x=bias.gain, y=bias.loss), size=markersize) +
+  xlim(c(-coord.lim,coord.lim)) +
+  ylim(c(-coord.lim,coord.lim)) +
+  labs(x = TeX(r"(Gain bias)"), y = TeX(r"(Loss bias)")) +
+  scale_y_continuous(breaks = c(-coord.lim, 0, coord.lim)) +
+  scale_x_continuous(breaks = c(-coord.lim, 0, coord.lim)) 
+
+coord.lim <- 1.75
+theta_gradient <- expand.grid(x=seq(0,coord.lim,coord.lim/gradient_resolution), y=seq(0,coord.lim,coord.lim/gradient_resolution))
+plt.compare.theta.e <- ggplot(data=pdata) +
+  geom_tile(data=theta_gradient, aes(x=x, y=y, fill=abs(y-x))) +
+  scale_fill_gradient(low='orange', high=far) +
+  geom_vline(xintercept = 1, color='grey30', alpha=.5) +
+  geom_hline(yintercept = 1, color='grey30', alpha=.5) +
+  #geom_abline(intercept=0, slope=1, color='grey30') +
+  geom_point(aes(x=theta.gain, y=theta.loss), size=markersize) +
+  coord_cartesian(
+    xlim=c(0,coord.lim),
+    ylim=c(0,coord.lim),
+    expand=F
+  ) +
+  labs(x = TeX(r"(Gain $\theta$)"), y = TeX(r"(Loss $\theta$)")) +
+  scale_y_continuous(breaks = c(0, 1, coord.lim), labels=scaleFUN) +
+  scale_x_continuous(breaks = c(0, 1, coord.lim), labels=scaleFUN) +
+  theme(
+    legend.position=c(.75,.8),
+    legend.background=element_blank(),
+    legend.key=element_blank(),
+    legend.title= element_blank()
+  ) +
+  guides(fill="none")
+
+plt.compare.param.e <- grid.arrange(plt.compare.d.e, plt.compare.sig.e, plt.compare.bias.e, plt.compare.theta.e, nrow=2)
+
+ggsave(file.path(tempdir, "E_CompareIndividualAddmEstimates_RNP.pdf"), plt.compare.param.e,
+       width=figw, height=figh, units="in")
+```
+
+Range Normalization Plus plot WITH the constant
+
+```{r}
+
+coord.lim <- 3
+k_gradient <- expand.grid(x=seq(0,coord.lim,coord.lim/gradient_resolution), y=seq(0,coord.lim,coord.lim/gradient_resolution))
+plt.compare.k.e <- ggplot(data=pdata) +
+  geom_tile(data=d_gradient, aes(x=x, y=y, fill=abs(y-x))) + #add gradient background
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_point(aes(x=k.gain, y=k.loss), size=markersize) +
+  xlim(c(0,coord.lim)) +
+  ylim(c(0,coord.lim)) +
+  labs(x = TeX(r"(Gain $k$)"), y = TeX(r"(Loss $k$)")) +
+  scale_y_continuous(breaks = c(0, coord.lim/2, coord.lim)) +
+  scale_x_continuous(breaks = c(0, coord.lim/2, coord.lim))  
+
+plt.compare.param.e <- grid.arrange(plt.compare.d.e, plt.compare.sig.e, plt.compare.bias.e, plt.compare.theta.e, plt.compare.k.e, nrow=3)
+
+ggsave(file.path(tempdir, "E_CompareIndividualAddmEstimates_RNP.pdf"), plt.compare.param.e,
+       width=figw, height=figh*1.5, units="in")
+```
