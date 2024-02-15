@@ -26,79 +26,114 @@ using CSV;
 grid_search_terminate_threshold = .0001 
 include("make_new_grid.jl")
 
-# aDDM: original aDDM with unbounded θ
+#############################################
+# aDDM: standard aDDM with bounded θ
+#############################################
 
-include("fit_aDDM.jl")
+#include("fit_aDDM.jl")
 #fit_aDDM(study="dots", dataset="e")
 #fit_aDDM(study="numeric", dataset="e")
-#fit_aDDM(study="food", dataset="e")
 #
 #fit_aDDM(study="dots", dataset="c")
 #fit_aDDM(study="numeric", dataset="c")
-#fit_aDDM(study="food", dataset="c")
 
-# addDDM: additive model of attention, as with Michael Frank's work
+#############################################
+# UaDDM: original aDDM with unbounded θ 
+#############################################
 
-include("fit_addDDM.jl")
+#include("fit_UaDDM.jl")
+#fit_UaDDM(study="dots", dataset="e")
+#fit_UaDDM(study="numeric", dataset="e")
+#
+#fit_aDDM(study="dots", dataset="c")
+#fit_aDDM(study="numeric", dataset="c")
+
+#############################################
+# addDDM: additive model of attention, as with Michael Frank's work 
+#############################################
+
+#include("fit_addDDM.jl")
 #fit_addDDM(study="dots", dataset="e")
 #fit_addDDM(study="numeric", dataset="e")
-#fit_addDDM(study="food", dataset="e")
 #
 #fit_addDDM(study="dots", dataset="c")
 #fit_addDDM(study="numeric", dataset="c")
-#fit_addDDM(study="food", dataset="c")
 
-# DNaDDM: aDDM, but values are divisive normalizated
+#############################################
+# AddaDDM: additive model of attention, as with Michael Frank's work 
+#############################################
 
-include("fit_DNaDDM.jl")
+include("fit_AddaDDM.jl")
+fit_AddaDDM(study="dots", dataset="e")
+fit_AddaDDM(study="numeric", dataset="e")
+#
+#fit_addDDM(study="dots", dataset="c")
+#fit_addDDM(study="numeric", dataset="c")
+
+#############################################
+# DNaDDM: aDDM, but values are divisive normalizated 
+#############################################
+
+#include("fit_DNaDDM.jl")
 #fit_DNaDDM(study="dots", dataset="e")
 #fit_DNaDDM(study="numeric", dataset="e")
-#fit_DNaDDM(study="food", dataset="e")
 #
 #fit_DNaDDM(study="dots", dataset="c")
 #fit_DNaDDM(study="numeric", dataset="c")
-#fit_DNaDDM(study="food", dataset="c")
 
-# DNPaDDM: aDDM, but values are divisive normalizated to [k, k+1] where k is a fitted constant.
+#############################################
+# DNPaDDM: aDDM, but values are divisive normalizated to [k, k+1] where k is a fitted constant. 
 # This is mathematically equivalent to divisive normalized values with both additive and multiplicative attentional effects.
+#############################################
 
-include("fit_DNPaDDM.jl")
-#           fit_DNPaDDM(study="dots", dataset="e")
-#           fit_DNPaDDM(study="numeric", dataset="e")
-#fit_DNaDDM(study="food", dataset="e")
+#include("fit_DNPaDDM.jl")
+#fit_DNPaDDM(study="dots", dataset="e")
+#fit_DNPaDDM(study="numeric", dataset="e")
 #
 #fit_DNaDDM(study="dots", dataset="c")
 #fit_DNaDDM(study="numeric", dataset="c")
-#fit_DNaDDM(study="food", dataset="c")
 
-# RNaDDM: aDDM, but values are range normalizated
+#############################################
+# GDaDDM: aDDM, but values are with respect to the minimum value in a block 
+#############################################
 
-include("fit_RNaDDM.jl")
-#fit_RNaDDM(study="dots", dataset="e")
-#fit_RNaDDM(study="numeric", dataset="e")
-#fit_RNaDDM(study="food", dataset="e")
+#include("fit_GDaDDM.jl")
+#fit_GDaDDM(study="dots", dataset="e")
+#fit_GDaDDM(study="numeric", dataset="e")
 #
 #fit_RNaDDM(study="dots", dataset="c")
 #fit_RNaDDM(study="numeric", dataset="c")
-#fit_RNaDDM(study="food", dataset="c")
 
-# RNPaDDM: aDDM, but values are range normalizated to [k, k+1] where k is a fitted constant.
+#############################################
+# RNaDDM: aDDM, but values are range normalizated 
+#############################################
+
+#include("fit_RNaDDM.jl")
+#fit_RNaDDM(study="dots", dataset="e")
+#fit_RNaDDM(study="numeric", dataset="e")
+#
+#fit_RNaDDM(study="dots", dataset="c")
+#fit_RNaDDM(study="numeric", dataset="c")
+
+#############################################
+# RNPaDDM: aDDM, but values are range normalizated to [k, k+1] where k is a fitted constant. 
 # Turns out, this is mathematically equivalent to range normalized values with both an additive AND multiplicative attentional bias.
+#############################################
 
-include("fit_RNPaDDM.jl")
+#include("fit_RNPaDDM.jl")
 #fit_RNPaDDM(study="dots", dataset="e")
 #fit_RNPaDDM(study="numeric", dataset="e")
-#fit_RNPaDDM(study="food", dataset="e")
 #
 #fit_RNPaDDM(study="dots", dataset="c")
 #fit_RNPaDDM(study="numeric", dataset="c")
-#fit_RNPaDDM(study="food", dataset="c")
 
-include("fit_DRNPaDDM.jl")
+#############################################
+# DRNPaDDM: range depends on history of outcomes in block  
+#############################################
+
+#include("fit_DRNPaDDM.jl")
 #fit_DRNPaDDM(study="dots", dataset="e")
-fit_DRNPaDDM(study="numeric", dataset="e")
-#fit_DRNPaDDM(study="food", dataset="e")
+#fit_DRNPaDDM(study="numeric", dataset="e")
 #
 #fit_DRNPaDDM(study="dots", dataset="c")
 #fit_DRNPaDDM(study="numeric", dataset="c")
-#fit_DRNPaDDM(study="food", dataset="c")
