@@ -175,11 +175,11 @@ function aDDM_get_trial_likelihood(addm::aDDM, trial::aDDMTrial; timeStep::Numbe
             if remainingNDT > 0
                 push!(correctedFixItem, 0)
                 push!(correctedFixTime, min(remainingNDT, fTime))
-                push!(correctedFixItem, fTime)
+                push!(correctedFixItem, fItem)
                 push!(correctedFixTime, max(fTime - remainingNDT, 0))
                 remainingNDT = remainingNDT - fTime
             else
-                push!(correctedFixTime, fItem)
+                push!(correctedFixItem, fItem)
                 push!(correctedFixTime, fTime)
             end
         end
@@ -381,8 +381,8 @@ function addDDM_get_trial_likelihood(addm::aDDM, trial::aDDMTrial; timeStep::Num
     numTimeSteps += 1
     
     # The values of the barriers can change over time.
-    barrierUp = addm.barrier ./ (1 .+ decay .* (0:numTimeSteps-1))
-    barrierDown = -addm.barrier ./ (1 .+ decay .* (0:numTimeSteps-1))
+    barrierUp = addm.barrier ./ (1 .+ (decay .* (0:numTimeSteps-1)))
+    barrierDown = -addm.barrier ./ (1 .+ (decay .* (0:numTimeSteps-1)))
     
     # Obtain correct state step.
     halfNumStateBins = ceil(addm.barrier / approxStateStep)
@@ -2085,6 +2085,33 @@ function addDDM_negative_log_likelihood_threads(addm::aDDM, addmTrials::Vector{a
     
     @threads for i in 1:length(addmTrials)
         likelihoods[i] = addDDM_get_trial_likelihood(addm, addmTrials[i])
+    end
+    
+    likelihoods = max.(likelihoods, 1e-64)
+    negative_log_likelihood = -sum(log.(likelihoods))
+    
+    return negative_log_likelihood
+end
+
+function cbAddDDM_negative_log_likelihood_threads(addm::aDDM, addmTrials::Vector{aDDMTrial}, d::Number, σ::Number, θ::Number, b::Number, c::Number)
+    """
+    Calculates the negative log likelihood from a given dataset of DDMTrials and parameters
+    of a model.
+    Args:
+      addmTrials: Vector of aDDMTrials.
+      d: Number, parameter of the model which controls the speed of integration of
+          the signal. 
+      σ: Number, parameter of the model, standard deviation for the normal
+          distribution.
+    Returns: 
+      The negative log likelihood for the given vector of aDDMTrials and model.
+    """
+    # Calculate the negative log likelihood
+    addm = aDDM(d, σ, θ; bias=b)
+    likelihoods = Vector{Float64}(undef, length(addmTrials))
+    
+    @threads for i in 1:length(addmTrials)
+        likelihoods[i] = addDDM_get_trial_likelihood(addm, addmTrials[i]; decay=c)
     end
     
     likelihoods = max.(likelihoods, 1e-64)

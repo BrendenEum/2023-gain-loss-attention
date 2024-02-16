@@ -92,11 +92,11 @@ output$UaDDM_se = apply(UaDDM_e_estimates, 2, std.error)
 output$AddDDM_mean = apply(AddDDM_e_estimates, 2, mean)
 output$AddDDM_se = apply(AddDDM_e_estimates, 2, std.error)
 
-output$AddaDDM_mean = apply(AddaDDM_e_estimates, 2, mean)
-output$AddaDDM_se = apply(AddaDDM_e_estimates, 2, std.error)
-
 output$cbAddDDM_mean = apply(cbAddDDM_e_estimates, 2, mean)
 output$cbAddDDM_se = apply(cbAddDDM_e_estimates, 2, std.error)
+
+output$AddaDDM_mean = apply(AddaDDM_e_estimates, 2, mean)
+output$AddaDDM_se = apply(AddaDDM_e_estimates, 2, std.error)
 
 output$DNaDDM_mean = apply(DNaDDM_e_estimates, 2, mean)
 output$DNaDDM_se = apply(DNaDDM_e_estimates, 2, std.error)
@@ -155,17 +155,17 @@ dots_IC = getIC(datadir=datadir, fitdir=fitdir, study="dots", model="AddDDM", da
 numeric_IC = getIC(datadir=datadir, fitdir=fitdir, study="numeric", model="AddDDM", dataset="e", parameterCount=4)
 AddDDM_IC = getTableIC(dots_IC, numeric_IC)
 
+# collapsing bounds additive DDM
+
+dots_IC = getIC(datadir=datadir, fitdir=fitdir, study="dots", model="cbAddDDM", dataset="e", parameterCount=5)
+numeric_IC = getIC(datadir=datadir, fitdir=fitdir, study="numeric", model="cbAddDDM", dataset="e", parameterCount=5)
+cbAddDDM_IC = getTableIC(dots_IC, numeric_IC)
+
 # Additive and multiplicative aDDM
 
-dots_IC = getIC(datadir=datadir, fitdir=fitdir, study="dots", model="AddaDDM", dataset="e", parameterCount=4)
-numeric_IC = getIC(datadir=datadir, fitdir=fitdir, study="numeric", model="AddaDDM", dataset="e", parameterCount=4)
+dots_IC = getIC(datadir=datadir, fitdir=fitdir, study="dots", model="AddaDDM", dataset="e", parameterCount=5)
+numeric_IC = getIC(datadir=datadir, fitdir=fitdir, study="numeric", model="AddaDDM", dataset="e", parameterCount=5)
 AddaDDM_IC = getTableIC(dots_IC, numeric_IC)
-
-# cbAddDDM
-
-dots_IC = getIC(datadir=datadir, fitdir=fitdir, study="dots", model="cbAddDDM", dataset="e", parameterCount=4)
-numeric_IC = getIC(datadir=datadir, fitdir=fitdir, study="numeric", model="cbAddDDM", dataset="e", parameterCount=4)
-cbAddDDM_IC = getTableIC(dots_IC, numeric_IC)
 
 # Divisive Normalization
 
@@ -205,8 +205,8 @@ gain_BIC = c(
   sum(aDDM_IC$dots_gain_totalBIC)+sum(aDDM_IC$numeric_gain_totalBIC), NA, 
   sum(UaDDM_IC$dots_gain_totalBIC)+sum(UaDDM_IC$numeric_gain_totalBIC), NA, 
   sum(AddDDM_IC$dots_gain_totalBIC)+sum(AddDDM_IC$numeric_gain_totalBIC), NA, 
-  sum(AddaDDM_IC$dots_gain_totalBIC)+sum(AddaDDM_IC$numeric_gain_totalBIC), NA, 
   sum(cbAddDDM_IC$dots_gain_totalBIC)+sum(cbAddDDM_IC$numeric_gain_totalBIC), NA, 
+  sum(AddaDDM_IC$dots_gain_totalBIC)+sum(AddaDDM_IC$numeric_gain_totalBIC), NA, 
   sum(DNaDDM_IC$dots_gain_totalBIC)+sum(DNaDDM_IC$numeric_gain_totalBIC), NA, 
   sum(GDaDDM_IC$dots_gain_totalBIC)+sum(GDaDDM_IC$numeric_gain_totalBIC), NA, 
   sum(RNaDDM_IC$dots_gain_totalBIC)+sum(RNaDDM_IC$numeric_gain_totalBIC), NA, 
@@ -217,8 +217,8 @@ loss_BIC = c(
   sum(aDDM_IC$dots_loss_totalBIC)+sum(aDDM_IC$numeric_loss_totalBIC), NA, 
   sum(UaDDM_IC$dots_loss_totalBIC)+sum(UaDDM_IC$numeric_loss_totalBIC), NA, 
   sum(AddDDM_IC$dots_loss_totalBIC)+sum(AddDDM_IC$numeric_loss_totalBIC), NA, 
-  sum(AddaDDM_IC$dots_loss_totalBIC)+sum(AddaDDM_IC$numeric_loss_totalBIC), NA, 
   sum(cbAddDDM_IC$dots_loss_totalBIC)+sum(cbAddDDM_IC$numeric_loss_totalBIC), NA, 
+  sum(AddaDDM_IC$dots_loss_totalBIC)+sum(AddaDDM_IC$numeric_loss_totalBIC), NA, 
   sum(DNaDDM_IC$dots_loss_totalBIC)+sum(DNaDDM_IC$numeric_loss_totalBIC), NA, 
   sum(GDaDDM_IC$dots_loss_totalBIC)+sum(GDaDDM_IC$numeric_loss_totalBIC), NA, 
   sum(RNaDDM_IC$dots_loss_totalBIC)+sum(RNaDDM_IC$numeric_loss_totalBIC), NA, 

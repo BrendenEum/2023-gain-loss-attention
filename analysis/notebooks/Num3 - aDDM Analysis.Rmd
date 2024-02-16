@@ -532,7 +532,7 @@ AIC_gainlist = NumericLossNLL[,1]
 AIC_RN_gainlist = NumericLossNLL_RN[,1]
 AIC_losslist = NumericLossNLL[,1]
 AIC_RN_losslist = NumericLossNLL_RN[,1]
-K = 5 # the number of free parameters
+K = 4 # the number of free parameters
 getAIC <- function(K, NLL) {
   return(2*K - 2*(-NLL))
 }

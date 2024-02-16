@@ -80,22 +80,22 @@ end
 # Additive model of attention with collapsing boundaries
 
 function cbAddDDM_grid_search(addm::aDDM, addmTrials::Dict{String, Vector{aDDMTrial}}, dList::Vector{Float64}, σList::Vector{Float64},
-    θList::Vector{Float64}, bList::Vector{Float64}, subject::String)
+    θList::Vector{Float64}, bList::Vector{Float64}, cList::Vector{Float64}, subject::String)
     """
     """
 
     # Create an array of tuples for all parameter combinations.
-    param_combinations = [(d, σ, θ, b) for d in dList, σ in σList, θ in θList, b in bList]
+    param_combinations = [(d, σ, θ, b, c) for d in dList, σ in σList, θ in θList, b in bList, c in cList]
 
     # Vectorized calculation of negative log-likelihood for all parameter combinations
-    neg_log_like_array = [cbAddDDM_negative_log_likelihood_threads(addm, addmTrials[subject], d, σ, θ, b) for (d, σ, θ, b) in param_combinations]
+    neg_log_like_array = [cbAddDDM_negative_log_likelihood_threads(addm, addmTrials[subject], d, σ, θ, b, c) for (d, σ, θ, b, c) in param_combinations]
 
     # Find the index of the minimum negative log-likelihood and obtain the MLE parameters
     minIdx = argmin(neg_log_like_array)
-    dMin, σMin, θMin, bMin = param_combinations[minIdx]
+    dMin, σMin, θMin, bMin, cMin = param_combinations[minIdx]
     NNL = minimum(neg_log_like_array)
 
-    return dMin, σMin, θMin, bMin, NNL
+    return dMin, σMin, θMin, bMin, cMin, NNL
 end
 
 # Additive and multiplicative model of attention
