@@ -1,1 +1,0 @@
-This is where the outputs from analyses and notebooks go. This could include figures, model fits, static notebook outputs (e.g. .html) etc.
