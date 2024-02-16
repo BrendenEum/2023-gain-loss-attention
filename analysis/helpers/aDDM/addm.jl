@@ -281,7 +281,7 @@ function aDDM_get_trial_likelihood(addm::aDDM, trial::aDDMTrial; timeStep::Numbe
             # that the area under the curves for the probability 
             # distributions probUpCrossing and probDownCrossing add up to 1.
             prStatesNew = stateStep * (normpdf * prStates[:,time])
-            prStatesNew[(states .>= 1) .| (states .<= -1)] .= 0
+            prStatesNew[(states .>= barrierUp[t]) .| (states .<= barrierDown[t])] .= 0
             
             # Calculate the probabilities of crossing the up barrier and
             # the down barrier. This is given by the sum, over all states
@@ -461,7 +461,7 @@ function addDDM_get_trial_likelihood(addm::aDDM, trial::aDDMTrial; timeStep::Num
             # that the area under the curves for the probability 
             # distributions probUpCrossing and probDownCrossing add up to 1.
             prStatesNew = stateStep * (normpdf * prStates[:,time])
-            prStatesNew[(states .>= 1) .| (states .<= -1)] .= 0
+            prStatesNew[(states .>= barrierUp[t]) .| (states .<= barrierDown[t])] .= 0
             
             # Calculate the probabilities of crossing the up barrier and
             # the down barrier. This is given by the sum, over all states
@@ -643,7 +643,7 @@ function AddaDDM_get_trial_likelihood(addm::aDDM, trial::aDDMTrial, minValue::Nu
             # that the area under the curves for the probability 
             # distributions probUpCrossing and probDownCrossing add up to 1.
             prStatesNew = stateStep * (normpdf * prStates[:,time])
-            prStatesNew[(states .>= 1) .| (states .<= -1)] .= 0
+            prStatesNew[(states .>= barrierUp[t]) .| (states .<= barrierDown[t])] .= 0
             
             # Calculate the probabilities of crossing the up barrier and
             # the down barrier. This is given by the sum, over all states
@@ -830,7 +830,7 @@ function DNaDDM_get_trial_likelihood(addm::aDDM, trial::aDDMTrial; timeStep::Num
             # that the area under the curves for the probability 
             # distributions probUpCrossing and probDownCrossing add up to 1.
             prStatesNew = stateStep * (normpdf * prStates[:,time])
-            prStatesNew[(states .>= 1) .| (states .<= -1)] .= 0
+            prStatesNew[(states .>= barrierUp[t]) .| (states .<= barrierDown[t])] .= 0
             
             # Calculate the probabilities of crossing the up barrier and
             # the down barrier. This is given by the sum, over all states
@@ -1017,7 +1017,7 @@ function DNPaDDM_get_trial_likelihood(addm::aDDM, trial::aDDMTrial, k::Number; t
             # that the area under the curves for the probability 
             # distributions probUpCrossing and probDownCrossing add up to 1.
             prStatesNew = stateStep * (normpdf * prStates[:,time])
-            prStatesNew[(states .>= 1) .| (states .<= -1)] .= 0
+            prStatesNew[(states .>= barrierUp[t]) .| (states .<= barrierDown[t])] .= 0
             
             # Calculate the probabilities of crossing the up barrier and
             # the down barrier. This is given by the sum, over all states
@@ -1199,7 +1199,7 @@ function GDaDDM_get_trial_likelihood(addm::aDDM, trial::aDDMTrial, minValue::Num
             # that the area under the curves for the probability 
             # distributions probUpCrossing and probDownCrossing add up to 1.
             prStatesNew = stateStep * (normpdf * prStates[:,time])
-            prStatesNew[(states .>= 1) .| (states .<= -1)] .= 0
+            prStatesNew[(states .>= barrierUp[t]) .| (states .<= barrierDown[t])] .= 0
             
             # Calculate the probabilities of crossing the up barrier and
             # the down barrier. This is given by the sum, over all states
@@ -1381,7 +1381,7 @@ function RNaDDM_get_trial_likelihood(addm::aDDM, trial::aDDMTrial, minValue::Num
             # that the area under the curves for the probability 
             # distributions probUpCrossing and probDownCrossing add up to 1.
             prStatesNew = stateStep * (normpdf * prStates[:,time])
-            prStatesNew[(states .>= 1) .| (states .<= -1)] .= 0
+            prStatesNew[(states .>= barrierUp[t]) .| (states .<= barrierDown[t])] .= 0
             
             # Calculate the probabilities of crossing the up barrier and
             # the down barrier. This is given by the sum, over all states
@@ -1563,7 +1563,7 @@ function RNPaDDM_get_trial_likelihood(addm::aDDM, trial::aDDMTrial, minValue::Nu
             # that the area under the curves for the probability 
             # distributions probUpCrossing and probDownCrossing add up to 1.
             prStatesNew = stateStep * (normpdf * prStates[:,time])
-            prStatesNew[(states .>= 1) .| (states .<= -1)] .= 0
+            prStatesNew[(states .>= barrierUp[t]) .| (states .<= barrierDown[t])] .= 0
             
             # Calculate the probabilities of crossing the up barrier and
             # the down barrier. This is given by the sum, over all states
@@ -1743,7 +1743,7 @@ function DRNPaDDM_get_trial_likelihood(addm::aDDM, trial::aDDMTrial, k::Number; 
             # that the area under the curves for the probability 
             # distributions probUpCrossing and probDownCrossing add up to 1.
             prStatesNew = stateStep * (normpdf * prStates[:,time])
-            prStatesNew[(states .>= 1) .| (states .<= -1)] .= 0
+            prStatesNew[(states .>= barrierUp[t]) .| (states .<= barrierDown[t])] .= 0
             
             # Calculate the probabilities of crossing the up barrier and
             # the down barrier. This is given by the sum, over all states

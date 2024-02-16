@@ -60,12 +60,23 @@ include("make_new_grid.jl")
 #fit_addDDM(study="numeric", dataset="c")
 
 #############################################
+# cbAddDDM: collapsing bounds additive model
+#############################################
+
+include("fit_cbAddDDM.jl")
+fit_cbAddDDM(study="dots", dataset="e")
+fit_cbAddDDM(study="numeric", dataset="e")
+#
+#fit_addDDM(study="dots", dataset="c")
+#fit_addDDM(study="numeric", dataset="c")
+
+#############################################
 # AddaDDM: additive model of attention, as with Michael Frank's work 
 #############################################
 
-include("fit_AddaDDM.jl")
-fit_AddaDDM(study="dots", dataset="e")
-fit_AddaDDM(study="numeric", dataset="e")
+#include("fit_AddaDDM.jl")
+#fit_AddaDDM(study="dots", dataset="e")
+#fit_AddaDDM(study="numeric", dataset="e")
 #
 #fit_addDDM(study="dots", dataset="c")
 #fit_addDDM(study="numeric", dataset="c")
