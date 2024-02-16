@@ -114,7 +114,8 @@ function make_new_grid_collapse_models(estimates::DataFrame, data::Dict{String, 
         end
         bLow = max(-.99, b-(bStepSize/(2^iteration)));
         bHigh = min(.99, b+(bStepSize/(2^iteration)));
-        cLow = max(0, c-(cStepSize/(2^iteration)));
+        #cLow = max(0, c-(cStepSize/(2^iteration)));
+        cLow = c-(cStepSize/(2^iteration));
         cHigh = c+(cStepSize/(2^iteration));
 
         push!(dGrid, float([dLow, d, dHigh]))

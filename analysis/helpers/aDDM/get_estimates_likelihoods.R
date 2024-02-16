@@ -15,14 +15,16 @@ read_estimates <- function(fitdir="error", study="error", model="error", dataset
     b.gain = gainFit$b,
     b.loss = lossFit$b,
     t.gain = gainFit$t,
-    t.loss = lossFit$t)
+    t.loss = lossFit$t,
+    k.gain = NA,
+    k.loss = NA,
+    c.gain = NA,
+    c.loss = NA
+  )
   
   if (model %in% c("AddaDDM", "DNPaDDM", "RNPaDDM", "DRNPaDDM")) {
     estimates$k.gain = gainFit$k
     estimates$k.loss = lossFit$k
-  } else {
-    estimates$k.gain = NA
-    estimates$k.loss = NA
   }
   
   if (model %in% c("AddDDM")) {
@@ -30,6 +32,15 @@ read_estimates <- function(fitdir="error", study="error", model="error", dataset
     estimates$t.loss = NA
     estimates$k.gain = gainFit$t #I coded the additive attentional bias as theta in the toolbox,
     estimates$k.loss = lossFit$t #but calling it k is more intuitive for the paper.
+  }
+  
+  if (model %in% c("cbAddDDM")) {
+    estimates$t.gain = NA
+    estimates$t.loss = NA
+    estimates$k.gain = gainFit$t
+    estimates$k.loss = lossFit$t
+    estimates$c.gain = gainFit$c
+    estimates$c.loss = lossFit$c
   }
   
   estimates = estimates %>% mutate_if(is.numeric, round, digits=3)

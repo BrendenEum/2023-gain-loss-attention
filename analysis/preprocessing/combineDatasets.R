@@ -12,10 +12,6 @@ edatadir.numeric <- file.path("../../data/processed_data/numeric/e")
 cdatadir.numeric <- file.path("../../data/processed_data/numeric/c")
 jdatadir.numeric <- file.path("../../data/processed_data/numeric/j")
 
-edatadir.food <- file.path("../../data/processed_data/food/e")
-cdatadir.food <- file.path("../../data/processed_data/food/c")
-jdatadir.food <- file.path("../../data/processed_data/food/j")
-
 processed.datadir = file.path("../../data/processed_data")
 
 ##########
@@ -24,8 +20,7 @@ processed.datadir = file.path("../../data/processed_data")
 
 load(file.path(edatadir.dots, "cfr_dots.RData"))
 load(file.path(edatadir.numeric, "cfr_numeric.RData"))
-load(file.path(edatadir.food, "cfr_food.RData"))
-ecfr = do.call("rbind", list(cfr_dots, cfr_numeric, cfr_food))
+ecfr = do.call("rbind", list(cfr_dots, cfr_numeric))
 save(ecfr, file=file.path(processed.datadir, "ecfr.RData"))
 
 ##########
@@ -34,8 +29,7 @@ save(ecfr, file=file.path(processed.datadir, "ecfr.RData"))
 
 load(file.path(cdatadir.dots, "cfr_dots.RData"))
 load(file.path(cdatadir.numeric, "cfr_numeric.RData"))
-load(file.path(cdatadir.food, "cfr_food.RData"))
-ccfr = do.call("rbind", list(cfr_dots, cfr_numeric, cfr_food))
+ccfr = do.call("rbind", list(cfr_dots, cfr_numeric))
 save(ccfr, file=file.path(processed.datadir, "ccfr.RData"))
 
 ##########
@@ -44,6 +38,5 @@ save(ccfr, file=file.path(processed.datadir, "ccfr.RData"))
 
 load(file.path(jdatadir.dots, "cfr_dots.RData"))
 load(file.path(jdatadir.numeric, "cfr_numeric.RData"))
-load(file.path(jdatadir.food, "cfr_food.RData"))
-jcfr = do.call("rbind", list(cfr_dots, cfr_numeric, cfr_food))
+jcfr = do.call("rbind", list(cfr_dots, cfr_numeric))
 save(jcfr, file=file.path(processed.datadir, "jcfr.RData"))

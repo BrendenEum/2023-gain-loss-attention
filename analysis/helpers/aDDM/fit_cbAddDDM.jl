@@ -72,7 +72,7 @@ function fit_cbAddDDM(; study::String = "error", dataset::String = "error")
     σStepSize = .04
     θStepSize = 1.5
     bStepSize = .9
-    cStepSize = .001
+    cStepSize = .005
 
     dInitialGrid = Any[]
     σInitialGrid = Any[]
@@ -84,7 +84,7 @@ function fit_cbAddDDM(; study::String = "error", dataset::String = "error")
         push!(σInitialGrid, float([0.01:σStepSize:.09;]))      
         push!(θInitialGrid, float([0:θStepSize:3;]))    
         push!(bInitialGrid, float([-.9:bStepSize:.9;]))     
-        push!(cInitialGrid, float([.00:cStepSize:.002;]))      
+        push!(cInitialGrid, float([.00:cStepSize:.01;]))      
     end
 
     println(dInitialGrid[1])
