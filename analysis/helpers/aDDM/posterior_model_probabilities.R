@@ -12,7 +12,7 @@ fitdir = "../../outputs/temp"
 datadir = "../../../data/processed_data"
 source("get_estimates_likelihoods.R")
 
-M = 8 # number of models
+M = 11 # number of models
 
 
 ################
@@ -34,6 +34,16 @@ numeric_UaDDM_IC = getIC(datadir=datadir, fitdir=fitdir, study="numeric", model=
 dots_AddDDM_IC = getIC(datadir=datadir, fitdir=fitdir, study="dots", model="AddDDM", dataset="e", parameterCount=4)
 numeric_AddDDM_IC = getIC(datadir=datadir, fitdir=fitdir, study="numeric", model="AddDDM", dataset="e", parameterCount=4)
 
+# collapsing bounds Additive Attentional Model
+
+dots_cbAddDDM_IC = getIC(datadir=datadir, fitdir=fitdir, study="dots", model="cbAddDDM", dataset="e", parameterCount=5)
+numeric_cbAddDDM_IC = getIC(datadir=datadir, fitdir=fitdir, study="numeric", model="cbAddDDM", dataset="e", parameterCount=5)
+
+# additive and multiplicative Attentional Model
+
+dots_AddaDDM_IC = getIC(datadir=datadir, fitdir=fitdir, study="dots", model="AddaDDM", dataset="e", parameterCount=5)
+numeric_AddaDDM_IC = getIC(datadir=datadir, fitdir=fitdir, study="numeric", model="AddaDDM", dataset="e", parameterCount=5)
+
 # Divisive Normalization
 
 dots_DNaDDM_IC = getIC(datadir=datadir, fitdir=fitdir, study="dots", model="DNaDDM", dataset="e", parameterCount=4)
@@ -43,6 +53,11 @@ numeric_DNaDDM_IC = getIC(datadir=datadir, fitdir=fitdir, study="numeric", model
 
 dots_GDaDDM_IC = getIC(datadir=datadir, fitdir=fitdir, study="dots", model="GDaDDM", dataset="e", parameterCount=4)
 numeric_GDaDDM_IC = getIC(datadir=datadir, fitdir=fitdir, study="numeric", model="GDaDDM", dataset="e", parameterCount=4)
+
+# collapsing bounds Goal-Dependent
+
+dots_cbGDaDDM_IC = getIC(datadir=datadir, fitdir=fitdir, study="dots", model="cbGDaDDM", dataset="e", parameterCount=5)
+numeric_cbGDaDDM_IC = getIC(datadir=datadir, fitdir=fitdir, study="numeric", model="cbGDaDDM", dataset="e", parameterCount=5)
 
 # Range Normalization
 
@@ -72,16 +87,19 @@ dots_ppm = dots_m_hat
 dots_m_hat[,1] = exp(-.5*dots_aDDM_IC$BIC) %>% apply(1,sum)
 dots_m_hat[,2] = exp(-.5*dots_UaDDM_IC$BIC) %>% apply(1,sum)
 dots_m_hat[,3] = exp(-.5*dots_AddDDM_IC$BIC) %>% apply(1,sum)
-dots_m_hat[,4] = exp(-.5*dots_DNaDDM_IC$BIC) %>% apply(1,sum)
-dots_m_hat[,5] = exp(-.5*dots_GDaDDM_IC$BIC) %>% apply(1,sum)
-dots_m_hat[,6] = exp(-.5*dots_RNaDDM_IC$BIC) %>% apply(1,sum)
-dots_m_hat[,7] = exp(-.5*dots_RNPaDDM_IC$BIC) %>% apply(1,sum)
-dots_m_hat[,8] = exp(-.5*dots_DRNPaDDM_IC$BIC) %>% apply(1,sum)
+dots_m_hat[,4] = exp(-.5*dots_cbAddDDM_IC$BIC) %>% apply(1,sum)
+dots_m_hat[,5] = exp(-.5*dots_AddaDDM_IC$BIC) %>% apply(1,sum)
+dots_m_hat[,6] = exp(-.5*dots_DNaDDM_IC$BIC) %>% apply(1,sum)
+dots_m_hat[,7] = exp(-.5*dots_GDaDDM_IC$BIC) %>% apply(1,sum)
+dots_m_hat[,8] = exp(-.5*dots_cbGDaDDM_IC$BIC) %>% apply(1,sum)
+dots_m_hat[,9] = exp(-.5*dots_RNaDDM_IC$BIC) %>% apply(1,sum)
+dots_m_hat[,10] = exp(-.5*dots_RNPaDDM_IC$BIC) %>% apply(1,sum)
+dots_m_hat[,11] = exp(-.5*dots_DRNPaDDM_IC$BIC) %>% apply(1,sum)
 
 dots_m_hat_rowsums = apply(dots_m_hat, 1, sum)
 for (row in c(1:nrow(dots_m_hat))) {
   for (col in c(1:ncol(dots_m_hat))) {
-    dots_ppm[row,col] = round(dots_m_hat[row,col] / dots_m_hat_rowsums[row], 3)
+    dots_ppm[row,col] = dots_m_hat[row,col] / dots_m_hat_rowsums[row]
   }
 }
 
@@ -93,16 +111,19 @@ numeric_ppm = numeric_m_hat
 numeric_m_hat[,1] = exp(-.5*numeric_aDDM_IC$BIC) %>% apply(1,sum)
 numeric_m_hat[,2] = exp(-.5*numeric_UaDDM_IC$BIC) %>% apply(1,sum)
 numeric_m_hat[,3] = exp(-.5*numeric_AddDDM_IC$BIC) %>% apply(1,sum)
-numeric_m_hat[,4] = exp(-.5*numeric_DNaDDM_IC$BIC) %>% apply(1,sum)
-numeric_m_hat[,5] = exp(-.5*numeric_GDaDDM_IC$BIC) %>% apply(1,sum)
-numeric_m_hat[,6] = exp(-.5*numeric_RNaDDM_IC$BIC) %>% apply(1,sum)
-numeric_m_hat[,7] = exp(-.5*numeric_RNPaDDM_IC$BIC) %>% apply(1,sum)
-numeric_m_hat[,8] = exp(-.5*numeric_DRNPaDDM_IC$BIC) %>% apply(1,sum)
+numeric_m_hat[,4] = exp(-.5*numeric_cbAddDDM_IC$BIC) %>% apply(1,sum)
+numeric_m_hat[,5] = exp(-.5*numeric_AddaDDM_IC$BIC) %>% apply(1,sum)
+numeric_m_hat[,6] = exp(-.5*numeric_DNaDDM_IC$BIC) %>% apply(1,sum)
+numeric_m_hat[,7] = exp(-.5*numeric_GDaDDM_IC$BIC) %>% apply(1,sum)
+numeric_m_hat[,8] = exp(-.5*numeric_cbGDaDDM_IC$BIC) %>% apply(1,sum)
+numeric_m_hat[,9] = exp(-.5*numeric_RNaDDM_IC$BIC) %>% apply(1,sum)
+numeric_m_hat[,10] = exp(-.5*numeric_RNPaDDM_IC$BIC) %>% apply(1,sum)
+numeric_m_hat[,11] = exp(-.5*numeric_DRNPaDDM_IC$BIC) %>% apply(1,sum)
 
 numeric_m_hat_rowsums = apply(numeric_m_hat, 1, sum)
 for (row in c(1:nrow(numeric_m_hat))) {
   for (col in c(1:ncol(numeric_m_hat))) {
-    numeric_ppm[row,col] = round(numeric_m_hat[row,col] / numeric_m_hat_rowsums[row], 3)
+    numeric_ppm[row,col] = numeric_m_hat[row,col] / numeric_m_hat_rowsums[row]
   }
 }
 
@@ -130,7 +151,7 @@ for (row in c(1:nrow(dots_addm_ppm))) {
   }
 }
 dots_pdata = data.frame(subject=pdata_subject, model=pdata_model, ppm=pdata_ppm)
-dots_pdata$model = factor(dots_pdata$model, levels=c(1:M), labels=c("aDDM","UaDDM","AddDDM","DNaDDN","GDaDDM","RNaDDM","RNPaDDM","DRNPaDDM"))
+dots_pdata$model = factor(dots_pdata$model, levels=c(1:M), labels=c("aDDM","UaDDM","AddDDM","cbAddDDM","AddaDDM","DNaDDN","GDaDDM","cbGDaDDM","RNaDDM","RNPaDDM","DRNPaDDM"))
 dots_pdata = dots_pdata[order(dots_pdata$model, dots_pdata$ppm),]
 dots_pdata$study = "Study 1"
 
@@ -153,7 +174,7 @@ for (row in c(1:nrow(numeric_addm_ppm))) {
   }
 }
 numeric_pdata = data.frame(subject=pdata_subject, model=pdata_model, ppm=pdata_ppm)
-numeric_pdata$model = factor(numeric_pdata$model, levels=c(1:M), labels=c("aDDM","UaDDM","AddDDM","DNaDDN","GDaDDM","RNaDDM","RNPaDDM","DRNPaDDM"))
+numeric_pdata$model = factor(numeric_pdata$model, levels=c(1:M), labels=c("aDDM","UaDDM","AddDDM","cbAddDDM","AddaDDM","DNaDDN","GDaDDM","cbGDaDDM","RNaDDM","RNPaDDM","DRNPaDDM"))
 numeric_pdata = numeric_pdata[order(numeric_pdata$model, numeric_pdata$ppm),]
 numeric_pdata$study = "Study 2"
 
@@ -179,7 +200,7 @@ plt.ppm = ggplot(data=pdata, aes(x=subject, y=ppm)) +
     panel.spacing = unit(2, "lines")
   ) +
   coord_cartesian(expand=F) +
-  scale_fill_npg() +
+  scale_fill_igv() +
   scale_y_continuous(breaks=c(0,.25,.5,.75,1)) +
   scale_x_continuous(breaks=c(1,25,36)) +
   facet_grid(. ~ study, scales="free", space="free")

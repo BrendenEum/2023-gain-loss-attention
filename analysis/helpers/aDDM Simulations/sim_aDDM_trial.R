@@ -6,6 +6,7 @@ simulate.trial <- function(
     t = .5,
     s = .02,
     k = 0,
+    c = 0,
     vL = 2,
     vR = 2,
     vMin = 1,
@@ -42,7 +43,7 @@ simulate.trial <- function(
       if (loc==0){mu = d*(t*vL-vR)}
     }
     
-    if (model=="AddDDM") {
+    if (model=="AddDDM" | model=="cbAddDDM") {
       if (loc==1){mu = d*(vL-vR+k)}
       if (loc==0){mu = d*(vL-vR-k)}
     }
@@ -54,7 +55,7 @@ simulate.trial <- function(
       if (loc==0){mu = d*(t*L-R)}
     }
     
-    if (model=="GDaDDM") {
+    if (model=="GDaDDM" | model=="cbGDaDDM") {
       L = vL-vMin
       R = vR-vMin
       if (loc==1){mu = d*(L-t*R)}
