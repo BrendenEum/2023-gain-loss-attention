@@ -13,7 +13,6 @@ tabdir = "../../outputs/tables"
 datadir = "../../../data/processed_data"
 source("get_estimates_likelihoods.R")
 
-models = c("aDDM", "UaDDM", "AddDDM", "cbAddDDM", "AddaDDM", "DNaDDM", "GDaDDM", "cbGDaDDM", "RNaDDM")
 
 
 for (study in c("dots","numeric")) {
@@ -21,7 +20,6 @@ for (study in c("dots","numeric")) {
   ################
   # Get Estimates
   ################
-  
   
   # Standard aDDM
   
@@ -105,7 +103,47 @@ for (study in c("dots","numeric")) {
   output$DRNPaDDM_mean = apply(DRNPaDDM_e_estimates, 2, mean)
   output$DRNPaDDM_se = apply(DRNPaDDM_e_estimates, 2, std.error)
   
+  
+  ################
+  # Formatting
+  ################
+  
   output = t(output)
+  table = output
+  
+  #round
+  table[,1:2] = formatC(output[,1:2], format="e", digits=0) #d
+  table[,3:4] = format(round(output[,3:4], 3), nsmall = 3) #s
+  table[,5:6] = format(round(output[,5:6], 2), nsmall = 2) #b
+  table[,7:8] = format(round(output[,7:8], 2), nsmall = 2) #t
+  table[,9:10] = format(round(output[,9:10], 1), nsmall = 1) #k
+  table[,11:12] = formatC(output[,11:12], format="e", digits=0) #c
+  
+  #model names
+  models = c(
+    "aDDM","",
+    "UaDDM","",
+    "AddDDM","",
+    "cbAddDDM","",
+    "AddaDDM","",
+    "DNaDDM","",
+    "GDaDDM","",
+    "cbGDaDDM","",
+    "RNaDDM","",
+    "RNPaDDM","",
+    "DRNPaDDM",""
+  )
+  table = cbind(models, table)
+  
+  #add parentheses around SEs
+  for (row in seq(2, nrow(table),2)) {
+    table[row,] = paste0("(", table[row,], ")")
+    table[row,] = gsub(" ","",table[row,])
+  }
+  
+  #remove NA and blanks
+  table[grepl("NA",table)] = ""
+  table[table=="()"] = ""
   
   
   ################
@@ -128,12 +166,13 @@ for (study in c("dots","numeric")) {
   
   print(
     xtable(
-      output, 
-      align = "|r|cc|cc|cc|cc|cc|cc|",
-      digits = c(0,-0,-0,2,2,2,2,2,2,1,1,-0,-0),
+      table, 
+      align = "|r|r|cc|cc|cc|cc|cc|cc|",
+      digits = c(0,0,-0,-0,2,2,2,2,2,2,1,1,-0,-0),
       caption = caption
     ), 
     hline.after = hlines,
+    include.rownames = FALSE,
     file = .texfile
   )
   

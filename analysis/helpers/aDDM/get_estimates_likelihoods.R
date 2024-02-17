@@ -39,7 +39,7 @@ read_estimates <- function(fitdir="error", study="error", model="error", dataset
     estimates$c.loss = lossFit$c
   }
   
-  estimates = estimates %>% mutate_if(is.numeric, round, digits=3)
+  #estimates = estimates %>% mutate_if(is.numeric, round, digits=3)
   return(estimates)
 }
 

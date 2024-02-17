@@ -12,9 +12,9 @@ fitdir = "../../outputs/temp"
 datadir = "../../../data/processed_data"
 source("get_estimates_likelihoods.R")
 
-M = 8 # number of models
-M_list = c("aDDM", "UaDDM", "AddDDM", "DNaDDM", "GDaDDM", "RNaDDM", "RNPaDDM", "DRNPaDDM")
-param_counts = c(4,4,4,4,4,4,5,5)
+M_list = c("aDDM", "UaDDM", "AddDDM", "cbAddDDM", "AddaDDM", "DNaDDM", "GDaDDM", "cbGDaDDM", "RNaDDM", "RNPaDDM", "DRNPaDDM")
+param_counts = c(4,4,4,5,5,4,4,5,4,5,5)
+M = length(M_list)
 
 ################
 # Get BICs
