@@ -135,7 +135,7 @@ function fit_GDaDDM(; study::String = "error", dataset::String = "error")
     while Δ > grid_search_terminate_threshold
         
         dGrid, σGrid, θGrid, bGrid = make_new_grid(oldLossEstimates, dataLoss, dStepSize, σStepSize, θStepSize, bStepSize, iteration; bounded_theta=false)
-        newLossEstimates, newNLLs = fit_GDaDDM_custom_resolution(addm, dataLoss, dGrid, σGrid, θGrid, bGrid, subjectCount)
+        newLossEstimates, newNLLs = fit_GDaDDM_custom_resolution(addm, dataLoss, dGrid, σGrid, θGrid, bGrid, subjectCount; minValue=-6, maxValue=-1)
         newNLL = sum(newNLLs)
         Δ = (oldNLL-newNLL)/oldNLL
         if Δ < 0

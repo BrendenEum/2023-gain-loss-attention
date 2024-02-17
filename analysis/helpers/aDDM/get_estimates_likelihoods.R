@@ -27,18 +27,14 @@ read_estimates <- function(fitdir="error", study="error", model="error", dataset
     estimates$k.loss = lossFit$k
   }
   
-  if (model %in% c("AddDDM")) {
+  if (model %in% c("AddDDM", "cbAddDDM")) {
     estimates$t.gain = NA
     estimates$t.loss = NA
     estimates$k.gain = gainFit$t #I coded the additive attentional bias as theta in the toolbox,
     estimates$k.loss = lossFit$t #but calling it k is more intuitive for the paper.
   }
   
-  if (model %in% c("cbAddDDM")) {
-    estimates$t.gain = NA
-    estimates$t.loss = NA
-    estimates$k.gain = gainFit$t
-    estimates$k.loss = lossFit$t
+  if (model %in% c("cbAddDDM", "cbGDaDDM")) {
     estimates$c.gain = gainFit$c
     estimates$c.loss = lossFit$c
   }

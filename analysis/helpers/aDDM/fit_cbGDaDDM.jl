@@ -2,7 +2,7 @@
 # FUNCTION: Fitting using custom grid
 ##################################################################
 
-function fit_cbAddDDM_custom_resolution(addm::aDDM, data::Dict{String, Vector{aDDMTrial}}, dGrid::Vector{Any}, σGrid::Vector{Any}, θGrid::Vector{Any}, bGrid::Vector{Any}, cGrid::Vector{Any}, subjectCount::Number)
+function fit_cbGDaDDM_custom_resolution(addm::aDDM, data::Dict{String, Vector{aDDMTrial}}, dGrid::Vector{Any}, σGrid::Vector{Any}, θGrid::Vector{Any}, bGrid::Vector{Any}, cGrid::Vector{Any}, subjectCount::Number; minValue::Number=-6, maxValue::Number=-1)
     """
     """
 
@@ -19,7 +19,7 @@ function fit_cbAddDDM_custom_resolution(addm::aDDM, data::Dict{String, Vector{aD
     ind = 1
     @showprogress for subject in collect(keys(data))
 
-        dEst, σEst, θEst, bEst, cEst, NLL_Indiv = cbAddDDM_grid_search(addm, data, dGrid[ind], σGrid[ind], θGrid[ind], bGrid[ind], cGrid[ind], subject)
+        dEst, σEst, θEst, bEst, cEst, NLL_Indiv = cbGDaDDM_grid_search(addm, data, minValue, maxValue, dGrid[ind], σGrid[ind], θGrid[ind], bGrid[ind], cGrid[ind], subject)
     
         dList[ind] = dEst[1]
         σList[ind] = σEst[1]
@@ -47,13 +47,13 @@ end
 # FUNCTION: Fit, iterate until ΔNLL<threshold
 ##################################################################
 
-function fit_cbAddDDM(; study::String = "error", dataset::String = "error")
+function fit_cbGDaDDM(; study::String = "error", dataset::String = "error")
 
     ########
     # Prep
     ########
 
-    println("cbAddDDM"); println(study); println(dataset);
+    println("cbGDaDDM"); println(study); println(dataset);
 
     addm = aDDM(.005, .07, .3); # These can be anything. They exist because you need an aDDM object. (d, s, t).
 
@@ -99,7 +99,7 @@ function fit_cbAddDDM(; study::String = "error", dataset::String = "error")
 
     println("Gain")
 
-    oldGainEstimates, oldNLLs = fit_cbAddDDM_custom_resolution(addm, dataGain, dInitialGrid, σInitialGrid, θInitialGrid, bInitialGrid, cInitialGrid, subjectCount)
+    oldGainEstimates, oldNLLs = fit_cbGDaDDM_custom_resolution(addm, dataGain, dInitialGrid, σInitialGrid, θInitialGrid, bInitialGrid, cInitialGrid, subjectCount)
     oldNLL = sum(oldNLLs)
     println("Iteration 1"); print("Old NLL missing"); print("New NLL "); println(oldNLL); print("Percent Change missing"); println(oldGainEstimates);
 
@@ -108,7 +108,7 @@ function fit_cbAddDDM(; study::String = "error", dataset::String = "error")
     while Δ > grid_search_terminate_threshold
         
         dGrid, σGrid, θGrid, bGrid, cGrid = make_new_grid_collapse_models(oldGainEstimates, dataGain, dStepSize, σStepSize, θStepSize, bStepSize, cStepSize, iteration; bounded_theta=false)
-        newGainEstimates, newNLLs = fit_cbAddDDM_custom_resolution(addm, dataGain, dGrid, σGrid, θGrid, bGrid, cGrid, subjectCount)
+        newGainEstimates, newNLLs = fit_cbGDaDDM_custom_resolution(addm, dataGain, dGrid, σGrid, θGrid, bGrid, cGrid, subjectCount; minValue=1, maxValue=6)
         newNLL = sum(newNLLs)
         Δ = (oldNLL-newNLL)/oldNLL
         if Δ < 0
@@ -124,8 +124,8 @@ function fit_cbAddDDM(; study::String = "error", dataset::String = "error")
     end
 
     gainOutPath = "../../outputs/temp/" * study * "_"
-    CSV.write(gainOutPath * "cbAddDDM_GainEst_" * dataset * ".csv", gainEstimates_Add)
-    CSV.write(gainOutPath * "cbAddDDM_GainNLL_" * dataset * ".csv", Tables.table(NLL), writeheader=false)
+    CSV.write(gainOutPath * "cbGDaDDM_GainEst_" * dataset * ".csv", gainEstimates_Add)
+    CSV.write(gainOutPath * "cbGDaDDM_GainNLL_" * dataset * ".csv", Tables.table(NLL), writeheader=false)
 
     ########
     # Loss Data Fit: loop until small change in NLL
@@ -133,7 +133,7 @@ function fit_cbAddDDM(; study::String = "error", dataset::String = "error")
 
     println("Loss")
 
-    oldLossEstimates, oldNLLs = fit_cbAddDDM_custom_resolution(addm, dataLoss, dInitialGrid, σInitialGrid, θInitialGrid, bInitialGrid, cInitialGrid, subjectCount)
+    oldLossEstimates, oldNLLs = fit_cbGDaDDM_custom_resolution(addm, dataLoss, dInitialGrid, σInitialGrid, θInitialGrid, bInitialGrid, cInitialGrid, subjectCount)
     oldNLL = sum(oldNLLs)
     println("Iteration 1"); print("Old NLL missing"); print("New NLL "); println(oldNLL); print("Percent Change missing"); println(oldLossEstimates);
 
@@ -142,7 +142,7 @@ function fit_cbAddDDM(; study::String = "error", dataset::String = "error")
     while Δ > grid_search_terminate_threshold
         
         dGrid, σGrid, θGrid, bGrid, cGrid = make_new_grid_collapse_models(oldLossEstimates, dataLoss, dStepSize, σStepSize, θStepSize, bStepSize, cStepSize, iteration; bounded_theta=false)
-        newLossEstimates, newNLLs = fit_cbAddDDM_custom_resolution(addm, dataLoss, dGrid, σGrid, θGrid, bGrid, cGrid, subjectCount)
+        newLossEstimates, newNLLs = fit_cbGDaDDM_custom_resolution(addm, dataLoss, dGrid, σGrid, θGrid, bGrid, cGrid, subjectCount; minValue=-6, maxValue=-1)
         newNLL = sum(newNLLs)
         Δ = (oldNLL-newNLL)/oldNLL
         if Δ < 0
@@ -158,7 +158,7 @@ function fit_cbAddDDM(; study::String = "error", dataset::String = "error")
     end
 
     lossOutPath = "../../outputs/temp/" * study * "_"
-    CSV.write(lossOutPath * "cbAddDDM_LossEst_" * dataset * ".csv", lossEstimates_Add)
-    CSV.write(lossOutPath * "cbAddDDM_LossNLL_" * dataset * ".csv", Tables.table(NLL), writeheader=false)
+    CSV.write(lossOutPath * "cbGDaDDM_LossEst_" * dataset * ".csv", lossEstimates_Add)
+    CSV.write(lossOutPath * "cbGDaDDM_LossNLL_" * dataset * ".csv", Tables.table(NLL), writeheader=false)
 
 end

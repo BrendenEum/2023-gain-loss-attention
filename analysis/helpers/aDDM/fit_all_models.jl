@@ -116,6 +116,17 @@ fit_cbAddDDM(study="numeric", dataset="e")
 #fit_RNaDDM(study="numeric", dataset="c")
 
 #############################################
+# cbGDaDDM: GDaDDM with collapsing boundaries
+#############################################
+
+include("fit_cbGDaDDM.jl")
+fit_cbGDaDDM(study="dots", dataset="e")
+fit_cbGDaDDM(study="numeric", dataset="e")
+#
+#fit_RNaDDM(study="dots", dataset="c")
+#fit_RNaDDM(study="numeric", dataset="c")
+
+#############################################
 # RNaDDM: aDDM, but values are range normalizated 
 #############################################
 

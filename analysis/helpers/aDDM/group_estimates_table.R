@@ -60,6 +60,12 @@ dots_GDaDDM_e_estimates = read_estimates(fitdir=fitdir, study="dots", model="GDa
 numeric_GDaDDM_e_estimates = read_estimates(fitdir=fitdir, study="numeric", model="GDaDDM", dataset="e")
 GDaDDM_e_estimates = rbind(dots_GDaDDM_e_estimates, numeric_GDaDDM_e_estimates)
 
+# GDaDDM
+
+dots_cbGDaDDM_e_estimates = read_estimates(fitdir=fitdir, study="dots", model="cbGDaDDM", dataset="e")
+numeric_cbGDaDDM_e_estimates = read_estimates(fitdir=fitdir, study="numeric", model="cbGDaDDM", dataset="e")
+cbGDaDDM_e_estimates = rbind(dots_GDaDDM_e_estimates, numeric_GDaDDM_e_estimates)
+
 # RNaDDM
 
 dots_RNaDDM_e_estimates = read_estimates(fitdir=fitdir, study="dots", model="RNaDDM", dataset="e")
@@ -104,6 +110,9 @@ output$DNaDDM_se = apply(DNaDDM_e_estimates, 2, std.error)
 output$GDaDDM_mean = apply(GDaDDM_e_estimates, 2, mean)
 output$GDaDDM_se = apply(GDaDDM_e_estimates, 2, std.error)
 
+output$cbGDaDDM_mean = apply(cbGDaDDM_e_estimates, 2, mean)
+output$cbGDaDDM_se = apply(cbGDaDDM_e_estimates, 2, std.error)
+
 output$RNaDDM_mean = apply(RNaDDM_e_estimates, 2, mean)
 output$RNaDDM_se = apply(RNaDDM_e_estimates, 2, std.error)
 
@@ -132,7 +141,11 @@ getTableIC = function(dots_IC, numeric_IC) {
       dots_gain_totalBIC = sum(dots_IC$BIC[,1]),
       numeric_gain_totalBIC = sum(numeric_IC$BIC[,1]),
       dots_loss_totalBIC = sum(dots_IC$BIC[,2]),
-      numeric_loss_totalBIC = sum(numeric_IC$BIC[,2])
+      numeric_loss_totalBIC = sum(numeric_IC$BIC[,2]),
+      dots_gain_totalAIC = sum(dots_IC$AIC[,1]),
+      numeric_gain_totalAIC = sum(numeric_IC$AIC[,1]),
+      dots_loss_totalAIC = sum(dots_IC$AIC[,2]),
+      numeric_loss_totalAIC = sum(numeric_IC$AIC[,2])
     )
   )
 }
@@ -179,6 +192,12 @@ dots_IC = getIC(datadir=datadir, fitdir=fitdir, study="dots", model="GDaDDM", da
 numeric_IC = getIC(datadir=datadir, fitdir=fitdir, study="numeric", model="GDaDDM", dataset="e", parameterCount=4)
 GDaDDM_IC = getTableIC(dots_IC, numeric_IC)
 
+# collapsing bounds Goal-Dependent
+
+dots_IC = getIC(datadir=datadir, fitdir=fitdir, study="dots", model="cbGDaDDM", dataset="e", parameterCount=5)
+numeric_IC = getIC(datadir=datadir, fitdir=fitdir, study="numeric", model="cbGDaDDM", dataset="e", parameterCount=5)
+cbGDaDDM_IC = getTableIC(dots_IC, numeric_IC)
+
 # Range Normalized
 
 dots_IC = getIC(datadir=datadir, fitdir=fitdir, study="dots", model="RNaDDM", dataset="e", parameterCount=4)
@@ -201,6 +220,8 @@ DRNPaDDM_IC = getTableIC(dots_IC, numeric_IC)
 # What IC's are you looking for?
 ################
 
+# BIC
+
 gain_BIC = c(
   sum(aDDM_IC$dots_gain_totalBIC)+sum(aDDM_IC$numeric_gain_totalBIC), NA, 
   sum(UaDDM_IC$dots_gain_totalBIC)+sum(UaDDM_IC$numeric_gain_totalBIC), NA, 
@@ -209,6 +230,7 @@ gain_BIC = c(
   sum(AddaDDM_IC$dots_gain_totalBIC)+sum(AddaDDM_IC$numeric_gain_totalBIC), NA, 
   sum(DNaDDM_IC$dots_gain_totalBIC)+sum(DNaDDM_IC$numeric_gain_totalBIC), NA, 
   sum(GDaDDM_IC$dots_gain_totalBIC)+sum(GDaDDM_IC$numeric_gain_totalBIC), NA, 
+  sum(cbGDaDDM_IC$dots_gain_totalBIC)+sum(cbGDaDDM_IC$numeric_gain_totalBIC), NA, 
   sum(RNaDDM_IC$dots_gain_totalBIC)+sum(RNaDDM_IC$numeric_gain_totalBIC), NA, 
   sum(RNPaDDM_IC$dots_gain_totalBIC)+sum(RNPaDDM_IC$numeric_gain_totalBIC), NA, 
   sum(DRNPaDDM_IC$dots_gain_totalBIC)+sum(DRNPaDDM_IC$numeric_gain_totalBIC), NA
@@ -221,19 +243,45 @@ loss_BIC = c(
   sum(AddaDDM_IC$dots_loss_totalBIC)+sum(AddaDDM_IC$numeric_loss_totalBIC), NA, 
   sum(DNaDDM_IC$dots_loss_totalBIC)+sum(DNaDDM_IC$numeric_loss_totalBIC), NA, 
   sum(GDaDDM_IC$dots_loss_totalBIC)+sum(GDaDDM_IC$numeric_loss_totalBIC), NA, 
+  sum(cbGDaDDM_IC$dots_loss_totalBIC)+sum(cbGDaDDM_IC$numeric_loss_totalBIC), NA, 
   sum(RNaDDM_IC$dots_loss_totalBIC)+sum(RNaDDM_IC$numeric_loss_totalBIC), NA, 
   sum(RNPaDDM_IC$dots_loss_totalBIC)+sum(RNPaDDM_IC$numeric_loss_totalBIC), NA, 
   sum(DRNPaDDM_IC$dots_loss_totalBIC)+sum(DRNPaDDM_IC$numeric_loss_totalBIC), NA
 )
+table = output
+table = cbind(table, gain_BIC)
+table = cbind(table, loss_BIC)
 
-#dots_BIC = c(dots_aDDM_totalBIC, NA, dots_UaDDM_totalBIC, NA, dots_AddDDM_totalBIC, NA, dots_DNaDDM_totalBIC, NA, dots_RNaDDM_totalBIC, NA, dots_RNPaDDM_totalBIC, NA, dots_DRNPaDDM_totalBIC, NA)
-#numeric_BIC = c(numeric_aDDM_totalBIC, NA, numeric_UaDDM_totalBIC, NA, numeric_AddDDM_totalBIC, NA, numeric_DNaDDM_totalBIC, NA, numeric_RNaDDM_totalBIC, NA, numeric_RNPaDDM_totalBIC, NA, numeric_DRNPaDDM_totalBIC, NA)
-#dots_AIC = c(dots_aDDM_totalAIC, NA, dots_UaDDM_totalAIC, NA, dots_AddDDM_totalAIC, NA, dots_DNaDDM_totalAIC, NA, dots_RNaDDM_totalAIC, NA, dots_RNPaDDM_totalAIC, NA, dots_DRNPaDDM_totalAIC, NA)
-#numeric_AIC = c(numeric_aDDM_totalAIC, NA, numeric_UaDDM_totalAIC, NA, numeric_AddDDM_totalAIC, NA, numeric_DNaDDM_totalAIC, NA, numeric_RNaDDM_totalAIC, NA, numeric_RNPaDDM_totalAIC, NA, numeric_DRNPaDDM_totalAIC, NA)
+# AIC
 
-output = cbind(output, gain_BIC)
-output = cbind(output, loss_BIC)
-
+gain_AIC = c(
+  sum(aDDM_IC$dots_gain_totalAIC)+sum(aDDM_IC$numeric_gain_totalAIC), NA, 
+  sum(UaDDM_IC$dots_gain_totalAIC)+sum(UaDDM_IC$numeric_gain_totalAIC), NA, 
+  sum(AddDDM_IC$dots_gain_totalAIC)+sum(AddDDM_IC$numeric_gain_totalAIC), NA, 
+  sum(cbAddDDM_IC$dots_gain_totalAIC)+sum(cbAddDDM_IC$numeric_gain_totalAIC), NA, 
+  sum(AddaDDM_IC$dots_gain_totalAIC)+sum(AddaDDM_IC$numeric_gain_totalAIC), NA, 
+  sum(DNaDDM_IC$dots_gain_totalAIC)+sum(DNaDDM_IC$numeric_gain_totalAIC), NA, 
+  sum(GDaDDM_IC$dots_gain_totalAIC)+sum(GDaDDM_IC$numeric_gain_totalAIC), NA, 
+  sum(cbGDaDDM_IC$dots_gain_totalAIC)+sum(cbGDaDDM_IC$numeric_gain_totalAIC), NA, 
+  sum(RNaDDM_IC$dots_gain_totalAIC)+sum(RNaDDM_IC$numeric_gain_totalAIC), NA, 
+  sum(RNPaDDM_IC$dots_gain_totalAIC)+sum(RNPaDDM_IC$numeric_gain_totalAIC), NA, 
+  sum(DRNPaDDM_IC$dots_gain_totalAIC)+sum(DRNPaDDM_IC$numeric_gain_totalAIC), NA
+)
+loss_AIC = c(
+  sum(aDDM_IC$dots_loss_totalAIC)+sum(aDDM_IC$numeric_loss_totalAIC), NA, 
+  sum(UaDDM_IC$dots_loss_totalAIC)+sum(UaDDM_IC$numeric_loss_totalAIC), NA, 
+  sum(AddDDM_IC$dots_loss_totalAIC)+sum(AddDDM_IC$numeric_loss_totalAIC), NA, 
+  sum(cbAddDDM_IC$dots_loss_totalAIC)+sum(cbAddDDM_IC$numeric_loss_totalAIC), NA, 
+  sum(AddaDDM_IC$dots_loss_totalAIC)+sum(AddaDDM_IC$numeric_loss_totalAIC), NA, 
+  sum(DNaDDM_IC$dots_loss_totalAIC)+sum(DNaDDM_IC$numeric_loss_totalAIC), NA, 
+  sum(GDaDDM_IC$dots_loss_totalAIC)+sum(GDaDDM_IC$numeric_loss_totalAIC), NA, 
+  sum(cbGDaDDM_IC$dots_loss_totalAIC)+sum(cbGDaDDM_IC$numeric_loss_totalAIC), NA, 
+  sum(RNaDDM_IC$dots_loss_totalAIC)+sum(RNaDDM_IC$numeric_loss_totalAIC), NA, 
+  sum(RNPaDDM_IC$dots_loss_totalAIC)+sum(RNPaDDM_IC$numeric_loss_totalAIC), NA, 
+  sum(DRNPaDDM_IC$dots_loss_totalAIC)+sum(DRNPaDDM_IC$numeric_loss_totalAIC), NA
+)
+table = cbind(table, gain_AIC)
+table = cbind(table, loss_AIC)
 
 ################
 # Round and Save
@@ -252,6 +300,6 @@ output = cbind(output, loss_BIC)
 # output[,11] = round(output[,11], digits=0) #dotsBIC
 # output[,12] = round(output[,12], digits=0) #numericBIC
 
-write.csv(output, file=file.path(tabdir, "group_estimates.csv"))
-print(xtable(output, type = "latex"), file = file.path(tabdir, "group_estimates.tex"))
+write.csv(table, file=file.path(tabdir, "group_estimates_table.csv"))
+
 

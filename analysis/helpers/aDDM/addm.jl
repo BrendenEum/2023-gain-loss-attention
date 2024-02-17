@@ -2228,6 +2228,33 @@ function GDaDDM_negative_log_likelihood_threads(addm::aDDM, addmTrials::Vector{a
     return negative_log_likelihood
 end
 
+function cbGDaDDM_negative_log_likelihood_threads(addm::aDDM, addmTrials::Vector{aDDMTrial}, minValue::Number, maxValue::Number, d::Number, σ::Number, θ::Number, b::Number, c::Number)
+    """
+    Calculates the negative log likelihood from a given dataset of DDMTrials and parameters
+    of a model.
+    Args:
+      addmTrials: Vector of aDDMTrials.
+      d: Number, parameter of the model which controls the speed of integration of
+          the signal. 
+      σ: Number, parameter of the model, standard deviation for the normal
+          distribution.
+    Returns: 
+      The negative log likelihood for the given vector of aDDMTrials and model.
+    """
+    # Calculate the negative log likelihood
+    addm = aDDM(d, σ, θ; bias=b)
+    likelihoods = Vector{Float64}(undef, length(addmTrials))
+    
+    @threads for i in 1:length(addmTrials)
+        likelihoods[i] = GDaDDM_get_trial_likelihood(addm, addmTrials[i], minValue, maxValue; decay=c)
+    end
+    
+    likelihoods = max.(likelihoods, 1e-64)
+    negative_log_likelihood = -sum(log.(likelihoods))
+    
+    return negative_log_likelihood
+end
+
 function RNaDDM_negative_log_likelihood_threads(addm::aDDM, addmTrials::Vector{aDDMTrial}, minValue::Number, maxValue::Number, d::Number, σ::Number, θ::Number, b::Number)
     """
     Calculates the negative log likelihood from a given dataset of DDMTrials and parameters
