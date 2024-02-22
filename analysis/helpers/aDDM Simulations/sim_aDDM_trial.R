@@ -80,6 +80,11 @@ simulate.trial <- function(
   }
   
   ###################################################################
+  # BARRIER at every ms
+  barrier = 1/(1+(c*c(0:maximum_rt)))
+  barrier[(maximum_rt+2):(maximum_rt*10)] = barrier[maximum_rt+1] #a cheap workaround for dealing with RT longer than maximum_rt
+  
+  ###################################################################
   # LATENCY and FIRST FIXATIONS
   # Dots and numeric studies will differ when it comes to latency to first fixation and first fixation location.
   # Location is not stochastic in numeric, and latency may be 0 if fix cross is not "Center"
@@ -91,12 +96,12 @@ simulate.trial <- function(
     # latency to first fixation
     latencyDur <- sample(latency,1)
     latency_err <- rnorm(n=latencyDur, mean=0, sd=s)
-    if (abs(RDV+sum(latency_err))>=1) {
+    if (abs(RDV+sum(latency_err))>=barrier[latencyDur+1]) {
       for (t in 1:latencyDur) {
         RDV <- RDV + latency_err[t]
         rt <- rt + 1
         lastLoc <- 4
-        if (abs(RDV)>=1) {stopper<-1; break}
+        if (abs(RDV)>=barrier[t+1]) {stopper<-1; break}
       }
     } else {
       RDV <- RDV + sum(latency_err)
@@ -110,14 +115,14 @@ simulate.trial <- function(
       loc <- rbinom(1,1,prFirstLeft)
       firstFixLoc <- loc
       drift = evidence(loc) + rnorm(n=firstDur, mean=0, sd=s)
-      if (abs(RDV+sum(drift))>=1) {
+      if (abs(RDV+sum(drift))>=barrier[rt+firstDur+1]) {
         for (t in 1:firstDur) {
           RDV <- RDV + drift[t]
           rt <- rt + 1
           if (loc==1 & rt<=1000) {earlyFixL <- earlyFixL + 1}
           if (loc==1 & rt>1000) {lateFixL <- lateFixL + 1}
           lastLoc <- loc
-          if (abs(RDV)>=1) {stopper<-1; break}
+          if (abs(RDV)>=barrier[rt+t+1]) {stopper<-1; break}
         }
       } else {
         RDV <- RDV + sum(drift)
@@ -142,12 +147,12 @@ simulate.trial <- function(
     if (fixCrossLoc=="Left" | fixCrossLoc=="Right") {latencyDur=0}
     if (fixCrossLoc=="Center") {latencyDur <- sample(latency,1)}
     latency_err <- rnorm(n=latencyDur, mean=0, sd=s)
-    if (abs(RDV+sum(latency_err))>=1) {
+    if (abs(RDV+sum(latency_err))>=barrier[latencyDur+1]) {
       for (t in 1:latencyDur) {
         RDV <- RDV + latency_err[t]
         rt <- rt + 1
         lastLoc <- 4
-        if (abs(RDV)>=1) {stopper<-1; break}
+        if (abs(RDV)>=barrier[t+1]) {stopper<-1; break}
       }
     } else {
       RDV <- RDV + sum(latency_err)
@@ -163,14 +168,14 @@ simulate.trial <- function(
       if (fixCrossLoc=="Center") {loc <- rbinom(1,1,prFirstLeft)}
       firstFixLoc <- loc
       drift <- evidence(loc) + rnorm(n=firstDur, mean=0, sd=s)
-      if (abs(RDV+sum(drift))>=1) {
+      if (abs(RDV+sum(drift))>=barrier[rt+firstDur+1]) {
         for (t in 1:firstDur) {
           RDV <- RDV + drift[t]
           rt <- rt + 1
           if (loc==1 & rt<=1000) {earlyFixL <- earlyFixL + 1}
           if (loc==1 & rt>1000) {lateFixL <- lateFixL + 1}
           lastLoc <- loc
-          if (abs(RDV)>=1) {stopper<-1; break}
+          if (abs(RDV)>=barrier[rt+t+1]) {stopper<-1; break}
         }
       } else {
         RDV <- RDV + sum(drift)
@@ -190,16 +195,18 @@ simulate.trial <- function(
   #######################################################
   # TRANSITIONS and MIDDLE FIXATIONS
   
-  while (abs(RDV)<1) {
+  while (stopper==0) {
+    
+    
     transDur <- sample(transition,1)
     trans_err <- rnorm(n=transDur, mean=0, sd=s)
     
-    if (abs(RDV+sum(trans_err))>=1) {
+    if (abs(RDV+sum(trans_err))>=barrier[rt+transDur+1]) {
       for (t in 1:transDur) {
         RDV <- RDV + trans_err[t]
         rt <- rt + 1
         lastLoc <- prevLoc
-        if (abs(RDV)>=1) {stopper<-1; break}
+        if (abs(RDV)>=barrier[rt+t+1]) {stopper<-1; break}
       }
     } else {
       RDV <- RDV + sum(trans_err)
@@ -212,14 +219,14 @@ simulate.trial <- function(
       if (prevLoc==0) {loc<-1}
       drift <- evidence(loc) + rnorm(n=middleDur, mean=0, sd=s)
       
-      if (abs(RDV+sum(drift))>=1) {
+      if (abs(RDV+sum(drift))>=barrier[rt+middleDur+1]) {
         for (t in 1:middleDur) {
           RDV <- RDV + drift[t]
           rt <- rt + 1
           if (loc==1 & rt<=1000) {earlyFixL <- earlyFixL + 1}
           if (loc==1 & rt>1000) {lateFixL <- lateFixL + 1}
           lastLoc <- loc
-          if (abs(RDV)>=1) {break}
+          if (abs(RDV)>=barrier[rt+t+1]) {stopper=1; break}
         }
       } else {
         RDV <- RDV + sum(drift)
@@ -240,6 +247,7 @@ simulate.trial <- function(
     
     if (rt > maximum_rt) { #20 second response?! no way
       choice = NA; rt = NA; lastLoc = NA; totFixL = NA; totFixR = NA; firstDuration = NA; firstFixLoc = NA
+      stopper = 1
       break
     }
   }
@@ -247,8 +255,8 @@ simulate.trial <- function(
   ##############################
   # SAVE
   
-  if (RDV>1) {choice <- 1}
-  if (RDV<(-1)) {choice <- 0}
+  if (RDV>0 & !is.na(rt)) {choice <- 1}
+  if (RDV<0 & !is.na(rt)) {choice <- 0}
   vDiff <- vL-vR
   results <- data.frame(
     choice=choice, 

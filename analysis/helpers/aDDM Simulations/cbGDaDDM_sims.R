@@ -28,8 +28,8 @@ Nsim = 10
 ## ESTIMATES
 ####################################################
 
-dots_est = read_estimates(fitdir=fitdir, study="dots", model="cbAddDDM", dataset="e")
-numeric_est = read_estimates(fitdir=fitdir, study="numeric", model="cbAddDDM", dataset="e")
+dots_est = read_estimates(fitdir=fitdir, study="dots", model="cbGDaDDM", dataset="e")
+numeric_est = read_estimates(fitdir=fitdir, study="numeric", model="cbGDaDDM", dataset="e")
 
 
 ####################################################
@@ -38,6 +38,8 @@ numeric_est = read_estimates(fitdir=fitdir, study="numeric", model="cbAddDDM", d
 
 load(file.path(datadir, "ecfr.RData"))
 cfr = ecfr[ecfr$trial%%2==0 & ecfr$sanity==0,] #out-sample data
+cfr$minValue[cfr$condition=="Gain"] = 1
+cfr$minValue[cfr$condition=="Loss"] = -6
 dots = cfr[cfr$study=="dots",]
 numeric = cfr[cfr$study=="numeric",]
 
@@ -97,9 +99,10 @@ for (subject in unique(dots$subject)) {
 
       while (TRUE) {
         simulated_trial = simulate.trial(
-          study = "dots", model = "cbAddDDM",
+          study = "dots", model = "cbGDaDDM",
           d = d, s = s, b = b, t = t, k = k, c = c,
-          vL = iteration_sim$vL[row], vR = iteration_sim$vR[row], vMin = NA, vMax = NA,
+          vL = iteration_sim$vL[row], vR = iteration_sim$vR[row], 
+          vMin = iteration_sim$minValue[row], vMax = NA,
           fixCrossLoc = NA, prFirstLeft = prFirstLeft,
           firstFix = firstFix, middleFix = middleFix,
           latency = latency, transition = transition,
@@ -130,7 +133,7 @@ for (i in c(1:length(dots_sim))) {
 }
 fdots_sim = fdots_sim[2:nrow(fdots_sim),]
 
-save(fdots_sim, file=file.path(tempdir, "fdots_sim_cbAddDDM.RData"))
+save(fdots_sim, file=file.path(tempdir, "fdots_sim_cbGDaDDM.RData"))
 
 ####################################################
 ## SIMULATE NUMERIC
@@ -175,7 +178,7 @@ for (subject in unique(numeric$subject)) {
         b = est$b.gain
         t = est$t.gain
         k = est$k.gain
-        c = est$c.gain
+        c = est$c.gain/10
       }
       if (iteration_sim$condition[row]=="Loss"){
         d = est$d.loss/10
@@ -183,14 +186,15 @@ for (subject in unique(numeric$subject)) {
         b = est$b.loss
         t = est$t.loss
         k = est$k.loss
-        c = est$c.loss
+        c = est$c.loss/10
       }
       
       while (TRUE) {
         simulated_trial = simulate.trial(
-          study = "numeric", model = "cbAddDDM",
+          study = "numeric", model = "cbGDaDDM",
           d = d, s = s, b = b, t = t, k = k, c = c,
-          vL = iteration_sim$vL[row], vR = iteration_sim$vR[row], vMin = NA, vMax = NA,
+          vL = iteration_sim$vL[row], vR = iteration_sim$vR[row],
+          vMin = iteration_sim$minValue[row], vMax = NA,
           fixCrossLoc = iteration_sim$fixCrossLoc[row], prFirstLeft = prFirstLeft,
           firstFix = firstFix, middleFix = middleFix,
           latency = latency, transition = transition,
@@ -221,5 +225,5 @@ for (i in c(1:length(numeric_sim))) {
 }
 fnumeric_sim = fnumeric_sim[2:nrow(fnumeric_sim),]
 
-save(fnumeric_sim, file=file.path(tempdir, "fnumeric_sim_cbAddDDM.RData"))
+save(fnumeric_sim, file=file.path(tempdir, "fnumeric_sim_cbGDaDDM.RData"))
 
