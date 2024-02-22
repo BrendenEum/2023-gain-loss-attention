@@ -94,6 +94,7 @@ Note that in fit_all_models.jl, you'll need to change the directory on line 15. 
   - analysis/outputs/temp/{study}_LossFit_{dataset}.csv
 
 ```
+analysis/helpers/aDDM/parameter_grids.R
 analysis/helpers/aDDM/fit_all_models.jl
 ```
 
