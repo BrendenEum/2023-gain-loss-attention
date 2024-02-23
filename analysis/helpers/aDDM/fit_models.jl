@@ -1,3 +1,6 @@
+# Author: Brenden Eum (2024)
+# If running this in vscode locally, you need to open up a shell REPL, run 'julia --project=<toolboxdir>', and run 'include("<yourscript.jl>")'. This opens julia with the ADDM environment and runs your code.
+
 #############
 # Preamble
 #############
@@ -7,24 +10,30 @@ using CSV
 using DataFrames
 using StatsPlots
 
+cluster = true
+
 #############
 # Get data
 #############
 
-data_dotgain = ADDM.load_data_from_csv("../../../data/processed_data/dots/e/expdataGain.csv", "../../../data/processed_data/dots/e/fixationsGain.csv")
-data_numgain = ADDM.load_data_from_csv("../../../data/processed_data/numeric/e/expdataGain.csv", "../../../data/processed_data/numeric/e/fixationsGain.csv")
-data_dotloss = ADDM.load_data_from_csv("../../../data/processed_data/dots/e/expdataloss.csv", "../../../data/processed_data/dots/e/fixationsloss.csv")
-data_numloss = ADDM.load_data_from_csv("../../../data/processed_data/numeric/e/expdataloss.csv", "../../../data/processed_data/numeric/e/fixationsloss.csv")
+if cluster == false
+    data_dotgain = ADDM.load_data_from_csv("../../../data/processed_data/dots/e/expdataGain.csv", "../../../data/processed_data/dots/e/fixationsGain.csv")
+    data_numgain = ADDM.load_data_from_csv("../../../data/processed_data/numeric/e/expdataGain.csv", "../../../data/processed_data/numeric/e/fixationsGain.csv")
+    data_dotloss = ADDM.load_data_from_csv("../../../data/processed_data/dots/e/expdataLoss.csv", "../../../data/processed_data/dots/e/fixationsLoss.csv")
+    data_numloss = ADDM.load_data_from_csv("../../../data/processed_data/numeric/e/expdataLoss.csv", "../../../data/processed_data/numeric/e/fixationsLoss.csv")
+else
+    data_dotloss = ADDM.load_data_from_csv("testexpdataLoss.csv", "testfixationsLoss.csv")
+end
 
 #############
 # Get grids
 #############
 
-include("./custom_aDDM_likelihood.jl")
+include("custom_aDDM_likelihood.jl")
 fn = "aDDM_grid.csv"
 tmp = DataFrame(CSV.File(fn, delim=","))
 tmp.likelihood_fn .= "ADDM.custom_aDDM_likelihood";
-param_grid1 = Dict(pairs(NamedTuple.(eachrow(tmp))))
+param_grid = Dict(pairs(NamedTuple.(eachrow(tmp))))
 
 #############
 # Common settings
@@ -41,9 +50,9 @@ dot_best_pars = Dict()
 dot_model_posteriors = Dict()
 dot_param_posteriors = Dict()
 
-for k in keys(dotdata)
+for k in keys(data_dotloss)
     
-    cur_subj_data = dotdata[k]
+    cur_subj_data = data_dotloss[k]
 
     fixed_params = Dict(:barrier=>1, :nonDecisionTime=>0, :minValue=>0, :range=>1)
   
