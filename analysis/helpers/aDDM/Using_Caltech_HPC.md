@@ -41,28 +41,35 @@ Using nano, edit then save this code below as job_script.sh file in the /beum/ d
 
 #Submit this script with: sbatch thefilename
 
-#SBATCH --time=9:59:59 # walltime
+#SBATCH --time=4:00:00 # walltime
 #SBATCH --ntasks=1 # number of processor cores (i.e. tasks)
 #SBATCH --nodes=1 # number of nodes
-#SBATCH --mem-per-cpu=1G # memory per CPU core
+#SBATCH --mem-per-cpu=8G # memory per CPU core
 #SBATCH --mail-user=beum@caltech.edu # email address
 #SBATCH --mail-type=BEGIN
 #SBATCH --mail-type=END
 #SBATCH --mail-type=FAIL
-#SBATCH --output=slurm/slurm%x.%j.out
-#SBATCH --error=slurm/slurm-%x.%j.err
+#SBATCH --output=slurm/out_%x.%j.out
+#SBATCH --error=slurm/err_%x.%j.err
 
 export TMPDIR=/central/scratch/beum/tmp
 
 # LOAD MODULES, INSERT CODE, AND RUN YOUR PROGRAMS HERE
 module load julia
-srun julia scripts/fit_models.jl
+julia --project=/central/groups/rnl/beum/ADDM.jl -e 'import Pkg; Pkg.instantiate()'
+julia --project=/central/groups/rnl/beum/ADDM.jl scripts/fit_models.jl
 ```
 
 Use Slurm to submit the job to compute nodes. Do this from /central/groups/rnl/beum/.
 
 ```
 sbatch -A rnl job_script.sh
+```
+
+Check the status of your jobs.
+
+```
+squeue -u beum
 ```
 
 Move files from cluster to my computer. This has to be done on local shell. Do this in the local directory that you want to store it in.

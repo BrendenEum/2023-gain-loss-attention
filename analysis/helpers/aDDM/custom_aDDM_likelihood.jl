@@ -1,8 +1,7 @@
 using Distributions
 using LinearAlgebra
 
-function custom_aDDM_likelihood(;model::ADDM.aDDM, trial::ADDM.Trial, timeStep::Number = 10.0, 
-                                   approxStateStep::Number = 0.1)
+function custom_aDDM_likelihood(;model::ADDM.aDDM, trial::ADDM.Trial, timeStep::Number = 10.0, approxStateStep::Number = 0.1)
     
     # Iterate over the fixations and discount the non-decision time.
     if model.nonDecisionTime > 0
