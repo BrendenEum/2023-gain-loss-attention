@@ -29,10 +29,9 @@ end
 # Get grids
 #############
 
-include("custom_aDDM_likelihood.jl");
-fn = "param_grid.csv";
-tmp = DataFrame(CSV.File(fn, delim=","));
-param_grid = Dict(pairs(NamedTuple.(eachrow(tmp))));
+include("custom_aDDM_likelihood.jl")
+tmp = DataFrame(CSV.File("/central/groups/rnl/beum/scripts/param_grid.csv", delim=","))
+param_grid = Dict(pairs(NamedTuple.(eachrow(tmp))))
 
 #############
 # Common settings
