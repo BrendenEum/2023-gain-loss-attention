@@ -13,7 +13,7 @@ write.csv(grid, file="param_grid.csv", row.names=F)
 
 # aDDM 
 
-drift = seq(.001, .009, .001)
+d = seq(.001, .009, .001)
 sigma = seq(.01, .09, .01)
 theta = seq(0, 1, .1)
 grid = expand.grid(d=d,sigma=sigma,theta=theta)

@@ -22,53 +22,42 @@ ADDM.aDDM(
 # Define stimuli
 #############
 
-data = ADDM.load_data_from_csv("../../../data/stimdata.csv", "../../../data/fixations.csv"; stimsOnly = true);
+data = ADDM.load_data_from_csv("testexpdataLoss.csv", "testfixationsLoss.csv"; stimsOnly=true);
+nTrials = 100;
+MyStims = (valueLeft = reduce(vcat, [[i.valueLeft for i in data[j]] for j in keys(data)])[1:nTrials], valueRight = reduce(vcat, [[i.valueRight for i in data[j]] for j in keys(data)])[1:nTrials]);
 
 #############
-# Common settings
+# Define fixation data
 #############
 
-my_likelihood_args = (timeStep = 10.0, approxStateStep = 0.1);
+MyFixationData = ADDM.process_fixations(data, fixDistType="simple");
 
 #############
-# Fit dots study
+# Simulate data
 #############
 
-dot_nll_df = DataFrame()
-dot_best_pars = Dict()
-dot_model_posteriors = Dict()
-dot_param_posteriors = Dict()
+MyArgs = (timeStep = 10.0, cutOff = 20000, fixationData = MyFixationData);
+SimData = ADDM.simulate_data(MyModel, MyStims, ADDM.aDDM_simulate_trial, MyArgs);
 
-for k in keys(data_dotloss)
+#############
+# Recover parameters
+#############
 
-    println(k)
-    cur_subj_data = data_dotloss[k]
+fn = "addm_grid.csv";
+tmp = DataFrame(CSV.File(fn, delim=","));
+param_grid = Dict(pairs(NamedTuple.(eachrow(tmp))));
 
-    fixed_params = Dict(:barrier=>1, :nonDecisionTime=>0)
-  
-    subj_best_pars, subj_nll_df, trial_posteriors = ADDM.grid_search(
-        cur_subj_data, param_grid, custom_aDDM_likelihood, 
-        fixed_params,
-        likelihood_args=my_likelihood_args,
-        return_model_posteriors = true);
-    
-    nTrials = length(cur_subj_data)
-    model_posteriors = Dict(zip(keys(trial_posteriors), [x[nTrials] for x in values(trial_posteriors)]))
-    param_posteriors = ADDM.marginal_posteriors(param_grid, model_posteriors)
-    model_posteriors_df = DataFrame();
-    for (k, v) in param_grid
-        cur_row = DataFrame([v])
-        cur_row.posterior = [model_posteriors[k]]
-        model_posteriors_df = vcat(model_posteriors_df, cur_row, cols=:union)
-    end;
-  
-    dot_best_pars[k] = subj_best_pars
-    dot_model_posteriors[k] = model_posteriors_df
-    dot_param_posteriors[k] = param_posteriors
+my_likelihood_args = (timeStep = 10.0, approxStateStep = 0.01);
 
-    subj_nll_df[!, "parcode"] .= k
-    append!(dot_nll_df, subj_nll_df)
-  
-end
+best_pars, all_nll_df = ADDM.grid_search(
+    SimData, param_grid, ADDM.aDDM_get_trial_likelihood, 
+    Dict(:η=>0.0, :barrier=>1, :decay=>0, :nonDecisionTime=>100, :bias=>0.0),
+    likelihood_args=my_likelihood_args; 
+    verbose=true);
 
-CSV.write("dot_nll_df.csv", dot_nll_df)
+#############
+# Record output
+#############
+
+output_path = '/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp'
+CSV.write(output_path, all_nll_df)
