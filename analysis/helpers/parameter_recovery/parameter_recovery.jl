@@ -18,7 +18,7 @@ Random.seed!(4)
 include("custom_aDDM_simulator.jl")
 include("custom_aDDM_likelihood.jl")
 timeStep = 10.0; # ms
-approxStateStep = 0.1; # the approximate resolution of the relative-decision-variable space
+approxStateStep = 0.01; # the approximate resolution of the relative-decision-variable space
 simCutoff = 20000; # maximum decision time for one simulated choice
 simCount = 10; # how many simulations to run per data generating process?
 
