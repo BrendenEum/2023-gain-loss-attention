@@ -84,11 +84,8 @@ function custom_aDDM_simulator(;model::ADDM.aDDM, fixationData::ADDM.FixationDat
             end
             prevFixItem = currFixLocation
 
-            # Sample the duration of this item fixation.
-            valueDiff = fixUnfixValueDiffs[currFixLocation]
             #[1] is here to make sure it's not sampling from 1-element Vector but from the array inside it
-            currFixTime = rand(fixationData.fixations[fixNumber][valueDiff][1]) 
-            
+            currFixTime = rand(fixationData.fixations[fixNumber][1]) 
 
             if fixNumber < numFixDists
                 fixNumber += 1

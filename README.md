@@ -84,16 +84,22 @@ analysis/helpers/aDDM/cfr_to_addmdata.R
 ```
 
 Do some parameter recovery exercises with the new models you're proposing before you try fitting them to real data.
-To do this, open up your terminal, navigate to your project folder, then type:
+To do this, open up your terminal, navigate to your project folder, then type the code below. Note, this only works with Julia 1.10 or later.
 
 ```
-julia --project=<absolute path to your addm toolbox>
+julia --project=/Users/brenden/Toolboxes/ADDM.jl --threads 4
+```
+
+You also need to generate a grid of parameters to search through before doing any fitting:
+
+```
+analysis/helpers/aDDM/parameter_grids.R
 ```
 
 After that, you can run your code by using `include()`.
 
 ```
-include("recovery.jl")
+include("parameter_recovery.jl")
 ```
 
 Note that in fit_all_models.jl, you'll need to change the directory on line 15. It "cd"s into a folder specific to my computer.
@@ -107,7 +113,6 @@ Note that in fit_all_models.jl, you'll need to change the directory on line 15. 
   - analysis/outputs/temp/{study}_LossFit_{dataset}.csv
 
 ```
-analysis/helpers/aDDM/parameter_grids.R
 analysis/helpers/aDDM/fit_all_models.jl
 ```
 

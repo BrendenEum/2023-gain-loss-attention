@@ -68,9 +68,9 @@ function custom_aDDM_likelihood(;model::ADDM.aDDM, trial::ADDM.Trial, timeStep::
     vR = (trial.valueRight - model.minValue) / model.range
     for fItem in 0:2
         if fItem == 1
-            μ = model.d * ((trial.valueLeft + model.η) - (model.θ * trial.valueRight))
+            μ = model.d*((vL) - (model.θ * vR)) + model.η
         elseif fItem == 2
-            μ = model.d * ((model.θ * trial.valueLeft) - (trial.valueRight + model.η))
+            μ = model.d*((model.θ * vL) - (vR)) - model.η
         else
             μ = 0
         end
