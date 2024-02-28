@@ -15,7 +15,7 @@ Move files and scripts from my computer to cluster. This has to be done on local
 ```
 scp -r /Users/brenden/Toolboxes/ADDM.jl beum@login.hpc.caltech.edu:/central/groups/rnl/beum/
 
-scp -r /Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/parameter_recovery/* beum@login.hpc.caltech.edu:/central/groups/rnl/beum/scripts
+scp -r /Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/parameter_recovery_HPC/* beum@login.hpc.caltech.edu:/central/groups/rnl/beum/scripts
 ```
 
 Log onto a login node on the Caltech HPC using shell.

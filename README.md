@@ -87,7 +87,7 @@ Do some parameter recovery exercises with the new models you're proposing before
 To do this, open up your terminal, navigate to your project folder, then type the code below. Note, this only works with Julia 1.10 or later.
 
 ```
-julia --project=/Users/brenden/Toolboxes/ADDM.jl --threads 4
+julia --project=/Users/brenden/Toolboxes/ADDM.jl --threads=4
 ```
 
 You also need to generate a grid of parameters to search through before doing any fitting:

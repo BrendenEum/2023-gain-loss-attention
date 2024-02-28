@@ -54,6 +54,9 @@ grid_RNaDDM = expand.grid(d=d,sigma=sigma,bias=bias,theta=theta,eta=eta,lambda=l
 grid_gain = do.call("rbind", list(grid_aDDM, grid_AddDDM, grid_GRaDDM, grid_RNaDDM))
 write.csv(grid_gain, file="custom_addm_grid_gain.csv", row.names=F)
 
+grid_benchmark = do.call("rbind", list(grid_aDDM, grid_AddDDM))
+write.csv(grid_benchmark, file="custom_addm_grid_gain_benchmark.csv", row.names=F)
+
 
 ####################################################################################################################
 
