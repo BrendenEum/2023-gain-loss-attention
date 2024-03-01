@@ -138,6 +138,60 @@ end
 
 
 ##################################################################################################################
+# (d, σ, η)
+##################################################################################################################
+m = "dse"
+println("== " * m * " ==")
+flush(stdout)
+Random.seed!(seed)
+@elapsed begin
+
+    # Gain
+    println("= Gain =")
+    flush(stdout)
+    model_list = Any[];
+    for i in 1:simCount
+        model = ADDM.define_model(
+            d = round( rand(Uniform(.001,.005),1)[1] ; digits=3),
+            σ = round( rand(Uniform(.01,.05),1)[1] ; digits=2),
+            bias = 0.0,
+            θ = 1.0,
+            nonDecisionTime = 100
+        )
+        model.η = round( rand(Uniform(0,.020),1)[1] ; digits=3);
+        model.λ = 0.0;
+        model.minValue = 0.0;
+        model.range = 1.0;
+        push!(model_list, model);
+    end
+    fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :theta=>1.0, :λ=>0, :bias=>0.0, :minValue=>0.0, :range=>1.0)
+    sim_and_fit(model_list, "Gain", "parameter_grids/"*m*"_Gain.csv", m, fixed_params)
+
+    # Loss
+    println("= Loss =")
+    flush(stdout)
+    model_list = Any[];
+    for i in 1:simCount
+        model = ADDM.define_model(
+            d = round( rand(Uniform(.001,.005),1)[1] ; digits=3),
+            σ = round( rand(Uniform(.01,.05),1)[1] ; digits=2),
+            bias = 0.0,
+            θ = 1.0,
+            nonDecisionTime = 100
+        )
+        model.η = round( rand(Uniform(0,.020),1)[1] ; digits=3);
+        model.λ = 0.0;
+        model.minValue = 0.0;
+        model.range = 1.0;
+        push!(model_list, model);
+    end
+    fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :theta=>1.0, :λ=>0, :bias=>0.0, :minValue=>0.0, :range=>1.0)
+    sim_and_fit(model_list, "Loss", "parameter_grids/"*m*"_Loss.csv", m, fixed_params)
+
+end
+
+
+##################################################################################################################
 # (d, σ, b, η)
 ##################################################################################################################
 m = "dsbe"
@@ -244,7 +298,7 @@ Random.seed!(seed)
 
 end
 
-"""
+
 ##################################################################################################################
 # (d, σ, t, m)
 ##################################################################################################################
@@ -294,6 +348,170 @@ Random.seed!(seed)
         push!(model_list, model);
     end
     fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :bias=>0.0, :η=>0.0, :λ=>0.0, :range=>1.0)
+    sim_and_fit(model_list, "Loss", "parameter_grids/"*m*"_Loss.csv", m, fixed_params)
+
+end
+
+
+##################################################################################################################
+# (d, σ, t, m, r)
+##################################################################################################################
+m = "dstmr"
+println("== " * m * " ==")
+flush(stdout)
+Random.seed!(seed)
+@elapsed begin
+
+    # Gain
+    println("= Gain =")
+    flush(stdout)
+    model_list = Any[];
+    for i in 1:simCount
+        model = ADDM.define_model(
+            d = sample([.001*5:.001*5:.005*5;]),
+            σ = round( rand(Uniform(.01,.05),1)[1] ; digits=2),
+            bias = 0.0,
+            θ = round( rand(Uniform(0,1),1)[1] ; digits=1),
+            nonDecisionTime = 100
+        )
+        model.η = 0.0;
+        model.λ = 0.0;
+        model.minValue = 1.0;
+        model.range = 5.0;
+        push!(model_list, model);
+    end
+    fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :bias=>0.0, :η=>0.0, :λ=>0.0)
+    sim_and_fit(model_list, "Gain", "parameter_grids/"*m*"_Gain.csv", m, fixed_params)
+
+    # Loss
+    println("= Loss =")
+    flush(stdout)
+    model_list = Any[];
+    for i in 1:simCount
+        model = ADDM.define_model(
+            d = sample([.001*5:.001*5:.005*5;]),
+            σ = round( rand(Uniform(.01,.05),1)[1] ; digits=2),
+            bias = 0.0,
+            θ = round( rand(Uniform(0,1),1)[1] ; digits=1),
+            nonDecisionTime = 100
+        )
+        model.η = 0.0;
+        model.λ = 0.0;
+        model.minValue = -6.0;
+        model.range = 5.0;
+        push!(model_list, model);
+    end
+    fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :bias=>0.0, :η=>0.0, :λ=>0.0)
+    sim_and_fit(model_list, "Loss", "parameter_grids/"*m*"_Loss.csv", m, fixed_params)
+
+end
+
+"""
+##################################################################################################################
+# GEN: (d,σ,θ,m)
+# FIT: (d,σ,θ,m) + (d,σ,η)
+##################################################################################################################
+m = "dstm-dse"
+println("== " * m * " ==")
+flush(stdout)
+Random.seed!(seed)
+@elapsed begin
+
+    # Gain
+    println("= Gain =")
+    flush(stdout)
+    model_list = Any[];
+    for i in 1:simCount
+        model = ADDM.define_model(
+            d = round( rand(Uniform(.001,.005),1)[1] ; digits=3),
+            σ = round( rand(Uniform(.01,.05),1)[1] ; digits=2),
+            bias = 0.0,
+            θ = round( rand(Uniform(0,1),1)[1] ; digits=1),
+            nonDecisionTime = 100
+        )
+        model.η = 0.0;
+        model.λ = 0.0;
+        model.minValue = 1.0;
+        model.range = 1.0;
+        push!(model_list, model);
+    end
+    fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :bias=>0.0, :λ=>0.0, :range=>1.0)
+    sim_and_fit(model_list, "Gain", "parameter_grids/"*m*"_Gain.csv", m, fixed_params)
+
+    # Loss
+    println("= Loss =")
+    flush(stdout)
+    model_list = Any[];
+    for i in 1:simCount
+        model = ADDM.define_model(
+            d = round( rand(Uniform(.001,.005),1)[1] ; digits=3),
+            σ = round( rand(Uniform(.01,.05),1)[1] ; digits=2),
+            bias = 0.0,
+            θ = round( rand(Uniform(0,1),1)[1] ; digits=1),
+            nonDecisionTime = 100
+        )
+        model.η = 0.0;
+        model.λ = 0.0;
+        model.minValue = -6.0;
+        model.range = 1.0;
+        push!(model_list, model);
+    end
+    fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :bias=>0.0, :λ=>0.0, :range=>1.0)
+    sim_and_fit(model_list, "Loss", "parameter_grids/"*m*"_Loss.csv", m, fixed_params)
+
+end
+
+
+##################################################################################################################
+# GEN: (d,σ,η)
+# FIT: (d,σ,θ,m) + (d,σ,η)
+##################################################################################################################
+m = "dse-dstm"
+println("== " * m * " ==")
+flush(stdout)
+Random.seed!(seed)
+@elapsed begin
+
+    # Gain
+    println("= Gain =")
+    flush(stdout)
+    model_list = Any[];
+    for i in 1:simCount
+        model = ADDM.define_model(
+            d = round( rand(Uniform(.001,.005),1)[1] ; digits=3),
+            σ = round( rand(Uniform(.01,.05),1)[1] ; digits=2),
+            bias = 0.0,
+            θ = 1.0,
+            nonDecisionTime = 100
+        )
+        model.η = round( rand(Uniform(0,.020),1)[1] ; digits=3);
+        model.λ = 0.0;
+        model.minValue = 0.0;
+        model.range = 1.0;
+        push!(model_list, model);
+    end
+    fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :bias=>0.0, :λ=>0.0, :range=>1.0)
+    sim_and_fit(model_list, "Gain", "parameter_grids/"*m*"_Gain.csv", m, fixed_params)
+
+    # Loss
+    println("= Loss =")
+    flush(stdout)
+    model_list = Any[];
+    for i in 1:simCount
+        model = ADDM.define_model(
+            d = round( rand(Uniform(.001,.005),1)[1] ; digits=3),
+            σ = round( rand(Uniform(.01,.05),1)[1] ; digits=2),
+            bias = 0.0,
+            θ = 1.0,
+            nonDecisionTime = 100
+        )
+        model.η = round( rand(Uniform(0,.020),1)[1] ; digits=3);
+        model.λ = 0.0;
+        model.minValue = 0.0;
+        model.range = 1.0;
+        push!(model_list, model);
+    end
+    fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :bias=>0.0, :λ=>0.0, :range=>1.0)
     sim_and_fit(model_list, "Loss", "parameter_grids/"*m*"_Loss.csv", m, fixed_params)
 
 end

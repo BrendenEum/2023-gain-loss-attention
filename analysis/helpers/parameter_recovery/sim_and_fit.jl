@@ -38,12 +38,13 @@ function sim_and_fit(model_list, condition, param_grid_csv, free_params, fixed_p
 
         my_likelihood_args = (timeStep = timeStep, approxStateStep = approxStateStep);
 
-        best_pars, all_nll_df = ADDM.grid_search(SimData, param_grid, custom_aDDM_likelihood, fixed_params, likelihood_args=my_likelihood_args; verbose=verbose, threadNum=Threads.threadid());
+        best_pars, all_nll_df, trial_posteriors = ADDM.grid_search(SimData, param_grid, custom_aDDM_likelihood, fixed_params, likelihood_args=my_likelihood_args, return_model_posteriors=true; verbose=verbose, threadNum=Threads.threadid());
 
         sort!(all_nll_df, [:nll])
 
         # Record data generating model and output
         write(outdir*condition*"_"*"model_$(m).txt", string(MyModel)); 
         CSV.write(outdir*condition*"_"*"fit_$(m).csv", all_nll_df);
+        CSV.write(outdir*condition*"_"*"trialposteriors_$(m).csv", trial_posteriors);
     end
 end
