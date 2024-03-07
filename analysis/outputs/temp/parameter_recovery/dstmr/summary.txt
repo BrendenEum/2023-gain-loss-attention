@@ -1,11 +1,11 @@
 [1] "== dstmr =="
 [1] "= Gain ="
       d minValue range sigma theta      nll
-4 0.025        1     5  0.05   0.7 448.1838
+3 0.025        1     5  0.05   0.7 448.1838
       d minValue range sigma theta      nll
 1 0.015        1     5  0.03   0.3 479.3992
      d minValue range sigma theta     nll
-3 0.01        1     5  0.04   0.5 530.747
+6 0.01        1     5  0.04   0.5 530.747
      d minValue range sigma theta      nll
 1 0.02        1     5  0.02   0.9 417.9851
       d minValue range sigma theta      nll
@@ -13,9 +13,9 @@
      d minValue range sigma theta      nll
 1 0.02        1     5  0.04     1 442.4108
      d minValue range sigma theta      nll
-1 0.01        1     5  0.01   0.1 435.0779
+2 0.01        1     5  0.01   0.1 435.0779
      d minValue range sigma theta     nll
-3 0.02        1     5  0.04   0.9 450.422
+6 0.02        1     5  0.04   0.9 450.422
 [1] "= Loss ="
       d minValue range sigma theta      nll
 3 0.005       -6     5  0.05     1 572.7862

@@ -1,0 +1,43 @@
+[1] "== dst-dstmr =="
+[1] "= Gain ="
+       d eta minValue range sigma theta      nll
+8  0.004   0        0     1  0.05   0.7 469.3353
+10 0.004   0        0     1  0.05   0.7 469.3353
+      d eta minValue range sigma theta     nll
+2 0.003   0        0     1  0.03   0.3 462.598
+3 0.003   0        0     1  0.03   0.3 462.598
+      d eta minValue range sigma theta      nll
+2 0.002   0        0     1  0.04   0.5 520.8123
+3 0.002   0        0     1  0.04   0.5 520.8123
+      d eta minValue range sigma theta      nll
+3 0.004   0        0     1  0.02   0.9 412.6188
+4 0.004   0        0     1  0.02   0.9 412.6188
+      d eta minValue range sigma theta      nll
+1 0.001   0        0     1  0.04     0 581.4398
+3 0.001   0        0     1  0.04     0 581.4398
+       d eta minValue range sigma theta      nll
+7  0.004   0        0     1  0.04     1 462.6541
+10 0.004   0        0     1  0.04     1 462.6541
+      d eta minValue range sigma theta      nll
+1 0.002   0        0     1  0.01   0.1 376.0861
+2 0.002   0        0     1  0.01   0.1 376.0861
+      d eta minValue range sigma theta      nll
+8 0.004   0        0     1  0.04   0.9 451.6743
+9 0.004   0        0     1  0.04   0.9 451.6743
+[1] "= Loss ="
+[1] d        eta      minValue range    sigma    theta    nll     
+<0 rows> (or 0-length row.names)
+[1] d        eta      minValue range    sigma    theta    nll     
+<0 rows> (or 0-length row.names)
+[1] d        eta      minValue range    sigma    theta    nll     
+<0 rows> (or 0-length row.names)
+[1] d        eta      minValue range    sigma    theta    nll     
+<0 rows> (or 0-length row.names)
+[1] d        eta      minValue range    sigma    theta    nll     
+<0 rows> (or 0-length row.names)
+[1] d        eta      minValue range    sigma    theta    nll     
+<0 rows> (or 0-length row.names)
+[1] d        eta      minValue range    sigma    theta    nll     
+<0 rows> (or 0-length row.names)
+[1] d        eta      minValue range    sigma    theta    nll     
+<0 rows> (or 0-length row.names)
