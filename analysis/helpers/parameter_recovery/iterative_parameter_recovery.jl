@@ -300,7 +300,7 @@ end
 
 
 ##################################################################################################################
-# (d, σ, t, m)
+# (d, σ, t, m) [m = 1 and -6]
 ##################################################################################################################
 m = "dstm"
 println("== " * m * " ==")
@@ -352,7 +352,61 @@ Random.seed!(seed)
 
 end
 
+"""
+##################################################################################################################
+# (d, σ, t, m) [m = 0 and -7]
+##################################################################################################################
+m = "dstm"
+println("== " * m * " ==")
+flush(stdout)
+Random.seed!(seed)
+@elapsed begin
 
+    # Gain
+    println("= Gain =")
+    flush(stdout)
+    model_list = Any[];
+    for i in 1:simCount
+        model = ADDM.define_model(
+            d = round( rand(Uniform(.001,.005),1)[1] ; digits=3),
+            σ = round( rand(Uniform(.01,.05),1)[1] ; digits=2),
+            bias = 0.0,
+            θ = round( rand(Uniform(0,1),1)[1] ; digits=1),
+            nonDecisionTime = 100
+        )
+        model.η = 0.0;
+        model.λ = 0.0;
+        model.minValue = 0.0;
+        model.range = 1.0;
+        push!(model_list, model);
+    end
+    fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :bias=>0.0, :η=>0.0, :λ=>0.0, :range=>1.0)
+    sim_and_fit(model_list, "Gain", "parameter_grids/"*m*"_Gain.csv", m, fixed_params)
+
+    # Loss
+    println("= Loss =")
+    flush(stdout)
+    model_list = Any[];
+    for i in 1:simCount
+        model = ADDM.define_model(
+            d = round( rand(Uniform(.001,.005),1)[1] ; digits=3),
+            σ = round( rand(Uniform(.01,.05),1)[1] ; digits=2),
+            bias = 0.0,
+            θ = round( rand(Uniform(0,1),1)[1] ; digits=1),
+            nonDecisionTime = 100
+        )
+        model.η = 0.0;
+        model.λ = 0.0;
+        model.minValue = -7.0;
+        model.range = 1.0;
+        push!(model_list, model);
+    end
+    fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :bias=>0.0, :η=>0.0, :λ=>0.0, :range=>1.0)
+    sim_and_fit(model_list, "Loss", "parameter_grids/"*m*"_Loss.csv", m, fixed_params)
+
+end
+
+"""
 ##################################################################################################################
 # (d, σ, t, m, r)
 ##################################################################################################################
@@ -681,7 +735,7 @@ Random.seed!(seed)
 
 end
 
-"""
+
 ##################################################################################################################
 # GEN: (d,σ,θ)
 # FIT: (d,σ,θ,m,r) + (d,σ,θ)
@@ -791,7 +845,7 @@ Random.seed!(seed)
 
 end
 
-"""
+
 ##################################################################################################################
 # GEN: (d,σ,θ)
 # FIT: (d,σ,θ,m) + (d,σ,θ)
@@ -846,7 +900,7 @@ Random.seed!(seed)
 
 end
 
-"""
+
 ##################################################################################################################
 # GEN: (d,σ,θ,m,r)
 # FIT: (d,σ,θ,m,r) + (d,σ,θ,m)
@@ -887,7 +941,7 @@ Random.seed!(seed)
             d = sample([.001*5:.001*5:.005*5;]),
             σ = round( rand(Uniform(.01,.05),1)[1] ; digits=2),
             bias = 0.0,
-            θ = round( rand(Uniform(1,2),1)[1] ; digits=1),
+            θ = round( rand(Uniform(0,1),1)[1] ; digits=1),
             nonDecisionTime = 100
         )
         model.η = 0.0;
@@ -941,7 +995,7 @@ Random.seed!(seed)
             d = round( rand(Uniform(.001,.005),1)[1] ; digits=3),
             σ = round( rand(Uniform(.01,.05),1)[1] ; digits=2),
             bias = 0.0,
-            θ = round( rand(Uniform(1,2),1)[1] ; digits=1),
+            θ = round( rand(Uniform(0,1),1)[1] ; digits=1),
             nonDecisionTime = 100
         )
         model.η = 0.0;
@@ -954,3 +1008,4 @@ Random.seed!(seed)
     sim_and_fit(model_list, "Loss", "parameter_grids/"*m*"_Loss.csv", m, fixed_params)
 
 end
+"""

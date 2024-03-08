@@ -4,7 +4,7 @@ library(stringr)
 
 ##########################################
 #dstbelnmr
-data_generating_process = "dstm-dst"
+data_generating_process = "dstm-dstmr"
 simCount = 8
 ##########################################
 

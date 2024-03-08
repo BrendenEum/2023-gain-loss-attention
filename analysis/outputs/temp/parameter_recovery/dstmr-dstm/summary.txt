@@ -17,19 +17,19 @@
      d eta minValue range sigma theta     nll
 9 0.02   0        1     5  0.04   0.9 450.422
 [1] "= Loss ="
-[1] d        eta      minValue range    sigma    theta    nll     
-<0 rows> (or 0-length row.names)
-[1] d        eta      minValue range    sigma    theta    nll     
-<0 rows> (or 0-length row.names)
-[1] d        eta      minValue range    sigma    theta    nll     
-<0 rows> (or 0-length row.names)
-[1] d        eta      minValue range    sigma    theta    nll     
-<0 rows> (or 0-length row.names)
-[1] d        eta      minValue range    sigma    theta    nll     
-<0 rows> (or 0-length row.names)
-[1] d        eta      minValue range    sigma    theta    nll     
-<0 rows> (or 0-length row.names)
-[1] d        eta      minValue range    sigma    theta    nll     
-<0 rows> (or 0-length row.names)
-[1] d        eta      minValue range    sigma    theta    nll     
-<0 rows> (or 0-length row.names)
+      d eta minValue range sigma theta      nll
+8 0.005   0       -6     5  0.05     1 572.7862
+      d eta minValue range sigma theta      nll
+10 0.01   0       -6     5  0.03   0.9 512.9238
+      d eta minValue range sigma theta      nll
+9 0.005   0       -6     5  0.03   0.6 579.9309
+     d eta minValue range sigma theta      nll
+9 0.02   0       -6     5  0.04   0.9 452.3533
+     d eta minValue range sigma theta      nll
+3 0.01   0       -6     5  0.01   0.5 429.9419
+      d eta minValue range sigma theta      nll
+9 0.015   0       -6     5  0.04   0.2 488.8643
+     d eta minValue range sigma theta     nll
+2 0.02   0       -6     5  0.03   0.3 429.525
+     d eta minValue range sigma theta      nll
+1 0.02   0       -6     5  0.02   0.6 407.6214

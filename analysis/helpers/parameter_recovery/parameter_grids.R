@@ -117,7 +117,7 @@ grid = list(
     d = seq(.001, .005, .001),
     sigma = seq(.01, .05, .01),
     theta = seq(0, 1, .1),
-    minValue = c(0,-6)
+    minValue = c(0,-6,-7)
 )
 grid = expand.grid(grid)
 write.csv(grid, file="parameter_grids/dstm_Loss.csv", row.names=F)
