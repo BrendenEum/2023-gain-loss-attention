@@ -102,7 +102,7 @@ grid = expand.grid(grid)
 write.csv(grid, file="parameter_grids/dstbe_Loss.csv", row.names=F)
 
 ####################################
-# d,s,t,m
+# d,s,t,m16
 ####################################
 grid = list(
     d = seq(.001, .005, .001),
@@ -111,7 +111,28 @@ grid = list(
     minValue = c(0,1)
 )
 grid = expand.grid(grid)
-write.csv(grid, file="parameter_grids/dstm_Gain.csv", row.names=F)
+write.csv(grid, file="parameter_grids/dstm16_Gain.csv", row.names=F)
+
+grid = list(
+    d = seq(.001, .005, .001),
+    sigma = seq(.01, .05, .01),
+    theta = seq(0, 1, .1),
+    minValue = c(0,-6)
+)
+grid = expand.grid(grid)
+write.csv(grid, file="parameter_grids/dstm16_Loss.csv", row.names=F)
+
+####################################
+# d,s,t,m07
+####################################
+grid = list(
+    d = seq(.001, .005, .001),
+    sigma = seq(.01, .05, .01),
+    theta = seq(0, 1, .1),
+    minValue = c(0,1)
+)
+grid = expand.grid(grid)
+write.csv(grid, file="parameter_grids/dstm07_Gain.csv", row.names=F)
 
 grid = list(
     d = seq(.001, .005, .001),
@@ -120,7 +141,7 @@ grid = list(
     minValue = c(0,-6,-7)
 )
 grid = expand.grid(grid)
-write.csv(grid, file="parameter_grids/dstm_Loss.csv", row.names=F)
+write.csv(grid, file="parameter_grids/dstm07_Loss.csv", row.names=F)
 
 ####################################
 # d,s,t,m,r
