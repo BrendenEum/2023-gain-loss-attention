@@ -1,0 +1,35 @@
+[1] "== dse =="
+[1] "= Gain ="
+      d   eta sigma     nll
+2 0.004 0.014  0.05 414.256
+      d   eta sigma      nll
+2 0.003 0.006  0.03 421.3196
+      d   eta sigma      nll
+1 0.002 0.011  0.04 459.1269
+       d   eta sigma      nll
+19 0.004 0.017  0.02 349.2915
+      d   eta sigma      nll
+1 0.001 0.001  0.04 577.1841
+      d   eta sigma      nll
+5 0.004 0.019  0.04 374.5096
+      d   eta sigma      nll
+1 0.002 0.002  0.01 420.8185
+      d   eta sigma      nll
+5 0.004 0.018  0.04 359.8098
+[1] "= Loss ="
+      d   eta sigma      nll
+2 0.001 0.019  0.05 400.2742
+      d   eta sigma      nll
+7 0.002 0.018  0.03 392.6441
+      d   eta sigma      nll
+1 0.001 0.013  0.03 420.7004
+       d   eta sigma      nll
+12 0.004 0.017  0.04 390.7919
+      d  eta sigma     nll
+1 0.002 0.01  0.01 309.317
+      d   eta sigma      nll
+1 0.003 0.004  0.04 469.7104
+      d   eta sigma     nll
+3 0.004 0.006  0.03 392.722
+      d   eta sigma      nll
+1 0.004 0.012  0.02 365.3811

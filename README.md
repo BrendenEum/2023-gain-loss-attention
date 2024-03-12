@@ -70,6 +70,8 @@ analysis/helpers/fix_cross_analysis/fix_cross_analysis_figures.R
 
 ### aDDM
 
+## Convert data
+
 Fit the various versions of aDDM to the data. Converting cfr to aDDM data takes a little bit of time since I couldn't think of a clever way to do it, so I use a roundabout way with a bunch of for loops. Sue me.
 
 Input:
@@ -83,6 +85,8 @@ Output:
 analysis/helpers/aDDM/cfr_to_addmdata.R
 ```
 
+## Parameter recovery exercises
+
 Do some parameter recovery exercises with the new models you're proposing before you try fitting them to real data.
 To do this, open up your terminal, navigate to your project folder, then type the code below. Note, this only works with Julia 1.10 or later.
 
@@ -93,14 +97,68 @@ julia --project=/Users/brenden/Toolboxes/ADDM.jl --threads=4
 You also need to generate a grid of parameters to search through before doing any fitting:
 
 ```
-analysis/helpers/aDDM/parameter_grids.R
+analysis/helpers/parameter_recovery/parameter_grids.R
 ```
 
 After that, you can run your code by using `include()`.
 
 ```
-include("parameter_recovery.jl")
+include("simglemodel_iterative_parameter_recovery.jl")
 ```
+
+To check the results of your parameter recovery, run:
+
+- Input:
+  - analysis/helpers/parameter_recovery/expdata{Gain,Loss}.csv from the numeric study.
+  - analysis/helpers/parameter_recovery/fixations{Gain,Loss}.csv from the numeric study.
+  - analysis/helpers/parameter_recovery/parameter_grids/*.csv with grids for each model
+
+- Output:
+  - analysis/outputs/temp/parameter_recovery/{model_acronym}/*_fits_*.csv for parameter combos and their NLL.
+  - analysis/outputs/temp/parameter_recovery/{model_acronym}/*_model_*.txt for true data generating processes.
+  - analysis/outputs/temp/parameter_recovery/{model_acronym}/*_summary_*.txt for details about best fitting estimates.
+
+```
+analysis/helpers/parameter_recovery/check_parameter_recovery.R
+```
+
+You'll need to change the "data_generating_process" variable to the acronym that satisfies the data generating model. For instance, "dst" is aDDM with drift, sigma, theta. "dstb" is with the additional parameter "starting point bias". The full length acronym is "dstbelmr" for drift, sigma, theta, bias, eta, lambda, nonDecisionTime, minValue, and range. A summary .txt file is stored with the full fitted outputs and details about the data generating processes.
+
+The results so far are for checking if models can recover original parameters when they are also the original data generating process. What about comparing pairs of models on data generated from only one of those models?
+
+```
+include("pairmodel_iterative_parameter_recovery.jl")
+```
+
+
+## Practice model comparison
+
+Let's figure out how to get model posteriors and parameter posteriors for two subjects before proceeding.
+
+Start Julia with 4 threads and the aDDM environment.
+
+```
+julia --project=/Users/brenden/Toolboxes/ADDM.jl --threads=4
+```
+
+Then run the practice script.
+
+- Input:
+  - testexpdataLoss.csv
+  - testfixationsLoss.csv
+
+Output:
+  - model_posteriors
+  - parameter_posteriors
+
+```
+include("practice_model_comparison.jl")
+```
+
+
+
+
+## Fit real data
 
 Note that in fit_all_models.jl, you'll need to change the directory on line 15. It "cd"s into a folder specific to my computer.
 

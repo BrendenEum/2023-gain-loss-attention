@@ -1,0 +1,35 @@
+[1] "== dsbe =="
+[1] "= Gain ="
+   bias     d  eta sigma      nll
+10    0 0.004 0.01  0.05 450.8908
+  bias     d   eta sigma     nll
+4    0 0.003 0.014  0.02 361.889
+   bias     d   eta sigma      nll
+12    0 0.003 0.017  0.04 393.4353
+  bias     d   eta sigma      nll
+2 -0.1 0.001 0.016  0.04 428.5728
+  bias     d   eta sigma      nll
+8    0 0.004 0.002  0.05 462.9821
+  bias     d   eta sigma      nll
+2    0 0.001 0.018  0.04 404.5793
+  bias     d   eta sigma      nll
+1  0.1 0.001 0.005  0.05 553.5794
+  bias     d   eta sigma      nll
+2 -0.1 0.003 0.008  0.05 451.9013
+[1] "= Loss ="
+  bias     d   eta sigma      nll
+9  0.1 0.004 0.017  0.04 404.8289
+  bias     d   eta sigma      nll
+1    0 0.002 0.011  0.01 320.8947
+  bias     d   eta sigma      nll
+5    0 0.004 0.012  0.02 350.1804
+  bias     d   eta sigma      nll
+1    0 0.002 0.012  0.04 452.1065
+  bias     d   eta sigma      nll
+9  0.1 0.003 0.019  0.04 405.5921
+  bias     d   eta sigma     nll
+1  0.1 0.002 0.012  0.02 360.809
+  bias     d   eta sigma      nll
+1    0 0.002 0.007  0.02 431.8313
+  bias     d   eta sigma      nll
+1  0.1 0.003 0.008  0.01 326.6623

@@ -1,0 +1,35 @@
+[1] "== dstmr-dst =="
+[1] "= Gain ="
+      d eta minValue range sigma theta      nll
+4 0.025   0        1     5  0.05   0.7 448.1838
+      d eta minValue range sigma theta      nll
+1 0.015   0        1     5  0.03   0.3 479.3992
+     d eta minValue range sigma theta     nll
+8 0.01   0        1     5  0.04   0.5 530.747
+     d eta minValue range sigma theta      nll
+1 0.02   0        1     5  0.02   0.9 417.9851
+      d eta minValue range sigma theta      nll
+1 0.005   0        1     5  0.04     0 616.0751
+     d eta minValue range sigma theta      nll
+3 0.02   0        1     5  0.04     1 442.4108
+     d eta minValue range sigma theta      nll
+2 0.01   0        1     5  0.01   0.1 435.0779
+     d eta minValue range sigma theta     nll
+7 0.02   0        1     5  0.04   0.9 450.422
+[1] "= Loss ="
+      d eta minValue range sigma theta      nll
+7 0.005   0       -6     5  0.05     1 572.7862
+     d eta minValue range sigma theta      nll
+9 0.01   0       -6     5  0.03   0.9 512.9238
+      d eta minValue range sigma theta      nll
+6 0.005   0       -6     5  0.03   0.6 579.9309
+     d eta minValue range sigma theta      nll
+7 0.02   0       -6     5  0.04   0.9 452.3533
+     d eta minValue range sigma theta      nll
+2 0.01   0       -6     5  0.01   0.5 429.9419
+      d eta minValue range sigma theta      nll
+6 0.015   0       -6     5  0.04   0.2 488.8643
+     d eta minValue range sigma theta     nll
+2 0.02   0       -6     5  0.03   0.3 429.525
+     d eta minValue range sigma theta      nll
+1 0.02   0       -6     5  0.02   0.6 407.6214
