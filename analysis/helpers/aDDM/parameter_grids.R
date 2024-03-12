@@ -1,20 +1,22 @@
-# aDDM 
+# RDaDDM
+
+d = seq(.001, .009, .001)
+sigma = seq(.01, .09, .01)
+bias = seq(-.5, .5, .1)
+theta = seq(0, 1, .1)
+lambda = seq(0,.004, .001)
+minValue = -6
+grid = expand.grid(d=d,sigma=sigma,bias=bias,theta=theta,lambda=lambda,minValue=minValue)
+write.csv(grid, file="param_grid.csv", row.names=F)
+
+
+# RDaDDM
 
 d = seq(.001, .009, .004)
 sigma = seq(.01, .09, .04)
-bias = seq(-.9, .9, .9)
-theta = seq(0, 3, 1.5)
-eta = seq(0,3,1.5)
+bias = seq(-.5, .5, .5)
+theta = seq(0, 1, .25)
 lambda = seq(0,.004, .002)
-minValue = c(0, -6)
-range = c(1, 5)
-grid = expand.grid(d=d,sigma=sigma,bias=bias,theta=theta,eta=eta,lambda=lambda,minValue=minValue,range=range)
+minValue = -6
+grid = expand.grid(d=d,sigma=sigma,bias=bias,theta=theta,lambda=lambda,minValue=minValue)
 write.csv(grid, file="param_grid.csv", row.names=F)
-
-# aDDM 
-
-drift = seq(.001, .009, .001)
-sigma = seq(.01, .09, .01)
-theta = seq(0, 1, .1)
-grid = expand.grid(d=d,sigma=sigma,theta=theta)
-write.csv(grid, file="addm_grid.csv", row.names=F)

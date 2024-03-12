@@ -124,6 +124,34 @@ analysis/helpers/parameter_recovery/check_parameter_recovery.R
 
 You'll need to change the "data_generating_process" variable to the acronym that satisfies the data generating model. For instance, "dst" is aDDM with drift, sigma, theta. "dstb" is with the additional parameter "starting point bias". The full length acronym is "dstbelmr" for drift, sigma, theta, bias, eta, lambda, nonDecisionTime, minValue, and range. A summary .txt file is stored with the full fitted outputs and details about the data generating processes.
 
+
+## Practice model comparison
+
+Let's figure out how to get model posteriors and parameter posteriors for two subjects before proceeding.
+
+Start Julia with 4 threads and the aDDM environment.
+
+```
+julia --project=/Users/brenden/Toolboxes/ADDM.jl --threads=4
+```
+
+Then run the practice script.
+
+- Input:
+  - testexpdataLoss.csv
+  - testfixationsLoss.csv
+
+Output:
+  - model_posteriors
+  - parameter_posteriors
+
+```
+include("practice_model_comparison.jl")
+```
+
+
+
+
 ## Fit real data
 
 Note that in fit_all_models.jl, you'll need to change the directory on line 15. It "cd"s into a folder specific to my computer.

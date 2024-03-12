@@ -7,8 +7,8 @@ function custom_aDDM_simulator(;model::ADDM.aDDM, fixationData::ADDM.FixationDat
     # Range normalization, which nests goal-relevant transformations
     valueLeftRaw = valueLeft
     valueRightRaw = valueRight
-    valueLeft = (valueLeftRaw - model.minValue) / model.range
-    valueRight = (valueRightRaw - model.minValue) / model.range
+    valueLeft = valueLeftRaw - model.minValue
+    valueRight = valueRightRaw - model.minValue
 
     fixUnfixValueDiffs = Dict(1 => valueLeft - valueRight, 2 => valueRight - valueLeft)
     
@@ -146,9 +146,9 @@ function custom_aDDM_simulator(;model::ADDM.aDDM, fixationData::ADDM.FixationDat
             if currFixLocation == 0
                 μ = 0
             elseif currFixLocation == 1
-                μ = model.d * ( (valueLeft + model.η) - (model.θ * valueRight))
+                μ = model.d*((valueLeft) - (model.θ * valueRight)) + model.η
             elseif currFixLocation == 2
-                μ = model.d * ((model.θ * valueLeft) - (valueRight + model.η))
+                μ = model.d*((model.θ * valueLeft) - (valueRight)) - model.η
             end
 
             # Sample the change in RDV from the distribution.

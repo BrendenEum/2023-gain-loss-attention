@@ -1,4 +1,4 @@
-function sim_and_fit(model_list, condition, param_grid_csv, free_params, fixed_params; timeStep=10.0, simCutoff=20000, approxStateStep=0.01, verbose=true)
+function sim_and_fit(model_list, condition, param_grid, free_params, fixed_params; timeStep=10.0, simCutoff=20000, approxStateStep=0.01, verbose=true)
 
     # Filenames
     if (condition=="Gain")
@@ -26,15 +26,12 @@ function sim_and_fit(model_list, condition, param_grid_csv, free_params, fixed_p
         println("Thread ", Threads.threadid(), ": Model $(m)")
         flush(stdout)
 
-        # Simulate data
+        ############################### Simulate data
         MyModel = model_list[m];
         MyArgs = (timeStep = timeStep, cutOff = simCutoff, fixationData = MyFixationData);
         SimData = ADDM.simulate_data(MyModel, MyStims, custom_aDDM_simulator, MyArgs);
 
-        # Fit the simulated data with the modified aDDM that nests all models
-        fn = param_grid_csv;
-        tmp = DataFrame(CSV.File(fn, delim=","));
-        param_grid = Dict(pairs(NamedTuple.(eachrow(tmp))));
+        ############################### Fit simulated data
 
         my_likelihood_args = (timeStep = timeStep, approxStateStep = approxStateStep);
 
@@ -43,8 +40,31 @@ function sim_and_fit(model_list, condition, param_grid_csv, free_params, fixed_p
         sort!(all_nll_df, [:nll])
 
         # Record data generating model and output
-        write(outdir*condition*"_"*"model_$(m).txt", string(MyModel)); 
-        CSV.write(outdir*condition*"_"*"fit_$(m).csv", all_nll_df);
-        CSV.write(outdir*condition*"_"*"trialposteriors_$(m).csv", trial_posteriors);
+        write(outdir*condition*"_model_$(m).txt", string(MyModel)); 
+        CSV.write(outdir*condition*"_fit_$(m).csv", all_nll_df);
+        CSV.write(outdir*condition*"_trialposteriors_$(m).csv", trial_posteriors);
+
+        ############################### Model and Parameter Posteriors
+
+        # Model posteriors.
+        nTrials = length(SimData);
+        model_posteriors = Dict(zip(keys(trial_posteriors), [x[nTrials] for x in values(trial_posteriors)]));
+        model_posteriors_df = DataFrame();
+        for (k, v) in param_grid
+            cur_row = DataFrame([v])
+            cur_row.posterior = [model_posteriors[k]]
+            model_posteriors_df = vcat(model_posteriors_df, cur_row, cols=:union)
+        end
+        CSV.write(outdir*condition*"_modelposteriors_$(m).csv", model_posteriors_df)
+
+        # Parameter posteriors.
+        param_posteriors = ADDM.marginal_posteriors(param_grid, model_posteriors)
+
+        # Store.
+        for paramIndex in 1:length(param_posteriors)
+            param = names(param_posteriors[paramIndex])[1]
+            CSV.write(outdir*condition*"_$(param)_posterior.csv", param_posteriors[paramIndex])
+        end
+
     end
 end
