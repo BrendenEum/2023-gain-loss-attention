@@ -27,7 +27,7 @@ verbose = true; # show progress
 """
 simCount = 8; # how many simulations to run per data generating process?
 
-"""
+
 ##################################################################################################################
 # (d, σ, θ)
 ##################################################################################################################
@@ -490,9 +490,23 @@ Random.seed!(seed)
         push!(model_list, model);
     end
     fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :bias=>0.0, :λ=>0.0, :range=>1.0)
-    fn = "parameter_grids/"*m*"_Gain.csv";
+    
+    include("custom_functions/dstm_likelihood.jl")
+    fn_module = [meth.module for meth in methods(dstm_likelihood)][1]
+    fn = "parameter_grids/dstm_Gain.csv";
     tmp = DataFrame(CSV.File(fn, delim=","));
-    param_grid = Dict(pairs(NamedTuple.(eachrow(tmp))));
+    tmp.likelihood_fn .= "dstm";
+    param_grid1 = Dict(pairs(NamedTuple.(eachrow(tmp))));
+    
+    include("custom_functions/dst_likelihood.jl")
+    fn_module = [meth.module for meth in methods(dst_likelihood)][1]
+    fn = "parameter_grids/dst_Gain.csv";
+    tmp = DataFrame(CSV.File(fn, delim=","));
+    tmp.likelihood_fn .= "dst";
+    param_grid2 = Dict(pairs(NamedTuple.(eachrow(tmp))));
+    param_grid2 = Dict(keys(param_grid2) .+ length(param_grid1) .=> values(param_grid2));
+
+    param_grid = Dict(param_grid1..., param_grid2...)
     sim_and_fit(model_list, "Gain", param_grid, m, fixed_params)
 
     # Loss
@@ -514,11 +528,28 @@ Random.seed!(seed)
         push!(model_list, model);
     end
     fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :bias=>0.0, :λ=>0.0, :range=>1.0)
-    sim_and_fit(model_list, "Loss", "parameter_grids/"*m*"_Loss.csv", m, fixed_params)
+    
+    include("custom_functions/dstm_likelihood.jl")
+    fn_module = [meth.module for meth in methods(dstm_likelihood)][1]
+    fn = "parameter_grids/dstm_Gain.csv";
+    tmp = DataFrame(CSV.File(fn, delim=","));
+    tmp.likelihood_fn .= "dstm";
+    param_grid1 = Dict(pairs(NamedTuple.(eachrow(tmp))));
+    
+    include("custom_functions/dst_likelihood.jl")
+    fn_module = [meth.module for meth in methods(dst_likelihood)][1]
+    fn = "parameter_grids/dst_Gain.csv";
+    tmp = DataFrame(CSV.File(fn, delim=","));
+    tmp.likelihood_fn .= "dst";
+    param_grid2 = Dict(pairs(NamedTuple.(eachrow(tmp))));
+    param_grid2 = Dict(keys(param_grid2) .+ length(param_grid1) .=> values(param_grid2));
+
+    param_grid = Dict(param_grid1..., param_grid2...)
+    sim_and_fit(model_list, "Gain", param_grid, m, fixed_params)
 
 end
 
-"""
+
 ##################################################################################################################
 # GEN: (d,σ,η)
 # FIT: (d,σ,θ,m) + (d,σ,η)

@@ -35,7 +35,7 @@ function sim_and_fit(model_list, condition, param_grid, free_params, fixed_param
 
         my_likelihood_args = (timeStep = timeStep, approxStateStep = approxStateStep);
 
-        best_pars, all_nll_df, trial_posteriors = ADDM.grid_search(SimData, param_grid, custom_aDDM_likelihood, fixed_params, likelihood_args=my_likelihood_args, return_model_posteriors=true; verbose=verbose, threadNum=Threads.threadid());
+        best_pars, all_nll_df, trial_posteriors = ADDM.grid_search(SimData, param_grid, nothing, fixed_params, likelihood_args=my_likelihood_args, return_model_posteriors=true; verbose=verbose, threadNum=Threads.threadid());
 
         sort!(all_nll_df, [:nll])
 
@@ -56,15 +56,11 @@ function sim_and_fit(model_list, condition, param_grid, free_params, fixed_param
             model_posteriors_df = vcat(model_posteriors_df, cur_row, cols=:union)
         end
         CSV.write(outdir*condition*"_modelposteriors_$(m).csv", model_posteriors_df)
-
-        # Parameter posteriors.
-        param_posteriors = ADDM.marginal_posteriors(param_grid, model_posteriors)
-
-        # Store.
-        for paramIndex in 1:length(param_posteriors)
-            param = names(param_posteriors[paramIndex])[1]
-            CSV.write(outdir*condition*"_$(param)_posterior.csv", param_posteriors[paramIndex])
-        end
+        
+        # Model comparison
+        gdf = groupby(model_posteriors_df, :likelihood_fn);
+        combdf = combine(gdf, :posterior => sum)
+        CSV.write(outdir*condition*"_modelcomparison_$(m).csv", combdf)
 
     end
 end

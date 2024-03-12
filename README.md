@@ -103,7 +103,7 @@ analysis/helpers/parameter_recovery/parameter_grids.R
 After that, you can run your code by using `include()`.
 
 ```
-include("iterative_parameter_recovery.jl")
+include("simglemodel_iterative_parameter_recovery.jl")
 ```
 
 To check the results of your parameter recovery, run:
@@ -123,6 +123,12 @@ analysis/helpers/parameter_recovery/check_parameter_recovery.R
 ```
 
 You'll need to change the "data_generating_process" variable to the acronym that satisfies the data generating model. For instance, "dst" is aDDM with drift, sigma, theta. "dstb" is with the additional parameter "starting point bias". The full length acronym is "dstbelmr" for drift, sigma, theta, bias, eta, lambda, nonDecisionTime, minValue, and range. A summary .txt file is stored with the full fitted outputs and details about the data generating processes.
+
+The results so far are for checking if models can recover original parameters when they are also the original data generating process. What about comparing pairs of models on data generated from only one of those models?
+
+```
+include("pairmodel_iterative_parameter_recovery.jl")
+```
 
 
 ## Practice model comparison
