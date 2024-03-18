@@ -89,7 +89,7 @@ analysis/helpers/aDDM/cfr_to_addmdata.R
 
 In previous iterations of code, I ran dozens of parameter recovery (PR) tests on simplified versions of models in this paper. For instance, the original aDDM, the additive aDDM, range-normalized aDDM, and so on. If you want to see that stuff, check out an older version of the main branch on github (3/12/24). That earlier analysis has helped me narrow down the set of models I want to test without the massive computation time that the next set of models will require. 
 
-Now, I will be doing parameter recovery exercises for 3 models: 
+Now, I will be doing parameter recovery exercises for the 3 model listed below. The idea is to generate data using one model, but go through the fitting pipeline with all three models, and see if the model with the highest posterior probability is the one that generated the data. 
 1.  standard aDDM with collapsing bounds (drift, noise, multiplicative attentional bias, starting point bias, collapse rate)
 2.  additive aDDM with collapsing bounds (drift, noise, additive attentional bias, starting point bias, collapse rate)
 3. reference-dependent aDDM with collapsing bounds (drift, noise, multiplicative attentional bias, starting point bias, collapse rate, reference point)
@@ -103,16 +103,16 @@ The range of values that I think are reasonable for each parameter is below:
 - collapse rate: $\lambda \in (0, .004)$
 - reference-point: $r \in \{0, 1, -6\}$ depending on the model and condition
 
-GEN: Based on these ranges, I'll randomly select from 3 possible values (near min, med, max) per parameter to generate data. Note that when $\theta=1$, $r$ in the reference-dependent aDDM is not identified, e.g. $\mu = d([V_L-r] - \theta [V_R-r])$. Because of this, I will avoid $\theta=1$ in my PR exercises. Per model and condition, I will simulate 8 datasets using randomly drawn parameters. I chose 8 because it is a multiple of the 4 performance cores I have on my laptop.
-- drift: $d \in \{.002, .005, .008\}$
-- noise: $s \in \{.02, .05, .08\}$
-- mult. attn. bias: $\theta \in \{0, .5, .9\}$ or $\theta \in \{1.1, 1.5, 2\}$ 
-- add. attn. bias: $\eta \in \{0, .02, .04\}$
-- start. pt. bias: $b \in \{-.2, 0, .2\}$
-- collapse rate: $\lambda \in \{0, .002, .004\}$
+GEN: Based on these ranges, I'll randomly select from 5 possible values (approx close to min, 25%, median, 75%, max) per parameter to generate data. Note that when $\theta=1$, $r$ in the reference-dependent aDDM is not identified, e.g. $\mu = d([V_L-r] - \theta [V_R-r])$. Because of this, I will avoid $\theta=1$ in my PR exercises. I also assume non-decision time is fixed at 100 ms. Per model and condition, I will simulate 20 datasets using randomly drawn parameters. I chose 20 because it is a multiple of the 4 performance cores I have on my laptop.
+- drift: $d \in \{.002, .0035, .005, .0065, .008\}$
+- noise: $s \in \{.02, .035, .05, .065, .08\}$
+- mult. attn. bias: $\theta \in \{0, .25, .5, .75, .9\}$ or $\theta \in \{1.1, 1.25, 1.5, 1.75, 2\}$ 
+- add. attn. bias: $\eta \in \{0, .01, .02, .03, .04\}$
+- start. pt. bias: $b \in \{-.2, -.1, 0, .1, .2\}$
+- collapse rate: $\lambda \in \{0, .001, .002, .003, .004\}$
 - reference-point: $r=0$, $r=1$, or $r=-6$
 
-FIT: I'm going to try and fit the simulated data (GEN) using a slightly larger grid than specified above. For every model, this is calculating the likelihood for $5^5=3125$ possible parameter combinations.
+FIT: I'm going to try and fit the simulated data (GEN) using the same grid that was sampled from to generated the data. For every trial, this is calculating the likelihood for $5^5=3125$ possible parameter combinations.
 - drift: $d \in \{.002, .0035, .005, .0065, .008\}$
 - noise: $s \in \{.02, .035, .05, .065, .08\}$
 - mult. attn. bias: $\theta \in \{0, .25, .5, .75, .9\}$ or $\theta \in \{1.1, 1.25, 1.5, 1.75, 2\}$ 
@@ -124,7 +124,8 @@ FIT: I'm going to try and fit the simulated data (GEN) using a slightly larger g
 Ok, first things first, we need to generate the grid of possible parameter values that we are going to test.
 
 ```
-analysis/helpers/parameter_recovery/parameter_grids.R
+analysis/helpers/parameter_recovery/model_parameter_grids.R
+analysis/helpers/parameter_recovery/make_parameter_grids.jl
 ```
 
 To do this, open a shell and start julia in an ADDM environment. I like to start it with 4 threads. Multi-threading will significantly speed up the speed at which this gets done.
@@ -138,8 +139,6 @@ In Julia, run the following code to do all the parameter recovery exercises.
 ```
 include("parameter_recovery.jl")
 ```
-
-
 
 ## DELETE Parameter recovery exercises
 

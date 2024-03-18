@@ -1,0 +1,73 @@
+# Introduction
+
+Author: Brenden Eum (2024)
+
+Clusters work like external computers that you can send jobs to. You log onto a login node, which is sort of like a small virtual machine with a little bit of memory and CPU. This login node is shared amongst everyone who uses the HPC and is used to send jobs to compute nodes. 
+
+Compute nodes do the heavy lifting computations. Login nodes communicate with compute nodes using SLURM. 
+- [See this video for SLURM coding if you need a knowledge recap.](https://www.youtube.com/watch?v=U42qlYkzP9k) 
+- [See this cheatsheet if you just need a quick reference.](https://slurm.schedmd.com/pdfs/summary.pdf)
+
+# Instructions
+
+Move files and scripts from my computer to cluster. This has to be done on local shell, not while ssh into cluster.
+
+```
+scp -r /Users/brenden/Toolboxes/ADDM.jl beum@login.hpc.caltech.edu:/central/groups/rnl/beum/
+
+scp -r /Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/HPC_benchmarking/* beum@login.hpc.caltech.edu:/central/groups/rnl/beum/benchmark_scripts
+```
+
+Log onto a login node on the Caltech HPC using shell.
+
+```
+ssh beum@login.hpc.caltech.edu
+```
+
+Put in your Caltech password and accept the Duo multi-factor authentication.
+
+Navigate to your directory.
+
+```
+cd /central/groups/rnl/beum/
+```
+
+Start an interactive compute node.
+
+```
+srun --nodes=1 --ntasks=1 --cpus-per-task=8 --time=01:00:00 --pty bash
+```
+
+Load julia and the toolbox.
+
+```
+# LOAD MODULES, INSERT CODE, AND RUN YOUR PROGRAMS HERE
+module load julia
+julia --project=/central/groups/rnl/beum/ADDM.jl -e 'import Pkg; Pkg.instantiate()'
+julia --project=/central/groups/rnl/beum/ADDM.jl
+```
+
+Run the script.
+
+```
+include("parameter_recovery.jl")
+```
+
+
+Use Slurm to submit the job to compute nodes. Do this from /central/groups/rnl/beum/.
+
+```
+sbatch -A rnl job_script.sh
+```
+
+Check the status of your jobs.
+
+```
+squeue -u beum
+```
+
+Move files from cluster to my computer. This has to be done on local shell. Do this in the local directory that you want to store it in.
+
+```
+scp beum@login.hpc.caltech.edu:/central/groups/rnl/beum/<subfolder>/<remote_filename>
+```

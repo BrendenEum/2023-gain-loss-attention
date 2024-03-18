@@ -5,19 +5,19 @@
 # Preamble
 ##################################################################################################################
 
+
 #############
 # Libraries and settings
 #############
-
 using ADDM
 using CSV
 using DataFrames
 using Random, Distributions, StatsBase
 using Base.Threads
-include("custom_functions/custom_aDDM_simulator.jl")
-include("custom_functions/custom_aDDM_likelihood.jl")
-include("sim_and_fit.jl")
+using Dates
 seed = 4;
+simCount = 20; # how many simulations to run per data generating process?
+include("sim_and_fit.jl")
 """
 These options are the defaults for the arguments in sim_and_fit().
 timeStep = 10.0; # ms
@@ -25,101 +25,227 @@ approxStateStep = 0.01; # the approximate resolution of the relative-decision-va
 simCutoff = 20000; # maximum decision time for one simulated choice
 verbose = true; # show progress
 """
-simCount = 8; # how many simulations to run per data generating process?
+
+
+#############
+# Prep experiment data
+#############
+expdata = "expdataGain.csv";
+fixdata = "fixationsGain.csv";
+data = ADDM.load_data_from_csv(expdata, fixdata; stimsOnly=true);
+nTrials = 81;
+Stims_Gain = (valueLeft = reduce(vcat, [[i.valueLeft for i in data[j]] for j in keys(data)])[1:nTrials], valueRight = reduce(vcat, [[i.valueRight for i in data[j]] for j in keys(data)])[1:nTrials]);
+Fixations_Gain = ADDM.process_fixations(data, fixDistType="simple");
+expdata = "expdataLoss.csv";
+fixdata = "fixationsLoss.csv";
+data = ADDM.load_data_from_csv(expdata, fixdata; stimsOnly=true);
+nTrials = 81;
+Stims_Loss = (valueLeft = reduce(vcat, [[i.valueLeft for i in data[j]] for j in keys(data)])[1:nTrials], valueRight = reduce(vcat, [[i.valueRight for i in data[j]] for j in keys(data)])[1:nTrials]);
+Fixations_Loss = ADDM.process_fixations(data, fixDistType="simple");
+
+
+#############
+# Prep likelihood and simulator functions
+#############
+include("custom_functions/aDDM_likelihood.jl")
+include("custom_functions/aDDM_simulator.jl")
+include("custom_functions/AddDDM_likelihood.jl")
+include("custom_functions/AddDDM_simulator.jl")
+include("custom_functions/RaDDM_likelihood.jl")
+include("custom_functions/RaDDM_simulator.jl")
+
+
+#############
+# Prep parameter grid (param_grid)
+#############
+include("make_parameter_grid.jl")
+
+#############
+# Prep output folder
+#############
+prdir = "../../outputs/temp/parameter_recovery/" * Dates.format(now(), "yyyy.mm.dd.H.M") * "/";
+mkpath(prdir);
 
 
 ##################################################################################################################
-# GEN: (d,σ,θ,m)
-# FIT: (d,σ,θ,m) + (d,σ,η)
+# GEN: Standard aDDM
 ##################################################################################################################
-m = "dstm-dse"
-println("== " * m * " ==")
+m = "aDDM"      # ! ! !
+println("== GEN: " * m * " ==")
 flush(stdout)
-Random.seed!(seed)
+outdir = prdir * "/" * m * "/";
+mkpath(outdir);
+simulator_fn = aDDM_simulator      # ! ! !
 
-############ Gain
+
+############# 
+# Gain
+#############
 condition = "Gain"
 println("= "*condition*" =")
 flush(stdout)
+Random.seed!(seed)
 
-# Parameters
+# SIM: Parameters      # ! ! !
 model_list = Any[];
 for i in 1:simCount
     model = ADDM.define_model(
-        d = sample([.002, .004, .006, .008]),
-        σ = sample([.01, .03, .05, .07]),
-        bias = 0.0,
-        θ = sample([0, .25, .5, .75, 1], Weights([.125, .25, .25, .25, .125])),
+        d = sample([.002, .0035, .005, .0065, .008]),
+        σ = sample([.02, .035, .05, .065, .08]),
+        θ = sample([0, .25, .5, .75, .9]),
+        bias = sample([-.2, -.1, 0, .1, .2]),
         nonDecisionTime = 100
-    )
-    model.η = 0.0;
-    model.λ = 0.0;
-    model.minValue = 1.0;
-    model.range = 1.0;
+    ) 
+    model.λ = sample([0, .001, .002, .003, .004])
     push!(model_list, model);
 end
-fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :bias=>0.0, :λ=>0.0, :range=>1.0)
+fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100)
 
-# Grid
-include("custom_functions/dstm_likelihood.jl")
-fn_module = [meth.module for meth in methods(dstm_likelihood)][1];
-fn = "parameter_grids/dstm_Gain.csv";
-tmp = DataFrame(CSV.File(fn, delim=","));
-tmp.likelihood_fn .= "dstm_likelihood";
-param_grid1 = Dict(pairs(NamedTuple.(eachrow(tmp))));
+# DO SIM AND FIT
+sim_and_fit(model_list, condition, simulator_fn, param_grid_Gain, fixed_params)
 
-include("custom_functions/dse_likelihood.jl")
-fn_module = [meth.module for meth in methods(dse_likelihood)][1];
-fn = "parameter_grids/dse_Gain.csv";
-tmp = DataFrame(CSV.File(fn, delim=","));
-tmp.likelihood_fn .= "dse_likelihood";
-param_grid2 = Dict(pairs(NamedTuple.(eachrow(tmp))));
-param_grid2 = Dict(keys(param_grid2) .+ length(param_grid1) .=> values(param_grid2));
 
-param_grid = Dict(param_grid1..., param_grid2...)
-
-# Sim and fit
-sim_and_fit(model_list, condition, param_grid, m, fixed_params);
-
-############ Loss
+############# 
+# Loss
+#############
 condition = "Loss"
 println("= "*condition*" =")
+flush(stdout)
+Random.seed!(seed)
 
-# Parameters
+# SIM: Parameters      # ! ! !
 model_list = Any[];
 for i in 1:simCount
     model = ADDM.define_model(
-        d = sample([.002, .004, .006, .008]),
-        σ = sample([.01, .03, .05, .07]),
-        bias = 0.0,
-        θ = sample([0, .25, .5, .75, 1], Weights([.125, .25, .25, .25, .125])),
+        d = sample([.002, .0035, .005, .0065, .008]),
+        σ = sample([.02, .035, .05, .065, .08]),
+        θ = sample([1.1, 1.25, 1.5, 1.75, 2]),
+        bias = sample([-.2, -.1, 0, .1, .2]),
         nonDecisionTime = 100
-    )
-    model.η = 0.0;
-    model.λ = 0.0;
-    model.minValue = -6.0;
-    model.range = 1.0;
+    ) 
+    model.λ = sample([0, .001, .002, .003, .004])
     push!(model_list, model);
 end
-fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :bias=>0.0, :λ=>0.0, :range=>1.0)
+fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100)
 
-# Grid
-include("custom_functions/dstm_likelihood.jl")
-fn_module = [meth.module for meth in methods(dstm_likelihood)][1]
-fn = "parameter_grids/dstm_Loss.csv";
-tmp = DataFrame(CSV.File(fn, delim=","));
-tmp.likelihood_fn .= "dstm_likelihood";
-param_grid1 = Dict(pairs(NamedTuple.(eachrow(tmp))));
+# DO SIM AND FIT
+sim_and_fit(model_list, condition, simulator_fn, param_grid_Loss, fixed_params)
 
-include("custom_functions/dse_likelihood.jl")
-fn_module = [meth.module for meth in methods(dse_likelihood)][1]
-fn = "parameter_grids/dse_Loss.csv";
-tmp = DataFrame(CSV.File(fn, delim=","));
-tmp.likelihood_fn .= "dse_likelihood";
-param_grid2 = Dict(pairs(NamedTuple.(eachrow(tmp))));
-param_grid2 = Dict(keys(param_grid2) .+ length(param_grid1) .=> values(param_grid2));
 
-param_grid = Dict(param_grid1..., param_grid2...)
+##################################################################################################################
+# GEN: Additive aDDM
+##################################################################################################################
+m = "AddDDM"      # ! ! !
+println("== GEN: " * m * " ==")
+flush(stdout)
+outdir = prdir * "/" * m * "/";
+mkpath(outdir);
+simulator_fn = AddDDM_simulator      # ! ! !
 
-# Sim and Fit
-sim_and_fit(model_list, condition, param_grid, m, fixed_params)
+
+############# 
+# Gain
+#############
+condition = "Gain"
+println("= "*condition*" =")
+flush(stdout)
+Random.seed!(seed)
+
+# SIM: Parameters      # ! ! !
+model_list = Any[];
+for i in 1:simCount
+    model = ADDM.define_model(
+        d = sample([.002, .0035, .005, .0065, .008]),
+        σ = sample([.02, .035, .05, .065, .08]),
+        η = sample([0, .01, .02, .03, .04]),
+        bias = sample([-.2, -.1, 0, .1, .2]),
+        nonDecisionTime = 100
+    ) 
+    model.λ = sample([0, .001, .002, .003, .004])
+    push!(model_list, model);
+end
+fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100)
+
+# DO SIM AND FIT
+sim_and_fit(model_list, condition, simulator_fn, param_grid_Gain, fixed_params)
+
+
+############# 
+# Loss
+#############
+condition = "Loss"
+println("= "*condition*" =")
+flush(stdout)
+Random.seed!(seed)
+
+# SIM: Parameters [SAME AS IN GAINS]
+
+# DO SIM AND FIT
+sim_and_fit(model_list, condition, simulator_fn, param_grid_Loss, fixed_params)
+
+
+##################################################################################################################
+# GEN: Reference-Dependent aDDM
+##################################################################################################################
+m = "RaDDM"      # ! ! !
+println("== GEN: " * m * " ==")
+flush(stdout)
+outdir = prdir * "/" * m * "/";
+mkpath(outdir);
+simulator_fn = RaDDM_simulator      # ! ! !
+
+
+############# 
+# Gain
+#############
+condition = "Gain"
+println("= "*condition*" =")
+flush(stdout)
+Random.seed!(seed)
+
+# SIM: Parameters      # ! ! !
+model_list = Any[];
+for i in 1:simCount
+    model = ADDM.define_model(
+        d = sample([.002, .0035, .005, .0065, .008]),
+        σ = sample([.02, .035, .05, .065, .08]),
+        θ = sample([0, .25, .5, .75, .9]),
+        bias = sample([-.2, -.1, 0, .1, .2]),
+        nonDecisionTime = 100
+    ) 
+    model.λ = sample([0, .001, .002, .003, .004])
+    model.reference = 1.0
+    push!(model_list, model);
+end
+fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100)
+
+# DO SIM AND FIT
+sim_and_fit(model_list, condition, simulator_fn, param_grid_Gain, fixed_params)
+
+
+############# 
+# Loss
+#############
+condition = "Loss"
+println("= "*condition*" =")
+flush(stdout)
+Random.seed!(seed)
+
+# SIM: Parameters      # ! ! !
+model_list = Any[];
+for i in 1:simCount
+    model = ADDM.define_model(
+        d = sample([.002, .0035, .005, .0065, .008]),
+        σ = sample([.02, .035, .05, .065, .08]),
+        θ = sample([0, .25, .5, .75, .9]),
+        bias = sample([-.2, -.1, 0, .1, .2]),
+        nonDecisionTime = 100
+    ) 
+    model.λ = sample([0, .001, .002, .003, .004])
+    model.reference = -6.0
+    push!(model_list, model);
+end
+fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100)
+
+# DO SIM AND FIT
+sim_and_fit(model_list, condition, simulator_fn, param_grid_Loss, fixed_params)
