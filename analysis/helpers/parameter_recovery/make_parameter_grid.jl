@@ -36,7 +36,7 @@ param_grid3 = Dict(keys(param_grid3) .+ length(param_grid2) .+ length(param_grid
 param_grid_Gain = Dict(param_grid1..., param_grid2..., param_grid3...)
 
 #######################
-# Gain
+# Loss
 #######################
 
 # Standard aDDM

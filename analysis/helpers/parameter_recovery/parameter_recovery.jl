@@ -15,7 +15,7 @@ using DataFrames
 using Random, Distributions, StatsBase
 using Base.Threads
 using Dates
-seed = 4;
+seed = 1337;
 simCount = 20; # how many simulations to run per data generating process?
 include("sim_and_fit.jl")
 """
@@ -66,7 +66,7 @@ include("make_parameter_grid.jl")
 prdir = "../../outputs/temp/parameter_recovery/" * Dates.format(now(), "yyyy.mm.dd.H.M") * "/";
 mkpath(prdir);
 
-
+"""
 ##################################################################################################################
 # GEN: Standard aDDM
 ##################################################################################################################
@@ -90,16 +90,18 @@ Random.seed!(seed)
 model_list = Any[];
 for i in 1:simCount
     model = ADDM.define_model(
-        d = sample([.002, .0035, .005, .0065, .008]),
-        σ = sample([.02, .035, .05, .065, .08]),
+        d = sample([.003, .0045, .006, .0075]),
+        σ = sample([.03, .045, .06, .075]),
         θ = sample([0, .25, .5, .75, .9]),
         bias = sample([-.2, -.1, 0, .1, .2]),
-        nonDecisionTime = 100
-    ) 
-    model.λ = sample([0, .001, .002, .003, .004])
+        nonDecisionTime = 100,
+        decay = 0
+    )
     push!(model_list, model);
 end
-fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100)
+
+# FIT
+fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :decay=>0.0)
 
 # DO SIM AND FIT
 sim_and_fit(model_list, condition, simulator_fn, param_grid_Gain, fixed_params)
@@ -117,21 +119,23 @@ Random.seed!(seed)
 model_list = Any[];
 for i in 1:simCount
     model = ADDM.define_model(
-        d = sample([.002, .0035, .005, .0065, .008]),
-        σ = sample([.02, .035, .05, .065, .08]),
+        d = sample([.003, .0045, .006, .0075]),
+        σ = sample([.03, .045, .06, .075]),
         θ = sample([1.1, 1.25, 1.5, 1.75, 2]),
         bias = sample([-.2, -.1, 0, .1, .2]),
-        nonDecisionTime = 100
+        nonDecisionTime = 100,
+        decay = 0
     ) 
-    model.λ = sample([0, .001, .002, .003, .004])
     push!(model_list, model);
 end
-fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100)
+
+# FIT
+fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :decay=>0.0)
 
 # DO SIM AND FIT
 sim_and_fit(model_list, condition, simulator_fn, param_grid_Loss, fixed_params)
 
-
+"""
 ##################################################################################################################
 # GEN: Additive aDDM
 ##################################################################################################################
@@ -155,16 +159,18 @@ Random.seed!(seed)
 model_list = Any[];
 for i in 1:simCount
     model = ADDM.define_model(
-        d = sample([.002, .0035, .005, .0065, .008]),
-        σ = sample([.02, .035, .05, .065, .08]),
-        η = sample([0, .01, .02, .03, .04]),
+        d = sample([.003, .0045, .006, .0075]),
+        σ = sample([.03, .045, .06, .075]),
+        η = sample([.005, .01, .015, .02]),
         bias = sample([-.2, -.1, 0, .1, .2]),
-        nonDecisionTime = 100
+        nonDecisionTime = 100,
+        decay = 0
     ) 
-    model.λ = sample([0, .001, .002, .003, .004])
     push!(model_list, model);
 end
-fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100)
+
+#FIT
+fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :decay=>0.0)
 
 # DO SIM AND FIT
 sim_and_fit(model_list, condition, simulator_fn, param_grid_Gain, fixed_params)
@@ -183,7 +189,7 @@ Random.seed!(seed)
 # DO SIM AND FIT
 sim_and_fit(model_list, condition, simulator_fn, param_grid_Loss, fixed_params)
 
-
+"""
 ##################################################################################################################
 # GEN: Reference-Dependent aDDM
 ##################################################################################################################
@@ -207,17 +213,19 @@ Random.seed!(seed)
 model_list = Any[];
 for i in 1:simCount
     model = ADDM.define_model(
-        d = sample([.002, .0035, .005, .0065, .008]),
-        σ = sample([.02, .035, .05, .065, .08]),
+        d = sample([.003, .0045, .006, .0075]),
+        σ = sample([.03, .045, .06, .075]),
         θ = sample([0, .25, .5, .75, .9]),
         bias = sample([-.2, -.1, 0, .1, .2]),
-        nonDecisionTime = 100
+        nonDecisionTime = 100,
+        decay = 0
     ) 
-    model.λ = sample([0, .001, .002, .003, .004])
     model.reference = 1.0
     push!(model_list, model);
 end
-fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100)
+
+#FIT
+fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :decay=>0.0)
 
 # DO SIM AND FIT
 sim_and_fit(model_list, condition, simulator_fn, param_grid_Gain, fixed_params)
@@ -235,17 +243,20 @@ Random.seed!(seed)
 model_list = Any[];
 for i in 1:simCount
     model = ADDM.define_model(
-        d = sample([.002, .0035, .005, .0065, .008]),
-        σ = sample([.02, .035, .05, .065, .08]),
+        d = sample([.003, .0045, .006, .0075]),
+        σ = sample([.03, .045, .06, .075]),
         θ = sample([0, .25, .5, .75, .9]),
         bias = sample([-.2, -.1, 0, .1, .2]),
-        nonDecisionTime = 100
+        nonDecisionTime = 100,
+        decay = 0
     ) 
-    model.λ = sample([0, .001, .002, .003, .004])
     model.reference = -6.0
     push!(model_list, model);
 end
-fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100)
+
+#FIT
+fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :decay=>0.0)
 
 # DO SIM AND FIT
 sim_and_fit(model_list, condition, simulator_fn, param_grid_Loss, fixed_params)
+"""

@@ -17,14 +17,15 @@ function AddDDM_simulator(;model::ADDM.aDDM, fixationData::ADDM.FixationData,
     RT = 0
     uninterruptedLastFixTime = 0
     ndtTimeSteps = Int64(model.nonDecisionTime ÷ timeStep)
+    cumTimeStep = 0
 
     # The values of the barriers can change over time.
     # In this case we include an exponential decay
     # Due to the shape of the exponential decay function the starting point for the decay is exp(0) = 1
     # Iterate up to the cutoff and get the maximum possible number of time steps.
     maxNumTimeSteps = cutOff÷timeStep
-    barrierUp = exp.(-model.λ .* (0:maxNumTimeSteps-1))
-    barrierDown = -exp.(-model.λ .* (0:maxNumTimeSteps-1))
+    barrierUp = exp.(-model.decay .* (0:maxNumTimeSteps-1))
+    barrierDown = -exp.(-model.decay .* (0:maxNumTimeSteps-1))
     
     # Sample and iterate over the latency for this trial.
     latency = rand(fixationData.latencies)
@@ -38,7 +39,8 @@ function AddDDM_simulator(;model::ADDM.aDDM, fixationData::ADDM.FixationData,
 
         # If the RDV hit one of the barriers, the trial is over.
         # No barrier decay before decision-related accummulation
-        if abs(RDV) >= model.barrier
+        cumTimeStep += 1
+        if abs(RDV) >= barrierUp[cumTimeStep]
             choice = RDV >= 0 ? -1 : 1
             push!(fixRDV, RDV)
             push!(fixItem, 0)
@@ -68,7 +70,6 @@ function AddDDM_simulator(;model::ADDM.aDDM, fixationData::ADDM.FixationData,
     decisionReached = false
 
     # Begin decision related accummulation
-    cumTimeStep = 0
     while true
         if currFixLocation == 0
             # This is an item fixation; sample its location.
@@ -106,7 +107,8 @@ function AddDDM_simulator(;model::ADDM.aDDM, fixationData::ADDM.FixationData,
 
                 # If the RDV hit one of the barriers, the trial is over.
                 # No barrier decay before decision-related accummulation
-                if abs(RDV) >= model.barrier
+                cumTimeStep += 1
+                if abs(RDV) >= barrierUp[cumTimeStep]
                     choice = RDV >= 0 ? -1 : 1
                     push!(fixRDV, RDV)
                     push!(fixItem, currFixLocation)

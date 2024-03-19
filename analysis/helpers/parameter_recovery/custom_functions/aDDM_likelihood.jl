@@ -38,15 +38,15 @@ function aDDM_likelihood(;model::ADDM.aDDM, trial::ADDM.Trial, timeStep::Number 
     numTimeSteps += 1
     
     # The values of the barriers can change over time.
-    barrierUp = exp.(-model.λ .* (0:numTimeSteps-1))
-    barrierDown = -exp.(-model.λ .* (0:numTimeSteps-1))
+    barrierUp = exp.(-model.decay .* (0:numTimeSteps-1))
+    barrierDown = -exp.(-model.decay .* (0:numTimeSteps-1))
     
     # Obtain correct state step.
     halfNumStateBins = ceil(model.barrier / approxStateStep)
     stateStep = model.barrier / (halfNumStateBins + 0.5)
     
     # The vertical axis is divided into states.
-    states = range(-1*(model.barrier) + stateStep / 2, 1*(model.barrier) - stateStep/2, step=stateStep)
+    states = range(-1*(model.barrier) + stateStep/2, 1*(model.barrier) - stateStep/2, step=stateStep)
     
     # Find the state corresponding to the bias parameter.
     biasState = argmin(abs.(states .- model.bias))

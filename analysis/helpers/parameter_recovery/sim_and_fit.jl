@@ -1,4 +1,4 @@
-function sim_and_fit(model_list, condition, simulator_fn, param_grid, fixed_params; timeStep=10.0, simCutoff=20000, approxStateStep=0.01, verbose=true)
+function sim_and_fit(model_list, condition, simulator_fn, param_grid, fixed_params; timeStep=10.0, simCutoff=40000, approxStateStep=0.01, verbose=true)
 
     Threads.@threads for m in 1:length(model_list)
 
@@ -16,7 +16,7 @@ function sim_and_fit(model_list, condition, simulator_fn, param_grid, fixed_para
         end
         MyModel = model_list[m];
         MyArgs = (timeStep = timeStep, cutOff = simCutoff, fixationData = MyFixationData);
-        SimData = ADDM.simulate_data(MyModel, MyStims, simulator_fn, MyArgs);
+        global SimData = ADDM.simulate_data(MyModel, MyStims, simulator_fn, MyArgs);
     
         ############################### Fit simulated data
     
@@ -45,7 +45,7 @@ function sim_and_fit(model_list, condition, simulator_fn, param_grid, fixed_para
         CSV.write(outdir*condition*"_modelposteriors_$(m).csv", model_posteriors_df)
 
         # Parameter Posteriors.
-        global param_posteriors = ADDM.marginal_posteriors(param_grid, model_posteriors)
+        #global param_posteriors = ADDM.marginal_posteriors(param_grid, model_posteriors)
         #CSV.write(outdir*condition*"_modelposteriors_$(m).csv", param_posteriors)
         
         # Model comparison
