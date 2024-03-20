@@ -1,7 +1,7 @@
 using Distributions
 using LinearAlgebra
 
-function custom_aDDM_likelihood(;model::ADDM.aDDM, trial::ADDM.Trial, timeStep::Number = 10.0, approxStateStep::Number = 0.1)
+function RaDDM_likelihood(;model::ADDM.aDDM, trial::ADDM.Trial, timeStep::Number = 10.0, approxStateStep::Number = 0.01)
     
     # Iterate over the fixations and discount the non-decision time.
     if model.nonDecisionTime > 0
@@ -38,8 +38,8 @@ function custom_aDDM_likelihood(;model::ADDM.aDDM, trial::ADDM.Trial, timeStep::
     numTimeSteps += 1
     
     # The values of the barriers can change over time.
-    barrierUp = exp.(-model.λ .* (0:numTimeSteps-1))
-    barrierDown = -exp.(-model.λ .* (0:numTimeSteps-1))
+    barrierUp = exp.(-model.decay .* (0:numTimeSteps-1))
+    barrierDown = -exp.(-model.decay .* (0:numTimeSteps-1))
     
     # Obtain correct state step.
     halfNumStateBins = ceil(model.barrier / approxStateStep)
@@ -64,13 +64,13 @@ function custom_aDDM_likelihood(;model::ADDM.aDDM, trial::ADDM.Trial, timeStep::
     
     # Dictionary of μ values from fItem.
     μDict = Dict{Number, Number}()
-    vL = trial.valueLeft - model.minValue
-    vR = trial.valueRight - model.minValue
+    vL = trial.valueLeft - model.reference
+    vR = trial.valueRight - model.reference
     for fItem in 0:2
         if fItem == 1
-            μ = model.d*((vL) - (model.θ * vR)) + model.η
+            μ = model.d*(vL - (model.θ * vR))
         elseif fItem == 2
-            μ = model.d*((model.θ * vL) - (vR)) - model.η
+            μ = model.d*((model.θ * vL) - vR)
         else
             μ = 0
         end
