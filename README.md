@@ -68,7 +68,7 @@ Output:
 analysis/helpers/fix_cross_analysis/fix_cross_analysis_figures.R
 ```
 
-### aDDM
+# aDDM
 
 ## Convert data
 
@@ -85,77 +85,72 @@ Output:
 analysis/helpers/aDDM/cfr_to_addmdata.R
 ```
 
-## Parameter recovery exercises
+## Parameter recovery
 
-Do some parameter recovery exercises with the new models you're proposing before you try fitting them to real data.
-To do this, open up your terminal, navigate to your project folder, then type the code below. Note, this only works with Julia 1.10 or later.
+In previous iterations of code, I ran dozens of parameter recovery (PR) tests on simplified versions of models in this paper. For instance, the original aDDM, the additive aDDM, range-normalized aDDM, and so on. If you want to see that stuff, check out an older version of the main branch on github (3/12/24). That earlier analysis has helped me narrow down the set of models I want to test without the massive computation time that the next set of models will require. 
+
+Now, I will be doing parameter recovery exercises for the 3 model listed below. The idea is to generate data using one model, but go through the fitting pipeline with all three models, and see if the model with the highest posterior probability is the one that generated the data. 
+1.  standard aDDM with collapsing bounds (drift, noise, multiplicative attentional bias, starting point bias, collapse rate)
+2.  additive aDDM with collapsing bounds (drift, noise, additive attentional bias, starting point bias, collapse rate)
+3. reference-dependent aDDM with collapsing bounds (drift, noise, multiplicative attentional bias, starting point bias, collapse rate, reference point)
+
+The range of values that I think are reasonable for each parameter is below:
+- drift: $d \in (.001, .009)$
+- noise: $s \in (.01, .09)$
+- mult. attn. bias: $\theta \in \{(0,1), (1,2)\}$ depending on the model and condition
+- add. attn. bias: $\eta \in (0, .04)$ depending on the model
+- start. pt. bias: $b \in (-.5, .5)$
+- collapse rate: $\lambda \in (0, .004)$
+- reference-point: $r \in \{0, 1, -6\}$ depending on the model and condition
+
+GEN: Based on these ranges, I'll randomly select from 5 possible values (approx close to min, 25%, median, 75%, max) per parameter to generate data. Note that when $\theta=1$, $r$ in the reference-dependent aDDM is not identified, e.g. $\mu = d([V_L-r] - \theta [V_R-r])$. Because of this, I will avoid $\theta=1$ in my PR exercises. I also assume non-decision time is fixed at 100 ms. Per model and condition, I will simulate 20 datasets using randomly drawn parameters. I chose 20 because it is a multiple of the 4 performance cores I have on my laptop.
+- drift: $d \in \{.003, .005, .007, .009\}$
+- noise: $s \in \{.02, .04, .06, .08\}$
+- mult. attn. bias: $\theta \in \{0, .25, .5, .75, .9\}$ or $\theta \in \{1.1, 1.25, 1.5, 1.75, 2\}$ 
+- add. attn. bias: $\eta \in \{0, .01, .02, .03, .04\}$
+- start. pt. bias: $b \in \{-.2, -.1, 0, .1, .2\}$
+- collapse rate: $\lambda \in \{0, .001, .002, .003, .004\}$
+- reference-point: $r=0$, $r=1$, or $r=-6$
+
+FIT: I'm going to try and fit the simulated data (GEN) using the same grid that was sampled from to generated the data. For every trial, this is calculating the likelihood for $5^5=3125$ possible parameter combinations.
+- drift: $d \in \{.003, .005, .007, .009\}$
+- noise: $s \in \{.02, .04, .06, .08\}$
+- mult. attn. bias: $\theta \in \{0, .25, .5, .75, .9\}$ or $\theta \in \{1.1, 1.25, 1.5, 1.75, 2\}$ 
+- add. attn. bias: $\eta \in \{0, .01, .02, .03, .04\}$
+- start. pt. bias: $b \in \{-.2, -.1, 0, .1, .2\}$
+- collapse rate: $\lambda \in \{0, .001, .002, .003, .004\}$
+- reference-point: $r=0$, $r=1$, or $r=-6$
+
+Ok, first things first, we need to generate the grid of possible parameter values that we are going to test.
+
+```
+analysis/helpers/parameter_recovery/model_parameter_grids.R
+```
+
+When that's done, we open a shell and start julia in an ADDM environment. I like to start it with 4 threads. Multi-threading will significantly speed up the speed at which this gets done.
 
 ```
 julia --project=/Users/brenden/Toolboxes/ADDM.jl --threads=4
 ```
 
-You also need to generate a grid of parameters to search through before doing any fitting:
+In Julia, run the following code to do all the parameter recovery exercises.
 
 ```
-analysis/helpers/parameter_recovery/parameter_grids.R
+include("parameter_recovery.jl")
 ```
 
-After that, you can run your code by using `include()`.
+To analyze the output of that parameter recovery, we need to run some R code. We want to check if the most likely fitted model is the same as the data generating model (ModelRecovery). If that's true, and hopefully it is, then we want to check that each model is able to recover it's original parameters (MarginalPosteriors).
 
-```
-include("simglemodel_iterative_parameter_recovery.jl")
-```
-
-To check the results of your parameter recovery, run:
-
-- Input:
-  - analysis/helpers/parameter_recovery/expdata{Gain,Loss}.csv from the numeric study.
-  - analysis/helpers/parameter_recovery/fixations{Gain,Loss}.csv from the numeric study.
-  - analysis/helpers/parameter_recovery/parameter_grids/*.csv with grids for each model
-
-- Output:
-  - analysis/outputs/temp/parameter_recovery/{model_acronym}/*_fits_*.csv for parameter combos and their NLL.
-  - analysis/outputs/temp/parameter_recovery/{model_acronym}/*_model_*.txt for true data generating processes.
-  - analysis/outputs/temp/parameter_recovery/{model_acronym}/*_summary_*.txt for details about best fitting estimates.
-
-```
-analysis/helpers/parameter_recovery/check_parameter_recovery.R
-```
-
-You'll need to change the "data_generating_process" variable to the acronym that satisfies the data generating model. For instance, "dst" is aDDM with drift, sigma, theta. "dstb" is with the additional parameter "starting point bias". The full length acronym is "dstbelmr" for drift, sigma, theta, bias, eta, lambda, nonDecisionTime, minValue, and range. A summary .txt file is stored with the full fitted outputs and details about the data generating processes.
-
-The results so far are for checking if models can recover original parameters when they are also the original data generating process. What about comparing pairs of models on data generated from only one of those models?
-
-```
-include("pairmodel_iterative_parameter_recovery.jl")
-```
-
-
-## Practice model comparison
-
-Let's figure out how to get model posteriors and parameter posteriors for two subjects before proceeding.
-
-Start Julia with 4 threads and the aDDM environment.
-
-```
-julia --project=/Users/brenden/Toolboxes/ADDM.jl --threads=4
-```
-
-Then run the practice script.
-
-- Input:
-  - testexpdataLoss.csv
-  - testfixationsLoss.csv
+Input:
+- analysis/outputs/temp/parameter_recovery/{date in yyyy.mm.dd.H.M}
 
 Output:
-  - model_posteriors
-  - parameter_posteriors
+- analysis/outputs/temp/parameter_recovery/{date in yyyy.mm.dd.H.M}/ModelRecovery.pdf
+- analysis/outputs/temp/parameter_recovery/{date in yyyy.mm.dd.H.M}/{model}/Sim{#}_MarginalPosteriors.pdf
 
 ```
-include("practice_model_comparison.jl")
+analysis/helpers/parameter_recovery/parameter_recovery_analysis.R
 ```
-
-
 
 
 ## Fit real data
