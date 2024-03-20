@@ -125,10 +125,9 @@ Ok, first things first, we need to generate the grid of possible parameter value
 
 ```
 analysis/helpers/parameter_recovery/model_parameter_grids.R
-analysis/helpers/parameter_recovery/make_parameter_grids.jl
 ```
 
-To do this, open a shell and start julia in an ADDM environment. I like to start it with 4 threads. Multi-threading will significantly speed up the speed at which this gets done.
+When that's done, we open a shell and start julia in an ADDM environment. I like to start it with 4 threads. Multi-threading will significantly speed up the speed at which this gets done.
 
 ```
 julia --project=/Users/brenden/Toolboxes/ADDM.jl --threads=4
@@ -140,75 +139,18 @@ In Julia, run the following code to do all the parameter recovery exercises.
 include("parameter_recovery.jl")
 ```
 
-## DELETE Parameter recovery exercises
+To analyze the output of that parameter recovery, we need to run some R code. We want to check if the most likely fitted model is the same as the data generating model (ModelRecovery). If that's true, and hopefully it is, then we want to check that each model is able to recover it's original parameters (MarginalPosteriors).
 
-Do some parameter recovery exercises with the new models you're proposing before you try fitting them to real data.
-To do this, open up your terminal, navigate to your project folder, then type the code below. Note, this only works with Julia 1.10 or later.
-
-
-
-You also need to generate a grid of parameters to search through before doing any fitting:
-
-```
-analysis/helpers/parameter_recovery/parameter_grids.R
-```
-
-After that, you can run your code by using `include()`.
-
-```
-include("simglemodel_iterative_parameter_recovery.jl")
-```
-
-To check the results of your parameter recovery, run:
-
-- Input:
-  - analysis/helpers/parameter_recovery/expdata{Gain,Loss}.csv from the numeric study.
-  - analysis/helpers/parameter_recovery/fixations{Gain,Loss}.csv from the numeric study.
-  - analysis/helpers/parameter_recovery/parameter_grids/*.csv with grids for each model
-
-- Output:
-  - analysis/outputs/temp/parameter_recovery/{model_acronym}/*_fits_*.csv for parameter combos and their NLL.
-  - analysis/outputs/temp/parameter_recovery/{model_acronym}/*_model_*.txt for true data generating processes.
-  - analysis/outputs/temp/parameter_recovery/{model_acronym}/*_summary_*.txt for details about best fitting estimates.
-
-```
-analysis/helpers/parameter_recovery/check_parameter_recovery.R
-```
-
-You'll need to change the "data_generating_process" variable to the acronym that satisfies the data generating model. For instance, "dst" is aDDM with drift, sigma, theta. "dstb" is with the additional parameter "starting point bias". The full length acronym is "dstbelmr" for drift, sigma, theta, bias, eta, lambda, nonDecisionTime, minValue, and range. A summary .txt file is stored with the full fitted outputs and details about the data generating processes.
-
-The results so far are for checking if models can recover original parameters when they are also the original data generating process. What about comparing pairs of models on data generated from only one of those models?
-
-```
-include("pairmodel_iterative_parameter_recovery.jl")
-```
-
-
-## DELETE Practice model comparison
-
-Let's figure out how to get model posteriors and parameter posteriors for two subjects before proceeding.
-
-Start Julia with 4 threads and the aDDM environment.
-
-```
-julia --project=/Users/brenden/Toolboxes/ADDM.jl --threads=4
-```
-
-Then run the practice script.
-
-- Input:
-  - testexpdataLoss.csv
-  - testfixationsLoss.csv
+Input:
+- analysis/outputs/temp/parameter_recovery/{date in yyyy.mm.dd.H.M}
 
 Output:
-  - model_posteriors
-  - parameter_posteriors
+- analysis/outputs/temp/parameter_recovery/{date in yyyy.mm.dd.H.M}/ModelRecovery.pdf
+- analysis/outputs/temp/parameter_recovery/{date in yyyy.mm.dd.H.M}/{model}/Sim{#}_MarginalPosteriors.pdf
 
 ```
-include("practice_model_comparison.jl")
+analysis/helpers/parameter_recovery/parameter_recovery_analysis.R
 ```
-
-
 
 
 ## Fit real data
