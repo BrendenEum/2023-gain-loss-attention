@@ -38,40 +38,35 @@ verbose = true;
 
 
 ##################################################################################################################
-# Study 1 Exploratory
+# Study 2 Exploratory
 ##################################################################################################################
+
 
 #############
 # Prep output folder
 #############
-study = "Study1E"      # ! ! !
+study = "Study2E"      # ! ! !
 println("== " * study * " ==")
 flush(stdout)
 outdir = "../../outputs/temp/model_fitting/" * study * "-" * Dates.format(now(), "yyyy.mm.dd.H.M") * "/";
 mkpath(outdir);
 
-#############
-# Prep experiment data
-#############
-expdata = "../../../data/processed_data/dots/e/expdataGain_test.csv";
-fixdata = "../../../data/processed_data/dots/e/fixationsGain_test.csv";
-study1 = ADDM.load_data_from_csv(expdata, fixdata);
-
-
 ##########################
 # Gain
 ##########################
-condition = "Gain"
+condition = "Gain"               # ! ! !
 println("= " * condition * " =")
 flush(stdout)
 Random.seed!(seed)
-param_grid = param_grid_Gain;
+param_grid = param_grid_Gain;               # ! ! !
+expdata = "../../../data/processed_data/numeric/e/expdata"*condition*".csv";
+fixdata = "../../../data/processed_data/numeric/e/fixations"*condition*".csv";
+study2 = ADDM.load_data_from_csv(expdata, fixdata);
 
-Threads.@threads for k in collect(keys(study1))
-#for k in keys(study1)
+Threads.@threads for k in collect(keys(study2))
     
     # Subset the data by subject.
-    cur_subj_data = study1[k]
+    cur_subj_data = study2[k]
 
     # Fit the model via grid search.
     subj_best_pars, subj_nll_df, subj_trial_posteriors = ADDM.grid_search(
@@ -82,7 +77,7 @@ Threads.@threads for k in collect(keys(study1))
     CSV.write(outdir * condition * "_trialPosteriors_$(k).csv", subj_trial_posteriors)
     
     # Get model posteriors.
-    nTrials = length(study1[k]);
+    nTrials = length(study2[k]);
     subj_model_posteriors = Dict(zip(keys(subj_trial_posteriors), [x[nTrials] for x in values(subj_trial_posteriors)]));
     subj_model_posteriors_df = DataFrame();
     for (k, v) in param_grid
