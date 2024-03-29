@@ -39,7 +39,7 @@ write.csv(grid, file="parameter_grids/aDDM_Loss.csv", row.names=F)
 grid = list(
     d = d_grid,
     sigma = sigma_grid,
-    eta = seq(0, .035, .005),
+    eta = seq(0, .05, .005),
     bias = bias_grid
 )
 grid = expand.grid(grid)
@@ -48,7 +48,7 @@ write.csv(grid, file="parameter_grids/AddDDM_Loss.csv", row.names=F)
 
 
 ####################################
-# Reference-Dependent aDDM
+# Reference-Dependent aDDM in Study 1
 ####################################
 
 # Gain
@@ -57,10 +57,10 @@ grid = list(
     sigma = sigma_grid,
     theta = seq(0, 1, .1),
     bias = bias_grid,
-    reference = 1
+    reference = 4.5
 )
 grid = expand.grid(grid)
-write.csv(grid, file="parameter_grids/RaDDM_Gain.csv", row.names=F)
+write.csv(grid, file="parameter_grids/RaDDM_Gain_Study1.csv", row.names=F)
 
 # Loss
 grid = list(
@@ -68,7 +68,33 @@ grid = list(
     sigma = sigma_grid,
     theta = seq(0, 1, .1),
     bias = bias_grid,
-    reference = -6
+    reference = -5.5
 )
 grid = expand.grid(grid)
-write.csv(grid, file="parameter_grids/RaDDM_Loss.csv", row.names=F)
+write.csv(grid, file="parameter_grids/RaDDM_Loss_Study1.csv", row.names=F)
+
+####################################
+# Reference-Dependent aDDM in Study 2
+####################################
+
+# Gain
+grid = list(
+  d = d_grid,
+  sigma = sigma_grid,
+  theta = seq(0, 1, .1),
+  bias = bias_grid,
+  reference = 1
+)
+grid = expand.grid(grid)
+write.csv(grid, file="parameter_grids/RaDDM_Gain_Study2.csv", row.names=F)
+
+# Loss
+grid = list(
+  d = d_grid,
+  sigma = sigma_grid,
+  theta = seq(0, 1, .1),
+  bias = bias_grid,
+  reference = -6
+)
+grid = expand.grid(grid)
+write.csv(grid, file="parameter_grids/RaDDM_Loss_Study2.csv", row.names=F)

@@ -25,7 +25,7 @@ param_grid2 = Dict(keys(param_grid2) .+ length(param_grid1) .=> values(param_gri
 
 include("custom_functions/RaDDM_likelihood.jl")
 fn_module = [meth.module for meth in methods(RaDDM_likelihood)][1];
-fn = "parameter_grids/RaDDM_Gain.csv";
+fn = "parameter_grids/RaDDM_Gain_Study1.csv";
 tmp = DataFrame(CSV.File(fn, delim=","));
 tmp.likelihood_fn .= "RaDDM_likelihood";
 param_grid3 = Dict(pairs(NamedTuple.(eachrow(tmp))));
@@ -62,7 +62,7 @@ param_grid2 = Dict(keys(param_grid2) .+ length(param_grid1) .=> values(param_gri
 
 include("custom_functions/RaDDM_likelihood.jl")
 fn_module = [meth.module for meth in methods(RaDDM_likelihood)][1];
-fn = "parameter_grids/RaDDM_Loss.csv";
+fn = "parameter_grids/RaDDM_Loss_Study1.csv";
 tmp = DataFrame(CSV.File(fn, delim=","));
 tmp.likelihood_fn .= "RaDDM_likelihood";
 param_grid3 = Dict(pairs(NamedTuple.(eachrow(tmp))));

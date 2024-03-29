@@ -26,7 +26,7 @@ include("custom_functions/RaDDM_likelihood.jl")
 #############
 # Prep parameter grid (param_grid)
 #############
-include("make_parameter_grid.jl")
+include("make_parameter_grid_Study2.jl")
 
 #############
 # Common model settings (! ! !)

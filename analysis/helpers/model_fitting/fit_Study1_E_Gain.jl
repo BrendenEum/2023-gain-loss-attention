@@ -26,7 +26,7 @@ include("custom_functions/RaDDM_likelihood.jl")
 #############
 # Prep parameter grid (param_grid)
 #############
-include("make_parameter_grid.jl")
+include("make_parameter_grid_Study1.jl")
 
 #############
 # Common model settings (! ! !)
@@ -63,9 +63,13 @@ param_grid = param_grid_Gain;               # ! ! !
 expdata = "../../../data/processed_data/dots/e/expdata"*condition*".csv";
 fixdata = "../../../data/processed_data/dots/e/fixations"*condition*".csv";
 study1 = ADDM.load_data_from_csv(expdata, fixdata);
+remaining_subjects = ["2", "3", "4", "5", "6", "7", "8", "9", "13", "15", "18", "20", "21", "30", "31", "34", "35"];
 
-Threads.@threads for k in collect(keys(study1))
+Threads.@threads for k in remaining_subjects#collect(keys(study1))
     
+    println(k)
+    flush(stdout)
+
     # Subset the data by subject.
     cur_subj_data = study1[k]
 
