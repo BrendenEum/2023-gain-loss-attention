@@ -155,18 +155,24 @@ analysis/helpers/parameter_recovery/parameter_recovery_analysis.R
 
 ## Fit real data
 
-Note that in fit_all_models.jl, you'll need to change the directory on line 15. It "cd"s into a folder specific to my computer.
+Note that in each script, you'll need to change the data directory. It "cd"s into a folder specific to my computer.
 
 - Input:
   - data/processed_data/{study}/{dataset}/expdata*.csv
   - data/processed_data/{study}/{dataset}/fixations*.csv
 
 - Output:
-  - analysis/outputs/temp/{study}_GainFit_{dataset}.csv
-  - analysis/outputs/temp/{study}_LossFit_{dataset}.csv
+  - A bunch of files related to model fitting. Each file ends with a number, representing participant number. 
+  - modelComparison: posterior model probabilites for each model (summing over all posterior likelihoods for each parameter combination within a model)
+  - modelPosteriors: the posterior probability of each parameter combination after going thru all trials
+  - nll: negative log likelihoods after going thru all trials
+  - trialPosteriors: posterior probability after each trial
 
 ```
-analysis/helpers/aDDM/fit_all_models.jl
+analysis/helpers/model_fitting/fit_Study1_E_Gain.jl
+analysis/helpers/model_fitting/fit_Study1_E_Loss.jl
+analysis/helpers/model_fitting/fit_Study2_E_Gain.jl
+analysis/helpers/model_fitting/fit_Study2_E_Loss.jl
 ```
 
 ### Model comparison
