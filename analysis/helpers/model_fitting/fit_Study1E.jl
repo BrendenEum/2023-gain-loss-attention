@@ -5,7 +5,6 @@ condition = "Gain"               # ! ! !
 println("= " * condition * " =")
 flush(stdout)
 Random.seed!(seed)
-param_grid = param_grid_Gain;               # ! ! !
 expdata = "../../../data/processed_data/dots/e/expdata"*condition*".csv";
 fixdata = "../../../data/processed_data/dots/e/fixations"*condition*".csv";
 study1 = ADDM.load_data_from_csv(expdata, fixdata);
@@ -19,9 +18,14 @@ Threads.@threads for k in collect(keys(study1))
     # Subset the data by subject.
     cur_subj_data = study1[k]
 
+    # Get parameter grid
+    global subject = k;
+    include("merge_parameter_grid_Gain.jl"); 
+    println(length(param_grid_Gain))
+
     # Fit the model via grid search.
     subj_best_pars, subj_nll_df, subj_trial_posteriors, subj_trial_likelihoods = ADDM.grid_search(
-        cur_subj_data, param_grid, nothing, fixed_params, likelihood_args=my_likelihood_args; 
+        cur_subj_data, param_grid_Gain, nothing, fixed_params, likelihood_args=my_likelihood_args; 
         return_model_posteriors=true, 
         return_trial_likelihoods=true,
         verbose=verbose, threadNum=Threads.threadid()
@@ -33,9 +37,9 @@ Threads.@threads for k in collect(keys(study1))
     
     # Get model posteriors.
     nTrials = length(study1[k]);
-    subj_model_posteriors = Dict(zip(keys(subj_trial_posteriors), [x[nTrials] for x in values(subj_trial_posteriors)]));
+    global subj_model_posteriors = Dict(zip(keys(subj_trial_posteriors), [x[nTrials] for x in values(subj_trial_posteriors)]));
     subj_model_posteriors_df = DataFrame();
-    for (k, v) in param_grid
+    for (k, v) in param_grid_Gain
         cur_row = DataFrame([v])
         cur_row.posterior = [subj_model_posteriors[k]]
         subj_model_posteriors_df = vcat(subj_model_posteriors_df, cur_row, cols=:union)
@@ -57,7 +61,6 @@ condition = "Loss"               # ! ! !
 println("= " * condition * " =")
 flush(stdout)
 Random.seed!(seed)
-param_grid = param_grid_Loss;               # ! ! !
 expdata = "../../../data/processed_data/dots/e/expdata"*condition*".csv";
 fixdata = "../../../data/processed_data/dots/e/fixations"*condition*".csv";
 study1 = ADDM.load_data_from_csv(expdata, fixdata);
@@ -71,9 +74,14 @@ Threads.@threads for k in collect(keys(study1))
     # Subset the data by subject.
     cur_subj_data = study1[k]
 
+    # Get parameter grid
+    global subject = "$(k)";
+    include("merge_parameter_grid_Loss.jl");
+    println(length(param_grid_Loss))
+
     # Fit the model via grid search.
     subj_best_pars, subj_nll_df, subj_trial_posteriors, subj_trial_likelihoods = ADDM.grid_search(
-        cur_subj_data, param_grid, nothing, fixed_params, likelihood_args=my_likelihood_args; 
+        cur_subj_data, param_grid_Loss, nothing, fixed_params, likelihood_args=my_likelihood_args; 
         return_model_posteriors=true, 
         return_trial_likelihoods=true,
         verbose=verbose, threadNum=Threads.threadid()
@@ -87,7 +95,7 @@ Threads.@threads for k in collect(keys(study1))
     nTrials = length(study1[k]);
     subj_model_posteriors = Dict(zip(keys(subj_trial_posteriors), [x[nTrials] for x in values(subj_trial_posteriors)]));
     subj_model_posteriors_df = DataFrame();
-    for (k, v) in param_grid
+    for (k, v) in param_grid_Loss
         cur_row = DataFrame([v])
         cur_row.posterior = [subj_model_posteriors[k]]
         subj_model_posteriors_df = vcat(subj_model_posteriors_df, cur_row, cols=:union)
@@ -99,4 +107,4 @@ Threads.@threads for k in collect(keys(study1))
     subj_model_comparison = combine(gdf, :posterior => sum)
     CSV.write(outdir * condition * "_modelComparison_$(k).csv", subj_model_comparison)
   
-end;
+end

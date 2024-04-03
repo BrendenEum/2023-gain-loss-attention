@@ -25,9 +25,23 @@ fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :decay=>0.0);
 my_likelihood_args = (timeStep = 10.0, approxStateStep = 0.01); #ms, RDV units
 verbose = true;
 
-# Prep output folder
-datefolder = "../../outputs/temp/model_fitting/" * Dates.format(now(), "yyyy.mm.dd-H.M") * "/"
+# Prep output folder and save the time in a silly file.
+WhatTimeIsItRightNowDotCom = Dates.format(now(), "yyyy.mm.dd-H.M");
+open("WhatTimeIsItRightNowDotCom.txt", "w") do file
+    write(file, WhatTimeIsItRightNowDotCom)
+end
+datefolder = "../../outputs/temp/model_fitting/" * WhatTimeIsItRightNowDotCom * "/";
 mkpath(datefolder);
+
+# List of study 1 and 2 participants
+expdata = "../../../data/processed_data/dots/e/expdataGain.csv";
+fixdata = "../../../data/processed_data/dots/e/fixationsGain.csv";
+study1 = ADDM.load_data_from_csv(expdata, fixdata);
+CSV.write("Study1_participants.csv", DataFrame(participants = collect(keys(study1))))
+expdata = "../../../data/processed_data/numeric/e/expdataGain.csv";
+fixdata = "../../../data/processed_data/numeric/e/fixationsGain.csv";
+study2 = ADDM.load_data_from_csv(expdata, fixdata);
+CSV.write("Study2_participants.csv", DataFrame(participants = collect(keys(study2))))
 
 
 ##################################################################################################################
@@ -40,6 +54,9 @@ stagefolder = datefolder * stage * "/";
 stage1folder = stagefolder;
 mkpath(stagefolder);
 
+# Parameter grids
+parameter_grid_folder = stage*"_parameter_grids/";
+
 ###########
 # Study 1
 ###########
@@ -50,10 +67,6 @@ println("== " * study * " ==")
 flush(stdout)
 outdir = stagefolder * study * "/"; # change this to datefolder once you're on stage3.
 mkpath(outdir);
-
-# Prep parameter grid (param_grid)
-parameter_grid_folder = stage*"_parameter_grids/";
-include("make_parameter_grid_Study1.jl");
 
 # Fitting
 include("fit_Study1E.jl")
@@ -68,10 +81,6 @@ println("== " * study * " ==")
 flush(stdout)
 outdir = stagefolder * study * "/"; # change this to datefolder once you're on stage3.
 mkpath(outdir);
-
-# Prep parameter grid (param_grid)
-parameter_grid_folder = stage*"_parameter_grids/";
-include("make_parameter_grid_Study2.jl");
 
 # Fitting
 include("fit_Study2E.jl")
@@ -88,9 +97,12 @@ stage2folder = stagefolder;
 mkpath(stagefolder);
 
 # Make new parameter grids
+# Make parameter grids
+parameter_grid_folder = stage*"_parameter_grids/";
 R"""
-source("Stage2_parameter_grids.R")
+source("make_Stage2_parameter_grids.R")
 """
+sleep(10)
 
 ###########
 # Study 1
@@ -102,10 +114,6 @@ println("== " * study * " ==")
 flush(stdout)
 outdir = stagefolder * study * "/"; # change this to datefolder once you're on stage3.
 mkpath(outdir);
-
-# Prep parameter grid (param_grid)
-parameter_grid_folder = stage*"_parameter_grids/";
-include("make_parameter_grid_Study1.jl");
 
 # Fitting
 include("fit_Study1E.jl")
@@ -120,10 +128,6 @@ println("== " * study * " ==")
 flush(stdout)
 outdir = stagefolder * study * "/"; # change this to datefolder once you're on stage3.
 mkpath(outdir);
-
-# Prep parameter grid (param_grid)
-parameter_grid_folder = stage*"_parameter_grids/";
-include("make_parameter_grid_Study2.jl");
 
 # Fitting
 include("fit_Study2E.jl")
