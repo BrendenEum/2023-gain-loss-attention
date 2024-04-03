@@ -12,6 +12,7 @@ study1 = ADDM.load_data_from_csv(expdata, fixdata);
 
 Threads.@threads for k in collect(keys(study1))
     
+    # Progress.
     println("Participant " * k)
     flush(stdout)
 
@@ -19,12 +20,16 @@ Threads.@threads for k in collect(keys(study1))
     cur_subj_data = study1[k]
 
     # Fit the model via grid search.
-    subj_best_pars, subj_nll_df, subj_trial_posteriors = ADDM.grid_search(
-        cur_subj_data, param_grid, nothing, fixed_params, likelihood_args=my_likelihood_args, return_model_posteriors=true; verbose=verbose, threadNum=Threads.threadid()
+    subj_best_pars, subj_nll_df, subj_trial_posteriors, subj_trial_likelihoods = ADDM.grid_search(
+        cur_subj_data, param_grid, nothing, fixed_params, likelihood_args=my_likelihood_args; 
+        return_model_posteriors=true, 
+        return_trial_likelihoods=true,
+        verbose=verbose, threadNum=Threads.threadid()
     );
     sort!(subj_nll_df, [:nll])
     CSV.write(outdir * condition * "_nll_$(k).csv", subj_nll_df)
     CSV.write(outdir * condition * "_trialPosteriors_$(k).csv", subj_trial_posteriors)
+    CSV.write(outdir * condition * "_trialLikelihoods_$(k).csv", subj_trial_likelihoods)
     
     # Get model posteriors.
     nTrials = length(study1[k]);
@@ -59,6 +64,7 @@ study1 = ADDM.load_data_from_csv(expdata, fixdata);
 
 Threads.@threads for k in collect(keys(study1))
 
+    # Progress
     println("Participant " * k)
     flush(stdout)
     
@@ -66,12 +72,16 @@ Threads.@threads for k in collect(keys(study1))
     cur_subj_data = study1[k]
 
     # Fit the model via grid search.
-    subj_best_pars, subj_nll_df, subj_trial_posteriors = ADDM.grid_search(
-        cur_subj_data, param_grid, nothing, fixed_params, likelihood_args=my_likelihood_args, return_model_posteriors=true; verbose=verbose, threadNum=Threads.threadid()
+    subj_best_pars, subj_nll_df, subj_trial_posteriors, subj_trial_likelihoods = ADDM.grid_search(
+        cur_subj_data, param_grid, nothing, fixed_params, likelihood_args=my_likelihood_args; 
+        return_model_posteriors=true, 
+        return_trial_likelihoods=true,
+        verbose=verbose, threadNum=Threads.threadid()
     );
     sort!(subj_nll_df, [:nll])
     CSV.write(outdir * condition * "_nll_$(k).csv", subj_nll_df)
     CSV.write(outdir * condition * "_trialPosteriors_$(k).csv", subj_trial_posteriors)
+    CSV.write(outdir * condition * "_trialLikelihoods_$(k).csv", subj_trial_likelihoods)
     
     # Get model posteriors.
     nTrials = length(study1[k]);

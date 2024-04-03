@@ -1,9 +1,13 @@
 #####################################################################
 # COMMON GRIDS
-d_grid_normal = seq(.001, .025, .004)
-sigma_grid = seq(.01, .13, .04)
-bias_grid = seq(-.4, .4, .4)
-theta_grid = seq(-.2, 1, .4)
+#d_grid_normal = seq(.001, .025, .004)
+#sigma_grid = seq(.01, .13, .04)
+#bias_grid = seq(-.4, .4, .4)
+#theta_grid = seq(-.2, 1, .4)
+d_grid_normal = .004
+sigma_grid = .07
+bias_grid = 0
+theta_grid = .5
 #####################################################################
 #if (length(d_grid_normal)!=length(d_grid_large)) {warning("Make sure d_grids are equal length.")}
 
