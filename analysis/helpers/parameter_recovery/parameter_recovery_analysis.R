@@ -14,7 +14,7 @@ library(latex2exp)
 
 #------------- Things you should edit at the start -------------
 simCount = 20 # How many simulated datasets per model-condition?
-date_folder = "2024.03.19.10.7" # yyyy.mm.dd.H.M of the results you want to look at.
+date_folder = "2024.04.02.15.51" # yyyy.mm.dd.H.M of the results you want to look at.
 colors = list(Gain="Green4", Loss="Red3")
 #---------------------------------------------------------------
 
@@ -104,7 +104,6 @@ data_compare$generating = factor(
 )
 
 ## Plot model recovery
-
 plt = ggplot(data_compare, aes(x=likelihood_fn, y=posterior_sum)) +
     myPlot + 
     
@@ -176,27 +175,30 @@ sigma_pdata = data.frame()
 theta_pdata = data.frame()
 eta_pdata = data.frame()
 bias_pdata = data.frame()
-decay_pdata = data.frame()
+ref_pdata = data.frame()
+#decay_pdata = data.frame()
 for (post in list(aDDM_post, AddDDM_post, RaDDM_post)) {
   d_p = post %>% mutate(variable="d", value=d) %>% calculateMarginal()
   sigma_p = post %>% mutate(variable="sigma", value=sigma) %>% calculateMarginal()
   theta_p = post %>% mutate(variable="theta", value=theta) %>% calculateMarginal()
   eta_p = post %>% mutate(variable="eta", value=eta) %>% calculateMarginal()
   bias_p = post %>% mutate(variable="bias", value=bias) %>% calculateMarginal()
+  ref_p = post %>% mutate(variable="reference", value=reference) %>% calculateMarginal()
   #decay_p = post %>% mutate(variable="decay", value=decay) %>% calculateMarginal()
   d_pdata = rbind(d_pdata, d_p)
   sigma_pdata = rbind(sigma_pdata, sigma_p)
   theta_pdata = rbind(theta_pdata, theta_p)
   eta_pdata = rbind(eta_pdata, eta_p)
   bias_pdata = rbind(bias_pdata, bias_p)
+  ref_pdata = rbind(ref_pdata, ref_p)
   #decay_pdata = rbind(decay_pdata, decay_p)
 }
 
-pdata = do.call("rbind", list(d_pdata, sigma_pdata, theta_pdata, eta_pdata, bias_pdata))#, decay_pdata))
+pdata = do.call("rbind", list(d_pdata, sigma_pdata, theta_pdata, eta_pdata, bias_pdata, ref_pdata))#, decay_pdata))
 pdata$variable = factor(
   pdata$variable,
-  levels = c("d","sigma","theta","eta","bias","decay"),
-  labels = c("d","sigma","theta","eta","bias","decay")
+  levels = c("d","sigma","theta","eta","bias","decay", "reference"),
+  labels = c("d","sigma","theta","eta","bias","decay", "reference")
 )
 pdata$value = factor(pdata$value)
 
@@ -217,8 +219,8 @@ for (row in 1:nrow(pdata)) {
   x = read.table(file.path(folder, paste0(condition, "_model_", simulation, ".txt")))
   d = parse_number(x$V10)
   sigma = parse_number(x$V7)
-  if (tInd==1) {theta = parse_number(x$V22); eta = parse_number(x$V25)} 
-  else if (tInd==0) {theta = parse_number(x$V25); eta = parse_number(x$V28)}
+  if (tInd==1) {theta = parse_number(x$V22); eta = parse_number(x$V25); reference = 0} 
+  else if (tInd==0) {theta = parse_number(x$V25); eta = parse_number(x$V28); reference = parse_number(x$V16)}
   bias = parse_number(x$V13)
   decay = parse_number(x$V19)
   
@@ -227,6 +229,7 @@ for (row in 1:nrow(pdata)) {
   else if (variable == "theta") {pdata$truth[row]=theta}
   else if (variable == "eta") {pdata$truth[row]=eta}
   else if (variable == "bias") {pdata$truth[row]=bias}
+  else if (variable == "reference") {pdata$truth[row]=reference}
   #else if (variable == "decay") {pdata$truth[row]=decay}
 }
 pdata$truth = factor(pdata$truth)
@@ -264,6 +267,6 @@ for (likelihood_fn in c("aDDM", "AddDDM", "RaDDM")){
       )
     
     fn = paste0("Sim", sim, "_MarginalPosteriors.pdf")
-    ggsave(file.path(figdir, likelihood_fn, fn), plot=plt, width = 20.5, height = 5.25)
+    ggsave(file.path(datadir, likelihood_fn, fn), plot=plt, width = 20.5, height = 5.25)
   }
 }

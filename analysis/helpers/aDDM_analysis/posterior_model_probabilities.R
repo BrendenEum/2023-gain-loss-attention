@@ -14,11 +14,13 @@ library(latex2exp)
 
 #------------- Things you should edit at the start -------------
 dataset = "e"
+datafolder = "e-refpt-minvalue"
+dataset_1 = "Study1E-debug-free-refpt3" #debugging
 colors = list(Gain="Green4", Loss="Red3")
 #---------------------------------------------------------------
 
 codedir = getwd()
-datadir = file.path(paste0("../../outputs/temp/model_fitting/", dataset))
+datadir = file.path(paste0("../../outputs/temp/model_fitting/", datafolder))
 cfrdir = file.path("../../../data/processed_data")
 load(file.path(cfrdir, paste0(dataset, "cfr.RData")))
 figdir = file.path("../../outputs/figures")
@@ -31,6 +33,9 @@ Study2_folder = file.path(datadir, "Study2")
 
 Study1_subjects = unique(ecfr$subject[ecfr$studyN==1])
 Study2_subjects = unique(ecfr$subject[ecfr$studyN==2])
+
+Study1_subjects = c(3, 5, 7, 9, 10) #debugging
+Study1_folder = file.path(paste0("../../outputs/temp/model_fitting/", dataset_1)) #debugging
 
 
 ##############
@@ -115,7 +120,7 @@ plt = ggplot(pdata, aes(x=likelihood_fn, y=posterior_sum)) +
     strip.background = element_blank(),
     strip.text.y = element_blank(),
     panel.spacing = unit(1, "lines"),
-    legend.position = c(.16,.88)
+    legend.position = c(.165,.88)
   )
 plot(plt)
-ggsave(file.path(figdir, "aDDM_modelComparison.pdf"), plot=plt, width = 12, height = 5)
+#ggsave(file.path(figdir, "aDDM_modelComparison.pdf"), plot=plt, width = 12, height = 5)

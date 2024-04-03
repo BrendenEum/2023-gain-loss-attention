@@ -28,6 +28,7 @@ tmp*
 *.xlsx
 mcmc_chains/
 figure-html/
+Analysis/outputs/temp/
 test*
 *.asc
 *.edf

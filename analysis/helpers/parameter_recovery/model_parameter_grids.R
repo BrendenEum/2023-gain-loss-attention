@@ -50,7 +50,7 @@ grid = list(
     sigma = c(.03, .045, .06, .075),
     theta = c(0, .25, .5, .75, .9),
     bias = c(-.2, -.1, 0, .1, .2),
-    reference = 1
+    reference = c(1,0,-1)
 )
 grid = expand.grid(grid)
 write.csv(grid, file="parameter_grids/RaDDM_Gain.csv", row.names=F)
@@ -61,7 +61,7 @@ grid = list(
     sigma = c(.03, .045, .06, .075),
     theta = c(0, .25, .5, .75, .9),
     bias = c(-.2, -.1, 0, .1, .2),
-    reference = -6
+    reference = c(-6,0,-8)
 )
 grid = expand.grid(grid)
 write.csv(grid, file="parameter_grids/RaDDM_Loss.csv", row.names=F)

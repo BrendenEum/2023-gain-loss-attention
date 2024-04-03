@@ -61,8 +61,7 @@ bias.firstfix.plt <- function(data, xlim) {
       show.legend=F
     ) +
     geom_line(aes(linetype=studyN), size=linesize) +
-    xlim(c(xlim[1],xlim[2])) +
-    ylim(c(0,1)) +
+    coord_cartesian(xlim=c(xlim[1],xlim[2]), ylim=c(0,1)) +
     labs(y="Pr(Choose First Fix. Option)", x="Norm. First - Other E[V]", color="Condition", linetype="Study")
 
   return(plt)

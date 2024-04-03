@@ -34,8 +34,7 @@ bias.netfix.plt <- function(data, xlim) {
     ) +
     geom_line(aes(linetype=studyN), size=linesize) +
     labs(y="Corr. Pr(Choose Left)", x="Net Fixation (L-R, s)", color="Condition", linetype="Study") +
-    xlim(c(xlim[1],xlim[2])) +
-    ylim(c(-0.41,0.41)) +
+    coord_cartesian(xlim=c(xlim[1],xlim[2])) +
     theme(
       legend.position = c(0.25,0.74)
     )

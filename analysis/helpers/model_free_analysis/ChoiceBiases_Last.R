@@ -36,8 +36,7 @@ bias.lastfix.plt <- function(data, xlim) {
       show.legend=F
     ) +
     geom_line(aes(linetype=studyN), size=linesize) +
-    xlim(c(xlim[1],xlim[2])) +
-    ylim(c(0,1)) +
+    coord_cartesian(xlim=c(xlim[1],xlim[2]), ylim=c(0,1)) +
     labs(y="Pr(Choose Last Fix. Option)", x="Norm. Last - Other E[V]", color="Condition", linetype="Study")
 
 

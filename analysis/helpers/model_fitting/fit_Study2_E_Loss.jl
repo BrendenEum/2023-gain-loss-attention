@@ -52,7 +52,7 @@ outdir = "../../outputs/temp/model_fitting/" * study * "-" * Dates.format(now(),
 mkpath(outdir);
 
 ##########################
-# Gain
+# Loss
 ##########################
 condition = "Loss"               # ! ! !
 println("= " * condition * " =")

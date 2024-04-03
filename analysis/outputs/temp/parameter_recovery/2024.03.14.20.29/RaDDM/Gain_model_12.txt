@@ -1,1 +1,0 @@
-ADDM.aDDM(Dict{Symbol, Any}(:nonDecisionTime => 100, :σ => 0.035, :d => 0.005, :bias => 0.0, :λ => 0.001, :barrier => 1, :reference => 1.0, :decay => 0, :θ => 0.0, :η => 0.0))
