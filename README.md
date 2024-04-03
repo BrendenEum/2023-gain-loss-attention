@@ -85,6 +85,18 @@ Output:
 analysis/helpers/aDDM/cfr_to_addmdata.R
 ```
 
+## What versions of the aDDM can predict the choice biases that we observe?
+
+Input:
+- analysis/helpers/aDDM_predictions/aDDM_simulate_trial.R
+
+Output:
+- analysis/outputs/figures/sim_{model}_ChoiceBiases_{Net,First,Last}.pdf
+
+```
+analysis/helpers/aDDM_predictions/plot_{model}_attnBias+&+rt(ov)_predictions.R
+```
+
 ## Parameter recovery
 
 In previous iterations of code, I ran dozens of parameter recovery (PR) tests on simplified versions of models in this paper. For instance, the original aDDM, the additive aDDM, range-normalized aDDM, and so on. If you want to see that stuff, check out an older version of the main branch on github (3/12/24). That earlier analysis has helped me narrow down the set of models I want to test without the massive computation time that the next set of models will require. 
@@ -169,10 +181,7 @@ Note that in each script, you'll need to change the data directory. It "cd"s int
   - trialPosteriors: posterior probability after each trial
 
 ```
-analysis/helpers/model_fitting/fit_Study1_E_Gain.jl
-analysis/helpers/model_fitting/fit_Study1_E_Loss.jl
-analysis/helpers/model_fitting/fit_Study2_E_Gain.jl
-analysis/helpers/model_fitting/fit_Study2_E_Loss.jl
+analysis/helpers/model_fitting/fit_all_models.jl
 ```
 
 ### Model comparison
@@ -180,48 +189,43 @@ analysis/helpers/model_fitting/fit_Study2_E_Loss.jl
 Look at model estimates and likelihoods.
 
 Input:
-- analysis/helpers/aDDM/get_estimates_likelihoods.R
-- analysis/outputs/temp/{study}_GainFit_{dataset}.csv
-- analysis/outputs/temp/{study}_LossFit_{dataset}.csv
-- analysis/outputs/temp/{study}_GainNLL_{dataset}.csv
-- analysis/outputs/temp/{study}_LossNLL_{dataset}.csv
+- analysis/outputs/temp/model_fitting/{dataset}/{study}/{condition}_modelComparison_{subjectNumber}.csv
+- analysis/outputs/temp/model_fitting/{dataset}/{study}/{condition}_modelPosteriors_{subjectNumber}.csv
 
 Output:
-- analysis/outputs/tables/group_estimates.csv
-- analysis/outputs/tables/{study}_group_estimates.csv
-- analysis/outputs/tables/posterior_model_probabilities.pdf
-- analysis/outputs/tables/individual_estimates_{model}.pdf
+- analysis/outputs/figures/aDDM_modelComparison.csv
+- analysis/outputs/temp/model_free_model_comparison/{regression_test}.rds
 
 ```
-analysis/helpers/aDDM/group_estimates_table.R
-analysis/helpers/aDDM/posterior_model_probabilities.R
-analysis/helpers/aDDM/best_fitting_model_counts.R
-analysis/helpers/aDDM/plot_individual_estimates_{model}.R
-analysis/helpers/aDDM/ttest_individual_estimates.R
+analysis/helpers/aDDM_analysis/posterior_model_probabilities.R
+analysis/helpers/aDDM_analysis/model_comparison_regression_tests.R
 ```
 
-### Model simulations
+### RaDDM analysis
 
-Simulate data with the estimates from the various aDDM.
+Look at individual-level parameters and predictive accuracy of the RaDDM.
 
 Input:
-- For parameter estimates
-  - analysis/outputs/temp/{study}_{model}_GainEst_{dataset}.csv
-  - analysis/outputs/temp/{study}_{model}_LossEst_{dataset}.csv
-- For out-of-sample fixation data
-  - data/processed_data/{dataset}cfr.RData
+- analysis/outputs/temp/model_fitting/{dataset}/{study}/{condition}_modelPosteriors_{subjectNumber}.csv
 
 Output:
-- analysis/outputs/temp/{study}_SimGainData_{dataset}.Rdata
-- analysis/outputs/temp/{study}_SimLossData_{dataset}.Rdata
-- analysis/outputs/figures/{model}_SimChoice_{dataset}.pdf
-- analysis/outputs/figures/{model}_SimRT_{dataset}.pdf
-- analysis/outputs/figures/{model}_SimNetFixBias_{dataset}.pdf
-- analysis/outputs/figures/{model}_SimLastFixBias_{dataset}.pdf
+- analysis/outputs/figures/RaDDM_IndividualEstimates.pdf
+
+```
+analysis/helpers/aDDM_analysis/RaDDM_IndividualEstimates.R
+analysis/helpers/aDDM_analysis/RaDDM_GroupEstimates.R
+```
+
+### RaDDM out-of-sample simulations
+
+Simulate data with the estimates from the RaDDM.
+
+Input:
+- 
+
+Output:
+- 
   
 ```
-analysis/helpers/aDDM/AddDDM_sims.R
-analysis/helpers/aDDM/plot_AddDDM_sims.R
-analysis/helpers/aDDM/GDaDDM_sims.R
-analysis/helpers/aDDM/plot_GDaDDM_sims.R
+analysis/helpers/aDDM_analysis/plot_out_of_sample.Rmd
 ```

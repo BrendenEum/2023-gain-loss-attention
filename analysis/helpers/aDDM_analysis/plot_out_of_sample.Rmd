@@ -1,0 +1,461 @@
+---
+title: "Plot out of sample"
+output: html_notebook
+---
+
+# Preamble
+
+```{r}
+rm(list=ls())
+set.seed(4)
+library(tidyverse)
+options(dplyr.summarise.inform=F) # summarize doesnt pop up a useless warning
+library(plotrix)
+library(gridExtra)
+library(ggpubr)
+library(ggsci)
+library(readr)
+library(latex2exp)
+
+#------------- Things you should edit at the start -------------
+.dataset = "e"
+.simCount = 10
+.colors = list(Gain="Green4", Loss="Red3")
+#---------------------------------------------------------------
+
+.codedir = getwd()
+.simdir = file.path("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/out_of_sample_simulations/2024.03.31.17.49/RaDDM")
+.cfrdir = file.path("../../../data/processed_data")
+.figdir = file.path("../../outputs/figures")
+.optdir = file.path("../plot_options/")
+source(file.path(.optdir, "GainLossColorPalette.R"))
+source(file.path(.optdir, "MyPlotOptions.R"))
+```
+
+
+# Load real data
+
+```{r}
+load(file.path(.cfrdir, paste0(.dataset, "cfr.RData")))
+cfr_out = ecfr[ecfr$trial %% 2 == 0,]
+cfr_out$studyN = factor(cfr_out$studyN, levels = c("1","2"), labels = c(1,2))
+Study1_subjects = unique(ecfr$subject[ecfr$studyN==1])
+Study2_subjects = unique(ecfr$subject[ecfr$studyN==2])
+breaks <- seq(-1.625,1.625,.250)
+labels <- seq(-1.500,1.500,.250)
+cfr_out$net_fix_bin <- cut(cfr_out$net_fix, breaks=breaks, labels=labels) %>%
+  as.character() %>%
+  as.numeric()
+```
+
+
+# Load simulated data
+
+```{r}
+cfr_sim = data.frame()
+
+for (subject in Study1_subjects) {
+  for (simulation in 1:.simCount) {
+    for (condition in c("Gain","Loss")) {
+      .fn = paste0("sim_data_fix", "_", subject, "_", simulation, "_", "Study1", "_", condition, ".csv")
+      fixData = read.csv(file.path(.simdir, .fn))
+      .fn = paste0("sim_data_beh", "_", subject, "_", simulation, "_", "Study1", "_", condition, ".csv")
+      behData = read.csv(file.path(.simdir, .fn))
+      
+      fixData = fixData[fixData$fix_item!=0, ]
+        
+      # Net fixation (L-R)
+      netFix = fixData
+      netFix$fix_time_L = ifelse(fixData$fix_item==1, fixData$fix_time, 0)
+      netFix$fix_time_R = ifelse(fixData$fix_item==2, fixData$fix_time, 0)
+      netFix = netFix %>%
+        group_by(sim, studyN, condition, parcode, trial) %>%
+        mutate(
+          totFixL = cumsum(fix_time_L),
+          totFixR = cumsum(fix_time_R)
+        ) %>%
+        summarize(
+          netFix = last(totFixL) - last(totFixR)
+        )
+      behData = merge(
+        behData, 
+        netFix[,c("sim","studyN","condition","parcode","trial","netFix")],
+        by=c("sim","studyN","condition","parcode","trial"),
+        all.x=T
+      )
+      
+      # last fixation location
+      lastFix = fixData %>%
+        group_by(sim, studyN, condition, parcode, trial) %>%
+        summarize(lastFixLoc = last(fix_item))
+      behData = merge(
+        behData, 
+        lastFix,
+        by=c("sim","studyN","condition","parcode","trial"),
+        all.x=T
+      )
+      
+      # first fixation location
+      firstFix = fixData %>%
+        group_by(sim, studyN, condition, parcode, trial) %>%
+        summarize(firstFixLoc = first(fix_item))
+      behData = merge(
+        behData, 
+        firstFix,
+        by=c("sim","studyN","condition","parcode","trial"),
+        all.x=T
+      )
+      
+      add_to_cfr_sim = behData %>%
+        mutate(
+          choice = ifelse(choice==-1, 1, 0),
+          rt = rt/1000,
+          netFix = netFix/1000,
+          lastFixLoc = ifelse(lastFixLoc==1, 1, 0),
+          firstFixLoc = ifelse(firstFixLoc==1, 1, 0)
+        )
+      
+      cfr_sim = rbind(cfr_sim, add_to_cfr_sim)
+    }
+  }
+}
+
+for (subject in Study2_subjects) {
+  for (simulation in 1:.simCount) {
+    for (condition in c("Gain","Loss")) {
+      .fn = paste0("sim_data_fix", "_", subject, "_", simulation, "_", "Study2", "_", condition, ".csv")
+      fixData = read.csv(file.path(.simdir, .fn))
+      .fn = paste0("sim_data_beh", "_", subject, "_", simulation, "_", "Study2", "_", condition, ".csv")
+      behData = read.csv(file.path(.simdir, .fn))
+      
+      fixData = fixData[fixData$fix_item!=0, ]
+        
+      # Net fixation (L-R)
+      netFix = fixData
+      netFix$fix_time_L = ifelse(fixData$fix_item==1, fixData$fix_time, 0)
+      netFix$fix_time_R = ifelse(fixData$fix_item==2, fixData$fix_time, 0)
+      netFix = netFix %>%
+        group_by(sim, studyN, condition, parcode, trial) %>%
+        mutate(
+          totFixL = cumsum(fix_time_L),
+          totFixR = cumsum(fix_time_R)
+        ) %>%
+        summarize(
+          netFix = last(totFixL) - last(totFixR)
+        )
+      behData = merge(
+        behData, 
+        netFix[,c("sim","studyN","condition","parcode","trial","netFix")],
+        by=c("sim","studyN","condition","parcode","trial"),
+        all.x=T
+      )
+      
+      # last fixation location
+      lastFix = fixData %>%
+        group_by(sim, studyN, condition, parcode, trial) %>%
+        summarize(lastFixLoc = last(fix_item))
+      behData = merge(
+        behData, 
+        lastFix,
+        by=c("sim","studyN","condition","parcode","trial"),
+        all.x=T
+      )
+      
+      # first fixation location
+      firstFix = fixData %>%
+        group_by(sim, studyN, condition, parcode, trial) %>%
+        summarize(firstFixLoc = first(fix_item))
+      behData = merge(
+        behData, 
+        firstFix,
+        by=c("sim","studyN","condition","parcode","trial"),
+        all.x=T
+      )
+      
+      add_to_cfr_sim = behData %>%
+        mutate(
+          choice = ifelse(choice==-1, 1, 0),
+          rt = rt/1000,
+          netFix = netFix/1000,
+          lastFixLoc = ifelse(lastFixLoc==1, 1, 0),
+          firstFixLoc = ifelse(firstFixLoc==1, 1, 0)
+        )
+      
+      cfr_sim = rbind(cfr_sim, add_to_cfr_sim)
+    }
+  }
+}
+
+cfr_sim = cfr_sim %>% rename(subject = parcode)
+cfr_sim$vDiff = cfr_sim$item_left - cfr_sim$item_right
+cfr_sim$nvDiff = cfr_sim$vDiff
+cfr_sim$nvDiff[cfr_sim$studyN==2] = cfr_sim$vDiff[cfr_sim$studyN==2] / max(cfr_sim$vDiff[cfr_sim$studyN==2])
+breaks <- seq(-1.125,1.125,.25)
+tags   <- seq(-1,1,.25)
+cfr_sim$nvDiff <- as.numeric(as.character(cut(cfr_sim$nvDiff, breaks, labels=tags)))
+cfr_sim$ndifficulty = abs(cfr_sim$nvDiff)
+cfr_sim$studyN = factor(cfr_sim$studyN, levels=c(1,2), labels=c(1,2))
+breaks <- seq(-1.625,1.625,.250)
+labels <- seq(-1.500,1.500,.250)
+cfr_sim$net_fix_bin <- cut(cfr_sim$netFix, breaks=breaks, labels=labels) %>%
+  as.character() %>%
+  as.numeric()
+cfr_sim = cfr_sim %>%
+  group_by(sim, studyN, subject, condition, nvDiff) %>%
+  mutate(nchoice.corr = choice - mean(choice))
+cfr_sim$lastOtherVDiff = cfr_sim$item_left - cfr_sim$item_right
+cfr_sim$lastFixLoc[is.na(cfr_sim$lastFixLoc)] = 2
+cfr_sim$lastOtherVDiff[cfr_sim$lastFixLoc==0] = cfr_sim$item_right[cfr_sim$lastFixLoc==0] - cfr_sim$item_left[cfr_sim$lastFixLoc==0]
+cfr_sim$lastFixLoc[cfr_sim$lastFixLoc==2] = NA
+cfr_sim$nlastOtherVDiff = cfr_sim$lastOtherVDiff
+cfr_sim$nlastOtherVDiff[cfr_sim$studyN==2] = cfr_sim$lastOtherVDiff[cfr_sim$studyN==2] / max(cfr_sim$lastOtherVDiff[cfr_sim$studyN==2])
+breaks <- seq(-1.125,1.125,.25)
+tags   <- seq(-1,1,.25)
+cfr_sim$nlastOtherVDiff <- as.numeric(as.character(cut(cfr_sim$lastOtherVDiff, breaks, labels=tags)))
+```
+
+
+# Psychometric Plot
+
+```{r}
+psycho_out = cfr_out[cfr_out$firstFix==T,] %>%
+  group_by(studyN, condition, subject, nvDiff) %>%
+  summarize(
+    mean_choice = mean(choice)
+  ) %>% ungroup() %>%
+  group_by(studyN, condition, nvDiff) %>%
+  summarize(
+    y = mean(mean_choice),
+    se = std.error(mean_choice),
+    simulated = 0
+  )
+psycho_sim = cfr_sim %>%
+  group_by(studyN, condition, subject, sim, nvDiff) %>%
+  summarize(
+    mean_choice = mean(choice)
+  ) %>% ungroup() %>%
+  group_by(studyN, condition, subject, nvDiff) %>%
+  summarize(
+    mean_choice = mean(mean_choice)
+  ) %>% ungroup() %>%
+  group_by(studyN, condition, nvDiff) %>%
+  summarize(
+    y = mean(mean_choice),
+    se = std.error(mean_choice),
+    simulated = 1
+  )
+pdata = rbind(psycho_out, psycho_sim)
+pdata$simulated = factor(pdata$simulated, levels=c(0,1), labels=c("Observed","Simulated"))
+
+plt.psycho <- ggplot(data=pdata, aes(x=nvDiff, y=y, color=condition)) +
+  myPlot +
+  geom_hline(yintercept=0.5, color="grey", alpha=0.75) +
+  geom_vline(xintercept=0, color="grey", alpha=0.75) +
+  geom_linerange(
+    aes(ymin=y-se, ymax=y+se, group=simulated, alpha=simulated), 
+    linewidth=errsize, 
+    position=position_jitter(width=.01, seed=4), 
+    show.legend=F
+  ) +
+  geom_line(aes(linetype=simulated, alpha=simulated), linewidth=linesize) +
+  xlim(c(-1.03, 1.03)) +
+  ylim(c(0,1)) +
+  labs(y="Pr(Choose Left)", x="Norm. Left - Right E[V]", color="Condition", linetype="Study") +
+  theme(
+    legend.position=c(.2,.3),
+    panel.spacing = unit(2, "lines"),
+    strip.text = element_blank()
+  ) +
+  scale_alpha_manual(values=c(.3,1), guide=F) +
+  scale_linetype_manual(values=c("solid","dotdash")) +
+  facet_grid(rows = vars(studyN))
+plt.psycho
+```
+
+
+# RT Plot
+
+```{r}
+rt_out = cfr_out[cfr_out$firstFix==T,] %>%
+  group_by(studyN, condition, subject, ndifficulty) %>%
+  summarize(
+    mean_rt = mean(rt)
+  ) %>% ungroup() %>%
+  group_by(studyN, condition, ndifficulty) %>%
+  summarize(
+    y = mean(mean_rt),
+    se = std.error(mean_rt),
+    simulated = 0
+  )
+rt_sim = cfr_sim %>%
+  group_by(studyN, condition, subject, sim, ndifficulty) %>%
+  summarize(
+    mean_rt = mean(rt)
+  ) %>% ungroup() %>%
+  group_by(studyN, condition, subject, ndifficulty) %>%
+  summarize(
+    mean_rt = mean(mean_rt)
+  ) %>% ungroup() %>%
+  group_by(studyN, condition, ndifficulty) %>%
+  summarize(
+    y = mean(mean_rt),
+    se = std.error(mean_rt),
+    simulated = 1
+  )
+pdata = rbind(rt_out, rt_sim)
+pdata$simulated = factor(pdata$simulated, levels=c(0,1), labels=c("Observed","Simulated"))
+
+plt.rt <- ggplot(data=pdata, aes(x=ndifficulty, y=y, color=condition)) +
+  myPlot +
+  geom_linerange(
+    aes(ymin=y-se, ymax=y+se, group=simulated, alpha=simulated), 
+    linewidth=errsize, 
+    position=position_jitter(width=.01, seed=4), 
+    show.legend=F
+  ) +
+  geom_line(aes(linetype=simulated, alpha=simulated), linewidth=linesize) +
+  xlim(c(-.02, 1.02)) +
+  ylim(c(-.1,6.1)) +
+  labs(y="Response Time (s)", x="Norm. Best - Worst E[V]") +
+  theme(
+    legend.position="none",
+    panel.spacing = unit(2, "lines"),
+    strip.text = element_blank()
+  ) +
+  scale_alpha_manual(values=c(.3,1), guide=F) +
+  scale_linetype_manual(values=c("solid","dotdash")) +
+  facet_grid(rows = vars(studyN))
+plt.rt
+```
+
+
+# Net Fix Plot
+
+```{r}
+nfb_out = cfr_out[cfr_out$firstFix==T,] %>%
+  group_by(studyN, condition, subject, net_fix_bin) %>%
+  summarize(
+    mean_y = mean(nchoice.corr, na.rm=T)
+  ) %>% ungroup() %>%
+  group_by(studyN, condition, net_fix_bin) %>%
+  summarize(
+    y = mean(mean_y),
+    se = std.error(mean_y),
+    simulated = 0
+  )
+nfb_sim = cfr_sim %>%
+  group_by(studyN, condition, subject, sim, net_fix_bin) %>%
+  summarize(
+    mean_y = mean(nchoice.corr)
+  ) %>% ungroup() %>%
+  group_by(studyN, condition, subject, net_fix_bin) %>%
+  summarize(
+    mean_y = mean(mean_y)
+  ) %>% ungroup() %>%
+  group_by(studyN, condition, net_fix_bin) %>%
+  summarize(
+    y = mean(mean_y),
+    se = std.error(mean_y),
+    simulated = 1
+  )
+pdata = rbind(nfb_out, nfb_sim)
+pdata$simulated = factor(pdata$simulated, levels=c(0,1), labels=c("Observed","Simulated"))
+
+plt.nfb <- ggplot(data=pdata, aes(x=net_fix_bin, y=y, color=condition)) +
+  myPlot +
+  geom_hline(yintercept=0, color="grey", alpha=0.75) +
+  geom_vline(xintercept=0, color="grey", alpha=0.75) +
+  geom_linerange(
+    aes(ymin=y-se, ymax=y+se, group=simulated, alpha=simulated), 
+    linewidth=errsize, 
+    position=position_jitter(width=.01, seed=4), 
+    show.legend=F
+  ) +
+  geom_line(aes(linetype=simulated, alpha=simulated), linewidth=linesize) +
+  labs(y="Corr. Pr(Choose Left)", x="Net Fixation (L-R, s)") +
+  coord_cartesian(xlim=c(-1.02, 1.02), ylim=c(-.4, .4)) +
+  theme(
+    legend.position="none",
+    panel.spacing = unit(2, "lines"),
+    strip.text = element_blank()
+  ) +
+  scale_alpha_manual(values=c(.3,1), guide=F) +
+  scale_linetype_manual(values=c("solid","dotdash")) +
+  facet_grid(rows = vars(studyN))
+plt.nfb
+```
+
+# Last Fix Plot
+
+```{r}
+lfb_out = cfr_out[cfr_out$lastFix==T,] %>%
+  group_by(studyN, condition, subject, location, nlastOtherVDiff) %>%
+  summarize(
+    mean_y = mean(choice)
+  )
+lfb_out$mean_y[lfb_out$location=="Right"] = 1-lfb_out$mean_y[lfb_out$location=="Right"]
+lfb_out = lfb_out %>%
+  group_by(studyN, condition, nlastOtherVDiff) %>%
+  summarize(
+    y = mean(mean_y),
+    se = std.error(mean_y),
+    simulated = 0
+  )
+
+lfb_sim = cfr_sim %>%
+  group_by(studyN, condition, subject, sim, lastFixLoc, nlastOtherVDiff) %>%
+  summarize(
+    mean_y = mean(choice)
+  ) 
+lfb_sim$lastFixLoc[is.na(lfb_sim$lastFixLoc)] = 2
+lfb_sim$mean_y[lfb_sim$lastFixLoc==0] = 1-lfb_sim$mean_y[lfb_sim$lastFixLoc==0]
+lfb_sim$lastFixLoc[lfb_sim$lastFixLoc==2] = NA
+lfb_sim = lfb_sim %>%
+  group_by(studyN, condition, subject, nlastOtherVDiff) %>%
+  summarize(
+    mean_y = mean(mean_y)
+  ) %>% ungroup() %>%
+  group_by(studyN, condition, nlastOtherVDiff) %>%
+  summarize(
+    y = mean(mean_y),
+    se = std.error(mean_y),
+    simulated = 1
+  )
+pdata = rbind(lfb_out, lfb_sim)
+pdata$simulated = factor(pdata$simulated, levels=c(0,1), labels=c("Observed","Simulated"))
+
+plt.lfb <- ggplot(data=pdata, aes(x=nlastOtherVDiff, y=y, color=condition)) +
+    myPlot +
+    geom_hline(yintercept=0.5, color="grey", alpha=0.75) +
+    geom_vline(xintercept=0, color="grey", alpha=0.75) +
+    geom_linerange(
+      aes(ymin=y-se, ymax=y+se, group=simulated, alpha=simulated), 
+      linewidth=errsize, 
+      position=position_jitter(width=.01, seed=4), 
+      show.legend=F
+    ) +
+    geom_line(aes(linetype=simulated, alpha=simulated), linewidth=linesize) +
+    coord_cartesian(xlim=c(-1.03,1.03), ylim=c(0,1)) +
+    labs(y="Pr(Choose Last Fix. Option)", x="Norm. Last - Other E[V]") +
+  theme(
+    legend.position="none",
+    panel.spacing = unit(2, "lines")
+  ) +
+  scale_alpha_manual(values=c(.3,1), guide=F) +
+  scale_linetype_manual(values=c("solid","dotdash")) +
+  facet_grid(rows = vars(studyN), labeller = as_labeller(c(`1`="Study 1", `2`="Study 2")))
+plt.lfb
+```
+
+
+# Combine and save
+
+```{r}
+plt <- grid.arrange(plt.psycho, plt.rt, plt.nfb, plt.lfb, nrow=1)
+
+ggsave(
+  file.path(.figdir, "RaDDM_out_of_sample_simulations.pdf"), 
+  plt, width = 15, height = 6, units="in")
+
+```
+

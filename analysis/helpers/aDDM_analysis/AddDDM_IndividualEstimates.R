@@ -1,0 +1,243 @@
+##############################################################################
+# Preamble
+##############################################################################
+
+rm(list=ls())
+set.seed(4)
+library(tidyverse)
+library(plotrix)
+library(gridExtra)
+library(ggpubr)
+library(ggsci)
+library(readr)
+library(latex2exp)
+
+#------------- Things you should edit at the start -------------
+.dataset = "e"
+.colors = list(Gain="Green4", Loss="Red3")
+#---------------------------------------------------------------
+
+.codedir = getwd()
+.datadir = file.path(paste0("../../outputs/temp/model_fitting/", .dataset))
+.cfrdir = file.path("../../../data/processed_data")
+load(file.path(.cfrdir, paste0(.dataset, "cfr.RData")))
+.figdir = file.path("../../outputs/figures")
+.optdir = file.path("../plot_options/")
+source(file.path(.optdir, "GainLossColorPalette.R"))
+source(file.path(.optdir, "MyPlotOptions.R"))
+
+.Study1_folder = file.path(.datadir, "Study1")
+.Study2_folder = file.path(.datadir, "Study2")
+
+Study1_subjects = unique(ecfr$subject[ecfr$studyN==1])
+Study2_subjects = unique(ecfr$subject[ecfr$studyN==2])
+
+
+##############################################################################
+# Load Data
+##############################################################################
+
+getData = function(folder, subjectList) {
+  gain_posterior = list()
+  loss_posterior = list()
+  
+  for (i in subjectList) {
+    gain_posterior[[i]] = read.csv(file = file.path(folder, paste0("Gain_modelPosteriors_", i, ".csv")))
+    loss_posterior[[i]] = read.csv(file = file.path(folder, paste0("Loss_modelPosteriors_", i, ".csv")))
+    gain_posterior[[i]]$subject = i
+    loss_posterior[[i]]$subject = i
+  }
+  gp = do.call("rbind", gain_posterior)
+  lp = do.call("rbind", loss_posterior)
+  
+  gp$condition = "Gain"
+  lp$condition = "Loss"
+  posteriors = rbind(gp, lp)
+  
+  posteriors$likelihood_fn = factor(
+    posteriors$likelihood_fn,
+    levels=c("aDDM_likelihood","AddDDM_likelihood","RaDDM_likelihood"),
+    labels=c("aDDM","AddDDM","RaDDM")
+  )
+  
+  return(posteriors)
+}
+
+Study1 = getData(.Study1_folder, Study1_subjects)
+Study2 = getData(.Study2_folder, Study2_subjects)
+
+##############################################################################
+# Combine and clean the data for plotting
+##############################################################################
+
+# Study N
+Study1$study = 1
+Study2$study = 2
+
+# Combine
+.data = rbind(Study1, Study2)
+
+# Factor
+.data$study = factor(.data$study, levels=c(1,2), labels=c("1","2"))
+
+# Limit to just RaDDM
+.data = .data[.data$likelihood_fn=="AddDDM",]
+
+# Get best fitting parameters for each subject
+.data = .data %>%
+  group_by(study, subject, condition) %>%
+  mutate(best_fitting = posterior==max(posterior))
+data = .data[.data$best_fitting==1,]
+
+# Check uniqueness based on study-subject-condition.
+.duplicate_rows = duplicated(data[,c("study","subject","condition")]) | duplicated(data[,c("study","subject","condition")], fromLast=T)
+if (sum(.duplicate_rows) != 0) {
+  warning("You have some duplicate study-subject-condition observations.")  
+} else {
+  print("You don't have any duplicate observations. It's safe to continue!")
+}
+
+# Long to wide format (1 obs should have gain and loss estiamtes)
+pdata = pivot_wider(
+  data, 
+  id_cols = c("study","subject"), 
+  names_from = "condition", 
+  values_from = c("d","sigma","eta","bias")
+)
+
+
+##############################################################################
+# Plot options
+##############################################################################
+
+gradient_resolution = 100
+exact = 'grey40'
+close = 'grey70'
+far = 'white'
+
+# Color palette
+my_colors = list(
+  #gain_loss_colors = c("red3", "green4", "blue2", "purple2", "orange2", "deeppink", "cyan3", "bisque3")
+  gain_loss_colors = c("dodgerblue3", "deeppink4", "orange2", "deeppink", "blue2", "bisque3")
+)
+cvi_palettes = function(name, n, all_palettes = my_colors, type = c("discrete", "continuous")) {
+  palette = all_palettes[[name]]
+  if (missing(n)) {
+    n = length(palette)
+  }
+  type = match.arg(type)
+  out = switch(
+    type,
+    continuous = grDevices::colorRampPalette(palette)(n),
+    discrete = palette[1:n]
+  )
+  structure(out, name = name, class = "palette")
+}
+scale_color_glcolor = function(name) {
+  ggplot2::scale_colour_manual(
+    values = cvi_palettes(
+      name,
+      type = "discrete"
+    )
+  )
+}
+scale_fill_glcolor = function(name) {
+  ggplot2::scale_fill_manual(
+    values = cvi_palettes(
+      name,
+      type = "discrete"
+    )
+  )
+}
+
+ggplot <- function(...) ggplot2::ggplot(...) + 
+  theme_bw() +
+  scale_color_glcolor("gain_loss_colors") +
+  scale_fill_glcolor("gain_loss_colors") +
+  coord_cartesian(expand=F) +
+  theme(
+    legend.position = "none",
+    legend.background=element_blank(),
+    legend.key = element_rect(fill = NA),
+    legend.spacing.x = unit(0.01, 'cm'),
+    legend.spacing.y = unit(0.01, 'cm'),
+    plot.margin = unit(c(.62,.62,.62,.62), "cm"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.title = element_text(size = 12),
+    axis.title = element_text(size = 12),
+    axis.text = element_text(size = 12),
+    legend.title = element_text(size = 9),
+    legend.text = element_text(size = 9)
+  ) +
+  guides(color=guide_legend(override.aes=list(fill=NA)))
+
+
+##############################################################################
+# Plot model comparison
+##############################################################################
+
+coord.lim <- .01
+d_gradient <- expand.grid(x=seq(0,coord.lim,coord.lim/gradient_resolution), y=seq(0,coord.lim,coord.lim/gradient_resolution))
+plt.compare.d.e <- ggplot(data=pdata) +
+  geom_tile(data=d_gradient, aes(x=x, y=y, fill=abs(y-x))) + #add gradient background
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_count(aes(x=d_Gain, y=d_Loss, color=study), alpha=.7) +
+  xlim(c(0,coord.lim)) +
+  ylim(c(0,coord.lim)) +
+  labs(x = TeX(r"(Gain $d$)"), y = TeX(r"(Loss $d$)")) +
+  scale_y_continuous(breaks = c(0, coord.lim), labels=c("0", "0.01")) +
+  scale_x_continuous(breaks = c(0, coord.lim), labels=c("0", "0.01"))  
+
+coord.lim <- .1
+sig_gradient <- expand.grid(x=seq(0,coord.lim,coord.lim/gradient_resolution), y=seq(0,coord.lim,coord.lim/gradient_resolution))
+plt.compare.s.e <- ggplot(data=pdata) +
+  geom_tile(data=sig_gradient, aes(x=x, y=y, fill=abs(y-x))) +
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_count(aes(x=sigma_Gain, y=sigma_Loss, color=study), alpha=.7) +
+  xlim(c(0,coord.lim)) +
+  ylim(c(0,coord.lim)) +
+  labs(x = TeX(r"(Gain $\sigma$)"), y = TeX(r"(Loss $\sigma$)")) +
+  scale_y_continuous(breaks = c(0, coord.lim), labels=c("0", "0.1")) +
+  scale_x_continuous(breaks = c(0, coord.lim), labels=c("0", "0.1")) 
+
+coord.lim <- 1
+bias_gradient <- expand.grid(x=seq(-coord.lim,coord.lim,coord.lim/gradient_resolution), y=seq(-coord.lim,coord.lim,coord.lim/gradient_resolution))
+plt.compare.b.e <- ggplot(data=pdata) +
+  geom_tile(data=bias_gradient, aes(x=x, y=y, fill=abs(y-x)), show.legend=F) +
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_count(aes(x=bias_Gain, y=bias_Loss, color=study), alpha=.7) +
+  xlim(c(-coord.lim,coord.lim)) +
+  ylim(c(-coord.lim,coord.lim)) +
+  labs(x = TeX(r"(Gain $b$)"), y = TeX(r"(Loss $b$)"), color = "Study") +
+  scale_y_continuous(breaks = c(-coord.lim, 0, coord.lim), labels=c("-1.0", "0.0", "1.0")) +
+  scale_x_continuous(breaks = c(-coord.lim, 0, coord.lim), labels=c("-1.0", "0.0", "1.0")) +
+  theme(
+    legend.position = "none"#c(.11,.7)
+  )
+
+coord.lim <- .05
+margin = .002
+eta_gradient <- expand.grid(x=seq(-margin,coord.lim+margin,(coord.lim+2*margin)/gradient_resolution), y=seq(-margin,coord.lim+margin,(coord.lim+2*margin)/gradient_resolution))
+plt.compare.eta.e <- ggplot(data=pdata) +
+  geom_tile(data=eta_gradient, aes(x=x, y=y, fill=abs(y-x)), show.legend = F) +
+  scale_fill_gradient(low='orange', high=far) +
+  geom_abline(intercept=0, slope=1, color='grey30') +
+  geom_count(aes(x=eta_Gain, y=eta_Loss, color=study), alpha=.7) +
+  labs(x = TeX(r"(Gain $\eta$)"), y = TeX(r"(Loss $\eta$)"), color = "Study") +
+  scale_y_continuous(breaks = c(0, coord.lim/2, coord.lim), labels=c("0", "0.025", "0.05")) +
+  scale_x_continuous(breaks = c(0, coord.lim/2, coord.lim), labels=c("0", "0.025", "0.05")) +
+  guides(size="none") + 
+  theme(
+    legend.position = c(-.20, 1.2),
+    legend.background = element_rect(colour = "black", size = .2, linetype = "solid")
+  ) 
+
+plt.compare.param.e <- grid.arrange(plt.compare.d.e, plt.compare.s.e, plt.compare.b.e, plt.compare.eta.e, nrow=2)
+
+ggsave(
+  file.path(.figdir, "AddDDM_IndividualEstimates.pdf"), 
+  plt.compare.param.e)

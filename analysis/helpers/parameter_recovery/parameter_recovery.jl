@@ -135,7 +135,7 @@ fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :decay=>0.0)
 # DO SIM AND FIT
 sim_and_fit(model_list, condition, simulator_fn, param_grid_Loss, fixed_params)
 
-"""
+
 ##################################################################################################################
 # GEN: Additive aDDM
 ##################################################################################################################
@@ -220,7 +220,7 @@ for i in 1:simCount
         nonDecisionTime = 100,
         decay = 0
     ) 
-    model.reference = 1.0
+    model.reference = sample([1.0, 0.0, -1.0])
     push!(model_list, model);
 end
 
@@ -250,7 +250,7 @@ for i in 1:simCount
         nonDecisionTime = 100,
         decay = 0
     ) 
-    model.reference = -6.0
+    model.reference = sample([-6.0, 0.0, -8.0])
     push!(model_list, model);
 end
 
@@ -259,4 +259,3 @@ fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :decay=>0.0)
 
 # DO SIM AND FIT
 sim_and_fit(model_list, condition, simulator_fn, param_grid_Loss, fixed_params)
-"""
