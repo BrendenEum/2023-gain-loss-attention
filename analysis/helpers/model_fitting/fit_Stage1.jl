@@ -45,12 +45,17 @@ fixdata = "../../../data/processed_data/numeric/e/fixationsGain.csv";
 study2 = ADDM.load_data_from_csv(expdata, fixdata);
 CSV.write("Study2_participants.csv", DataFrame(participants = collect(keys(study2))))
 
+keys_to_keep = ["3", "5", "7", "9", "10"]; #debug
+study1 = filter(pair -> pair.first in keys_to_keep, study1); #debug
+study2 = Dict(); #debug
+
 
 ##################################################################################################################
 # Stage 1
 ##################################################################################################################
 stage = "Stage1";
 println("=====" * stage * "=====")
+flush(stdout)
 
 # Prep output folder
 stagefolder = datefolder * stage * "/";
