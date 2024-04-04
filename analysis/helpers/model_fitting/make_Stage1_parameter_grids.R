@@ -13,6 +13,9 @@ theta_grid = .5
 dir.create("Stage1_parameter_grids")
 study1participants = read.csv("Study1_participants.csv")$participants
 study2participants = read.csv("Study2_participants.csv")$participants
+dir.create("Stage1_parameter_grids/")
+for (j in study1participants){dir.create(paste0("Stage1_parameter_grids/",j,"/"))}
+for (j in study2participants){dir.create(paste0("Stage1_parameter_grids/",j,"/"))}
 
 ####################################
 # Standard aDDM
@@ -27,15 +30,15 @@ grid = list(
 )
 grid = expand.grid(grid)
 for (j in study1participants){
-  fn = paste0("stage1_parameter_grids/aDDM_Gain_", j, ".csv")
+  fn = paste0("stage1_parameter_grids/", j, "/aDDM_Gain.csv")
   write.csv(grid, file=fn, row.names=F)
-  fn = paste0("stage1_parameter_grids/aDDM_Loss_", j, ".csv")
+  fn = paste0("stage1_parameter_grids/", j, "/aDDM_Loss.csv")
   write.csv(grid, file=fn, row.names=F)
 }
 for (j in study2participants){
-  fn = paste0("stage1_parameter_grids/aDDM_Gain_", j, ".csv")
+  fn = paste0("stage1_parameter_grids/", j, "/aDDM_Gain.csv")
   write.csv(grid, file=fn, row.names=F)
-  fn = paste0("stage1_parameter_grids/aDDM_Loss_", j, ".csv")
+  fn = paste0("stage1_parameter_grids/", j, "/aDDM_Loss.csv")
   write.csv(grid, file=fn, row.names=F)
 }
 
@@ -53,15 +56,15 @@ grid = list(
 )
 grid = expand.grid(grid)
 for (j in study1participants){
-  fn = paste0("stage1_parameter_grids/AddDDM_Gain_", j, ".csv")
+  fn = paste0("stage1_parameter_grids/", j, "/AddDDM_Gain.csv")
   write.csv(grid, file=fn, row.names=F)
-  fn = paste0("stage1_parameter_grids/AddDDM_Loss_", j, ".csv")
+  fn = paste0("stage1_parameter_grids/", j, "/AddDDM_Loss.csv")
   write.csv(grid, file=fn, row.names=F)
 }
 for (j in study2participants){
-  fn = paste0("stage1_parameter_grids/AddDDM_Gain_", j, ".csv")
+  fn = paste0("stage1_parameter_grids/", j, "/AddDDM_Gain.csv")
   write.csv(grid, file=fn, row.names=F)
-  fn = paste0("stage1_parameter_grids/AddDDM_Loss_", j, ".csv")
+  fn = paste0("stage1_parameter_grids/", j, "/AddDDM_Loss.csv")
   write.csv(grid, file=fn, row.names=F)
 }
 
@@ -80,7 +83,7 @@ grid = list(
 )
 grid = expand.grid(grid)
 for (j in study1participants){
-  fn = paste0("stage1_parameter_grids/RaDDM_Gain_", j, ".csv")
+  fn = paste0("stage1_parameter_grids/", j, "/RaDDM_Gain.csv")
   write.csv(grid, file=fn, row.names=F)
 }
 
@@ -94,7 +97,7 @@ grid = list(
 )
 grid = expand.grid(grid)
 for (j in study1participants){
-  fn = paste0("stage1_parameter_grids/RaDDM_Loss_", j, ".csv")
+  fn = paste0("stage1_parameter_grids/", j, "/RaDDM_Loss.csv")
   write.csv(grid, file=fn, row.names=F)
 }
 
@@ -112,7 +115,7 @@ grid = list(
 )
 grid = expand.grid(grid)
 for (j in study2participants){
-  fn = paste0("stage1_parameter_grids/RaDDM_Gain_", j, ".csv")
+  fn = paste0("stage1_parameter_grids/", j, "/RaDDM_Gain.csv")
   write.csv(grid, file=fn, row.names=F)
 }
 
@@ -126,6 +129,6 @@ grid = list(
 )
 grid = expand.grid(grid)
 for (j in study2participants){
-  fn = paste0("stage1_parameter_grids/RaDDM_Loss_", j, ".csv")
+  fn = paste0("stage1_parameter_grids/", j, "/RaDDM_Loss.csv")
   write.csv(grid, file=fn, row.names=F)
 }
