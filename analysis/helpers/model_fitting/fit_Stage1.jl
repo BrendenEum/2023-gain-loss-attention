@@ -24,11 +24,8 @@ fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :decay=>0.0);
 my_likelihood_args = (timeStep = 10.0, approxStateStep = 0.01); #ms, RDV units
 verbose = false;
 
-<<<<<<< Updated upstream
 <<<<<<<< Updated upstream:analysis/helpers/model_fitting/fit_all_Stage2.jl
 ========
-=======
->>>>>>> Stashed changes
 <<<<<<<< HEAD:analysis/helpers/model_fitting/fit_Stage1.jl
 # Prep output folder
 time = Dates.format(now(), "yyyy.mm.dd-H.M");
@@ -37,24 +34,17 @@ open("time1.txt", "w") do file
 end
 datefolder = "../../outputs/temp/model_fitting/" * time * "/"
 ========
-<<<<<<< Updated upstream
 >>>>>>>> Stashed changes:analysis/helpers/model_fitting/fit_Stage1.jl
-=======
->>>>>>> Stashed changes
 # Prep output folder and save the time in a silly file.
 WhatTimeIsItRightNowDotCom = Dates.format(now(), "yyyy.mm.dd-H.M");
 open("WhatTimeIsItRightNowDotCom.txt", "w") do file
     write(file, WhatTimeIsItRightNowDotCom)
 end
 datefolder = "../../outputs/temp/model_fitting/" * WhatTimeIsItRightNowDotCom * "/";
-<<<<<<< Updated upstream
 <<<<<<<< Updated upstream:analysis/helpers/model_fitting/fit_all_Stage2.jl
 ========
 >>>>>>>> 0ecc60be1749eaa1cf0382ea9a637c882b0711ea:analysis/helpers/model_fitting/fit_all_Stage2.jl
 >>>>>>>> Stashed changes:analysis/helpers/model_fitting/fit_Stage1.jl
-=======
->>>>>>>> 0ecc60be1749eaa1cf0382ea9a637c882b0711ea:analysis/helpers/model_fitting/fit_all_Stage2.jl
->>>>>>> Stashed changes
 mkpath(datefolder);
 
 # List of study 1 and 2 participants
@@ -92,11 +82,8 @@ flush(stdout)
 outdir = stagefolder * study * "/"; # change this to datefolder once you're on stage3.
 mkpath(outdir);
 
-<<<<<<< Updated upstream
 <<<<<<<< Updated upstream:analysis/helpers/model_fitting/fit_all_Stage2.jl
 ========
-=======
->>>>>>> Stashed changes
 <<<<<<<< HEAD:analysis/helpers/model_fitting/fit_Stage1.jl
 # Prep parameter grid (param_grid)
 parameter_grid_folder = stage*"_parameter_grids/";
@@ -104,10 +91,7 @@ include("merge_parameter_grid_Study1.jl");
 
 ========
 >>>>>>>> 0ecc60be1749eaa1cf0382ea9a637c882b0711ea:analysis/helpers/model_fitting/fit_all_Stage2.jl
-<<<<<<< Updated upstream
 >>>>>>>> Stashed changes:analysis/helpers/model_fitting/fit_Stage1.jl
-=======
->>>>>>> Stashed changes
 # Fitting
 include("fit_Study1E.jl")
 
@@ -122,20 +106,14 @@ flush(stdout)
 outdir = stagefolder * study * "/"; # change this to datefolder once you're on stage3.
 mkpath(outdir);
 
-<<<<<<< Updated upstream
 <<<<<<<< Updated upstream:analysis/helpers/model_fitting/fit_all_Stage2.jl
 ========
-=======
->>>>>>> Stashed changes
 <<<<<<<< HEAD:analysis/helpers/model_fitting/fit_Stage1.jl
 # Prep parameter grid (param_grid)
 parameter_grid_folder = stage*"_parameter_grids/";
 include("merge_parameter_grid_Study2.jl");
 ========
-<<<<<<< Updated upstream
 >>>>>>>> Stashed changes:analysis/helpers/model_fitting/fit_Stage1.jl
-=======
->>>>>>> Stashed changes
 # Fitting
 include("fit_Study2E.jl")
 
@@ -182,14 +160,10 @@ println("== " * study * " ==")
 flush(stdout)
 outdir = stagefolder * study * "/"; # change this to datefolder once you're on stage3.
 mkpath(outdir);
-<<<<<<< Updated upstream
 <<<<<<<< Updated upstream:analysis/helpers/model_fitting/fit_all_Stage2.jl
 ========
 >>>>>>>> 0ecc60be1749eaa1cf0382ea9a637c882b0711ea:analysis/helpers/model_fitting/fit_all_Stage2.jl
 >>>>>>>> Stashed changes:analysis/helpers/model_fitting/fit_Stage1.jl
-=======
->>>>>>>> 0ecc60be1749eaa1cf0382ea9a637c882b0711ea:analysis/helpers/model_fitting/fit_all_Stage2.jl
->>>>>>> Stashed changes
 
 # Fitting
 include("fit_Study2E.jl")
