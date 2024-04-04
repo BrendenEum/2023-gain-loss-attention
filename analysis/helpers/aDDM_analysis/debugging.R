@@ -13,7 +13,7 @@ library(readr)
 library(latex2exp)
 
 #------------- Things you should edit at the start -------------
-.dataset = "Study1E-debug-free-refpt3"
+.dataset = "2024.04.03-22.32/Stage3/Study1E"
 .colors = list(Gain="Green4", Loss="Red3")
 #---------------------------------------------------------------
 
