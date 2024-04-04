@@ -29,7 +29,7 @@ verbose = true;
 
 # Prep output folder
 time = Dates.format(now(), "yyyy.mm.dd-H.M");
-open("time2.txt", "w") do file
+open("time3.txt", "w") do file
     write(file, time)
 end
 datefolder = "../../outputs/temp/model_fitting/" * time * "/"
@@ -49,7 +49,7 @@ CSV.write("Study2_participants.csv", DataFrame(participants = collect(keys(study
 ##################################################################################################################
 # Stage 2
 ##################################################################################################################
-stage = "Stage2";
+stage = "Stage3";
 println("=====" * stage * "=====")
 flush(stdout)
 
@@ -108,4 +108,4 @@ mkpath(outdir);
 # Fitting
 all_param_grid_Gain = all_param_grid_Gain_Study2;
 all_param_grid_Loss = all_param_grid_Loss_Study2;
-#include("fit_Study2E.jl")  #debugging
+include("fit_Study2E.jl")

@@ -6,8 +6,8 @@
 library(tidyverse)
 
 # Get relevant directories and data.
-time = readLines("time1.txt", warn=F)
-datadir = file.path(paste0("../../outputs/temp/model_fitting/", time, "/Stage1"))
+time = readLines("time2.txt", warn=F)
+datadir = file.path(paste0("../../outputs/temp/model_fitting/", time, "/Stage2"))
 study1dir = file.path(datadir, "Study1E")
 study2dir = file.path(datadir, "Study2E")
 
@@ -18,9 +18,9 @@ study2participants = read.csv("Study2_participants.csv")$participants
 study1participants = c(3, 5, 7, 9, 10) #debugging
 study2participants = c() # debugging
 
-dir.create("Stage2_parameter_grids/", showWarnings=F)
-for (j in study1participants){dir.create(paste0("Stage2_parameter_grids/",j,"/"), showWarnings=F)}
-for (j in study2participants){dir.create(paste0("Stage2_parameter_grids/",j,"/"), showWarnings=F)}
+dir.create("Stage3_parameter_grids/", showWarnings=F)
+for (j in study1participants){dir.create(paste0("Stage3_parameter_grids/",j,"/"), showWarnings=F)}
+for (j in study2participants){dir.create(paste0("Stage3_parameter_grids/",j,"/"), showWarnings=F)}
 
 # Function to get best fitting parameter estimates for a subject-model
 getEst = function(directory, condition, participant, likelihood_fn) {
@@ -44,12 +44,12 @@ writeGrid = function(bestEst, stepsize, fn) {
 
 # Step sizes
 stepsize = data.frame(
-  d = .002,
-  sigma = .02,
-  theta = .2,
-  bias = .2,
-  eta = .002,
-  reference = 2
+  d = .001,
+  sigma = .01,
+  theta = .1,
+  bias = .1,
+  eta = .001,
+  reference = 1
 )
 
 ####################################
@@ -65,7 +65,7 @@ for (j in study1participants) {
     bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
   )
   grid = expand.grid(grid)
-  write.csv(grid, file=paste0("stage2_parameter_grids/", j, "/aDDM_Gain.csv"), row.names=F)
+  write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/aDDM_Gain.csv"), row.names=F)
   
   bestEst = getEst(study1dir, "Loss", j, "aDDM_likelihood")
   grid = list(
@@ -75,7 +75,7 @@ for (j in study1participants) {
     bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
   )
   grid = expand.grid(grid)
-  write.csv(grid, file=paste0("stage2_parameter_grids/", j, "/aDDM_Loss.csv"), row.names=F)
+  write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/aDDM_Loss.csv"), row.names=F)
 }
 
 for (j in study2participants) {
@@ -87,7 +87,7 @@ for (j in study2participants) {
     bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
   )
   grid = expand.grid(grid)
-  write.csv(grid, file=paste0("stage2_parameter_grids/", j, "/aDDM_Gain.csv"), row.names=F)
+  write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/aDDM_Gain.csv"), row.names=F)
   
   bestEst = getEst(study2dir, "Loss", j, "aDDM_likelihood")
   grid = list(
@@ -97,7 +97,7 @@ for (j in study2participants) {
     bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
   )
   grid = expand.grid(grid)
-  write.csv(grid, file=paste0("stage2_parameter_grids/", j, "/aDDM_Loss.csv"), row.names=F)
+  write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/aDDM_Loss.csv"), row.names=F)
 }
 
 ####################################
@@ -113,7 +113,7 @@ for (j in study1participants) {
     bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
   )
   grid = expand.grid(grid)
-  write.csv(grid, file=paste0("stage2_parameter_grids/", j, "/AddDDM_Gain.csv"), row.names=F)
+  write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/AddDDM_Gain.csv"), row.names=F)
   
   bestEst = getEst(study1dir, "Loss", j, "AddDDM_likelihood")
   grid = list(
@@ -123,7 +123,7 @@ for (j in study1participants) {
     bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
   )
   grid = expand.grid(grid)
-  write.csv(grid, file=paste0("stage2_parameter_grids/", j, "/AddDDM_Loss.csv"), row.names=F)
+  write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/AddDDM_Loss.csv"), row.names=F)
 }
 
 for (j in study2participants) {
@@ -135,7 +135,7 @@ for (j in study2participants) {
     bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
   )
   grid = expand.grid(grid)
-  write.csv(grid, file=paste0("stage2_parameter_grids/", j, "/AddDDM_Gain.csv"), row.names=F)
+  write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/AddDDM_Gain.csv"), row.names=F)
   
   bestEst = getEst(study2dir, "Loss", j, "AddDDM_likelihood")
   grid = list(
@@ -145,7 +145,7 @@ for (j in study2participants) {
     bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
   )
   grid = expand.grid(grid)
-  write.csv(grid, file=paste0("stage2_parameter_grids/", j, "/AddDDM_Loss.csv"), row.names=F)
+  write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/AddDDM_Loss.csv"), row.names=F)
 }
 
 
@@ -163,7 +163,7 @@ for (j in study1participants) {
     reference = seq(bestEst$reference-stepsize$reference, bestEst$reference+stepsize$reference, stepsize$reference)
   )
   grid = expand.grid(grid)
-  write.csv(grid, file=paste0("stage2_parameter_grids/", j, "/RaDDM_Gain.csv"), row.names=F)
+  write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/RaDDM_Gain.csv"), row.names=F)
   
   bestEst = getEst(study1dir, "Loss", j, "RaDDM_likelihood")
   grid = list(
@@ -174,7 +174,7 @@ for (j in study1participants) {
     reference = seq(bestEst$reference-stepsize$reference, bestEst$reference+stepsize$reference, stepsize$reference)
   )
   grid = expand.grid(grid)
-  write.csv(grid, file=paste0("stage2_parameter_grids/", j, "/RaDDM_Loss.csv"), row.names=F)
+  write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/RaDDM_Loss.csv"), row.names=F)
 }
 
 for (j in study2participants) {
@@ -187,7 +187,7 @@ for (j in study2participants) {
     reference = seq(bestEst$reference-stepsize$reference, bestEst$reference+stepsize$reference, stepsize$reference)
   )
   grid = expand.grid(grid)
-  write.csv(grid, file=paste0("stage2_parameter_grids/", j, "/RaDDM_Gain.csv"), row.names=F)
+  write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/RaDDM_Gain.csv"), row.names=F)
   
   bestEst = getEst(study2dir, "Loss", j, "RaDDM_likelihood")
   grid = list(
@@ -198,7 +198,7 @@ for (j in study2participants) {
     reference = seq(bestEst$reference-stepsize$reference, bestEst$reference+stepsize$reference, stepsize$reference)
   )
   grid = expand.grid(grid)
-  write.csv(grid, file=paste0("stage2_parameter_grids/", j, "/RaDDM_Loss.csv"), row.names=F)
+  write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/RaDDM_Loss.csv"), row.names=F)
 }
 
 print("Warnings about incomplete final line and directory already existing are fine.")

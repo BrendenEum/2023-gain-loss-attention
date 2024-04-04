@@ -25,7 +25,7 @@ include("merge_parameter_grid.jl");
 # Common model settings (! ! !)
 fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :decay=>0.0);
 my_likelihood_args = (timeStep = 10.0, approxStateStep = 0.01); #ms, RDV units
-verbose = false;
+verbose = true;
 
 # Prep output folder
 time = Dates.format(now(), "yyyy.mm.dd-H.M");
@@ -50,6 +50,7 @@ CSV.write("Study2_participants.csv", DataFrame(participants = collect(keys(study
 # Stage 1
 ##################################################################################################################
 stage = "Stage1";
+println("=====" * stage * "=====")
 
 # Prep output folder
 stagefolder = datefolder * stage * "/";
@@ -88,8 +89,8 @@ outdir = stagefolder * study * "/"; # change this to datefolder once you're on s
 mkpath(outdir);
 
 # Fitting
-all_param_grid_Gain = all_param_grid_Gain_Study1
-all_param_grid_Loss = all_param_grid_Loss_Study1
+all_param_grid_Gain = all_param_grid_Gain_Study1;
+all_param_grid_Loss = all_param_grid_Loss_Study1;
 include("fit_Study1E.jl")
 
 ###########
@@ -104,6 +105,6 @@ outdir = stagefolder * study * "/"; # change this to datefolder once you're on s
 mkpath(outdir);
 
 # Fitting
-all_param_grid_Gain = all_param_grid_Gain_Study2
-all_param_grid_Loss = all_param_grid_Loss_Study2
-include("fit_Study2E.jl")
+all_param_grid_Gain = all_param_grid_Gain_Study2;
+all_param_grid_Loss = all_param_grid_Loss_Study2;
+#include("fit_Study2E.jl")  #debugging
