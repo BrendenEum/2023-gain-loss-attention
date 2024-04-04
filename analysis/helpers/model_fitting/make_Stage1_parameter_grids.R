@@ -1,9 +1,9 @@
 #####################################################################
 # COMMON GRIDS
-d_grid_normal = seq(.001, .025, .004)
-sigma_grid = seq(.01, .13, .04)
-bias_grid = seq(-.4, .4, .4)
-theta_grid = seq(-.2, 1, .4)
+d_grid_normal = seq(.001, .021, .005)
+sigma_grid = seq(.01, .13, .03)
+bias_grid = seq(-.4, .4, .2)
+theta_grid = seq(0, 1, .2)
 #####################################################################
 
 study1participants = read.csv("Study1_participants.csv")$participants
@@ -46,7 +46,7 @@ for (j in study2participants){
 grid = list(
     d = d_grid_normal,
     sigma = sigma_grid,
-    eta = seq(0, .02, .004),
+    eta = seq(0, .02, .005),
     bias = bias_grid
 )
 grid = expand.grid(grid)
@@ -74,7 +74,7 @@ grid = list(
     sigma = sigma_grid,
     theta = theta_grid,
     bias = bias_grid,
-    reference = seq(4.5-8, 4.5, 4)
+    reference = seq(4.5-8, 4.5, 2)
 )
 grid = expand.grid(grid)
 for (j in study1participants){
@@ -88,7 +88,7 @@ grid = list(
     sigma = sigma_grid,
     theta = theta_grid,
     bias = bias_grid,
-    reference = seq(-5.5-8, -5.5, 4)
+    reference = seq(-5.5-8, -5.5, 2)
 )
 grid = expand.grid(grid)
 for (j in study1participants){
@@ -106,7 +106,7 @@ grid = list(
   sigma = sigma_grid,
   theta = theta_grid,
   bias = bias_grid,
-  reference = seq(1-8, 1, 4)
+  reference = seq(1-8, 1, 2)
 )
 grid = expand.grid(grid)
 for (j in study2participants){
@@ -120,7 +120,7 @@ grid = list(
   sigma = sigma_grid,
   theta = theta_grid,
   bias = bias_grid,
-  reference = seq(-6-8, -6, 4)
+  reference = seq(-6-8, -6, 2)
 )
 grid = expand.grid(grid)
 for (j in study2participants){

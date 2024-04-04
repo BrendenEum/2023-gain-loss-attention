@@ -15,9 +15,6 @@ study2dir = file.path(datadir, "Study2E")
 study1participants = read.csv("Study1_participants.csv")$participants
 study2participants = read.csv("Study2_participants.csv")$participants
 
-study1participants = c(3, 5, 7, 9, 10) #debugging
-study2participants = c() # debugging
-
 dir.create("Stage2_parameter_grids/", showWarnings=F)
 for (j in study1participants){dir.create(paste0("Stage2_parameter_grids/",j,"/"), showWarnings=F)}
 for (j in study2participants){dir.create(paste0("Stage2_parameter_grids/",j,"/"), showWarnings=F)}
@@ -44,12 +41,12 @@ writeGrid = function(bestEst, stepsize, fn) {
 
 # Step sizes
 stepsize = data.frame(
-  d = .002,
-  sigma = .02,
-  theta = .2,
-  bias = .2,
-  eta = .002,
-  reference = 2
+  d = .0025,
+  sigma = .03,
+  theta = .1,
+  bias = .1,
+  eta = .0025,
+  reference = 1
 )
 
 ####################################

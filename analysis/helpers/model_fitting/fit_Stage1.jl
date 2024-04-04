@@ -45,10 +45,6 @@ fixdata = "../../../data/processed_data/numeric/e/fixationsGain.csv";
 study2 = ADDM.load_data_from_csv(expdata, fixdata);
 CSV.write("Study2_participants.csv", DataFrame(participants = collect(keys(study2))))
 
-keys_to_keep = ["3", "5", "7", "9", "10"]; #debug
-study1 = filter(pair -> pair.first in keys_to_keep, study1); #debug
-study2 = Dict(); #debug
-
 
 ##################################################################################################################
 # Stage 1
@@ -112,4 +108,4 @@ mkpath(outdir);
 # Fitting
 all_param_grid_Gain = all_param_grid_Gain_Study2;
 all_param_grid_Loss = all_param_grid_Loss_Study2;
-#include("fit_Study2E.jl")  #debugging
+include("fit_Study2E.jl")

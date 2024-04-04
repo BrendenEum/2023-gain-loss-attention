@@ -15,7 +15,7 @@ library(latex2exp)
 #------------- Things you should edit at the start -------------
 dataset = "e"
 datafolder = "e-refpt-minvalue"
-dataset_1 = "Study1E-debug-free-refpt3" #debugging
+dataset_1 = "2024.04.03-Stage3/Stage3/Study1E" #debugging
 colors = list(Gain="Green4", Loss="Red3")
 #---------------------------------------------------------------
 

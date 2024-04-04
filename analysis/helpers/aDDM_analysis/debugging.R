@@ -13,7 +13,7 @@ library(readr)
 library(latex2exp)
 
 #------------- Things you should edit at the start -------------
-.dataset = "2024.04.03-22.32/Stage3/Study1E"
+.dataset = "2024.04.03-Stage3/Stage3/Study1E"
 .colors = list(Gain="Green4", Loss="Red3")
 #---------------------------------------------------------------
 
@@ -75,7 +75,7 @@ Study1$study = 1
 .data$study = factor(.data$study, levels=c(1,2), labels=c("1","2"))
 
 # Limit to just RaDDM
-.data = .data[.data$likelihood_fn=="RaDDM",]
+.data = .data[.data$likelihood_fn=="AddDDM",]
 
 # Get best fitting parameters for each subject
 .data = .data %>%

@@ -9,7 +9,7 @@ expdata = "../../../data/processed_data/dots/e/expdata"*condition*".csv";
 fixdata = "../../../data/processed_data/dots/e/fixations"*condition*".csv";
 study1 = ADDM.load_data_from_csv(expdata, fixdata);
 
-Threads.@threads for k in ["3","5","7","9","10"]#collect(keys(study1)) #debugging
+Threads.@threads for k in collect(keys(study1))
     
     # Progress.
     println("Participant " * k)
@@ -63,7 +63,7 @@ expdata = "../../../data/processed_data/dots/e/expdata"*condition*".csv";
 fixdata = "../../../data/processed_data/dots/e/fixations"*condition*".csv";
 study1 = ADDM.load_data_from_csv(expdata, fixdata);
 
-Threads.@threads for k in ["3","5","7","9","10"]#collect(keys(study1)) #debugging
+Threads.@threads for k in collect(keys(study1)) 
 
     # Progress
     println("Participant " * k)
