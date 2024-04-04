@@ -19,6 +19,9 @@ include("custom_functions/aDDM_likelihood.jl")
 include("custom_functions/AddDDM_likelihood.jl")
 include("custom_functions/RaDDM_likelihood.jl")
 
+# Prep param_grid functions
+include("merge_parameter_grid.jl");
+
 # Common model settings (! ! !)
 fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :decay=>0.0);
 my_likelihood_args = (timeStep = 10.0, approxStateStep = 0.01); #ms, RDV units
@@ -53,8 +56,25 @@ stagefolder = datefolder * stage * "/";
 stage1folder = stagefolder;
 mkpath(stagefolder);
 
-# Parameter grids
-parameter_grid_folder = stage*"_parameter_grids/";
+# Prep all parameter grids
+all_parameter_grid_folder = stage*"_parameter_grids/";
+all_param_grid_Gain_Study1 = Dict();
+all_param_grid_Loss_Study1 = Dict();
+for j in collect(keys(study1))
+    parameter_grid_folder = all_parameter_grid_folder * "$(j)/";
+    param_grid_Gain, param_grid_Loss = merge_parameter_grid(parameter_grid_folder);
+    all_param_grid_Gain_Study1[j] = param_grid_Gain;
+    all_param_grid_Loss_Study1[j] = param_grid_Loss;
+end
+all_param_grid_Gain_Study2 = Dict();
+all_param_grid_Loss_Study2 = Dict();
+for j in collect(keys(study2))
+    parameter_grid_folder = all_parameter_grid_folder * "$(j)/";
+    param_grid_Gain, param_grid_Loss = merge_parameter_grid(parameter_grid_folder);
+    all_param_grid_Gain_Study2[j] = param_grid_Gain;
+    all_param_grid_Loss_Study2[j] = param_grid_Loss;
+end
+
 
 ###########
 # Study 1
@@ -67,11 +87,9 @@ flush(stdout)
 outdir = stagefolder * study * "/"; # change this to datefolder once you're on stage3.
 mkpath(outdir);
 
-# Prep parameter grid (param_grid)
-parameter_grid_folder = stage*"_parameter_grids/";
-include("merge_parameter_grid_Study1.jl");
-
 # Fitting
+all_param_grid_Gain = all_param_grid_Gain_Study1
+all_param_grid_Loss = all_param_grid_Loss_Study1
 include("fit_Study1E.jl")
 
 ###########
@@ -85,9 +103,7 @@ flush(stdout)
 outdir = stagefolder * study * "/"; # change this to datefolder once you're on stage3.
 mkpath(outdir);
 
-# Prep parameter grid (param_grid)
-parameter_grid_folder = stage*"_parameter_grids/";
-include("merge_parameter_grid_Study2.jl");
-
 # Fitting
+all_param_grid_Gain = all_param_grid_Gain_Study2
+all_param_grid_Loss = all_param_grid_Loss_Study2
 include("fit_Study2E.jl")
