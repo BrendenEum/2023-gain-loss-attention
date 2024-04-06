@@ -27,6 +27,11 @@ getEst = function(directory, condition, participant, likelihood_fn) {
   return(bestEst)
 }
 
+
+###############
+# Grids
+###############
+
 # Step sizes
 stepsize = data.frame(
   d = .00125,
@@ -37,67 +42,96 @@ stepsize = data.frame(
   reference = .5
 )
 
+# Function to make grid
+makeGrid_aDDM = function(bestEst, stepsize) {
+  grid = list(
+    d = unique(c(
+      max(bestEst$d-stepsize$d, 0), 
+      bestEst$d, 
+      bestEst$d+stepsize$d
+    )),
+    sigma = unique(c(
+      max(bestEst$sigma-stepsize$sigma, 0), 
+      bestEst$sigma, 
+      bestEst$sigma+stepsize$sigma
+    )),
+    theta = unique(c(
+      max(bestEst$theta-stepsize$theta, 0), 
+      bestEst$theta,
+      min(bestEst$theta+stepsize$theta, 1)
+    )),
+    bias = unique(c(bestEst$bias-stepsize$bias, bestEst$bias, bestEst$bias))
+  )
+  grid = expand.grid(grid)
+  return(grid)
+}
+makeGrid_AddDDM = function(bestEst, stepsize) {
+  grid = list(
+    d = unique(c(
+      max(bestEst$d-stepsize$d, 0), 
+      bestEst$d, 
+      bestEst$d+stepsize$d
+    )),
+    sigma = unique(c(
+      max(bestEst$sigma-stepsize$sigma, 0), 
+      bestEst$sigma, 
+      bestEst$sigma+stepsize$sigma
+    )),
+    eta = unique(c(bestEst$eta-stepsize$eta, bestEst$eta, bestEst$eta+stepsize$eta)),
+    bias = unique(c(bestEst$bias-stepsize$bias, bestEst$bias, bestEst$bias))
+  )
+  grid = expand.grid(grid)
+  return(grid)
+}
+makeGrid_RaDDM = function(bestEst, stepsize) {
+  grid = list(
+    d = unique(c(
+      max(bestEst$d-stepsize$d, 0), 
+      bestEst$d, 
+      bestEst$d+stepsize$d
+    )),
+    sigma = unique(c(
+      max(bestEst$sigma-stepsize$sigma, 0), 
+      bestEst$sigma, 
+      bestEst$sigma+stepsize$sigma
+    )),
+    theta = unique(c(
+      max(bestEst$theta-stepsize$theta, 0), 
+      bestEst$theta,
+      min(bestEst$theta+stepsize$theta, 1)
+    )),
+    bias = unique(c(bestEst$bias-stepsize$bias, bestEst$bias, bestEst$bias)),
+    reference = unique(c(
+      bestEst$reference-stepsize$reference, 
+      bestEst$reference,
+      bestEst$reference+stepsize$reference
+    ))
+  )
+  grid = expand.grid(grid)
+  return(grid)
+}
+
 ####################################
 # Standard aDDM
 ####################################
 
 for (j in study1participants) {
   bestEst = getEst(study1dir, "Gain", j, "aDDM_likelihood")
-  grid = list(
-    d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
-    sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    theta = seq(
-      max(bestEst$theta-stepsize$theta, 0), 
-      min(bestEst$theta+stepsize$theta, 1), 
-      stepsize$theta
-    ),
-    bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
-  )
-  grid = expand.grid(grid)
+  grid = makeGrid_aDDM(bestEst, stepsize)
   write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/aDDM_Gain.csv"), row.names=F)
   
   bestEst = getEst(study1dir, "Loss", j, "aDDM_likelihood")
-  grid = list(
-    d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
-    sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    theta = seq(
-      max(bestEst$theta-stepsize$theta, 0), 
-      min(bestEst$theta+stepsize$theta, 1), 
-      stepsize$theta
-    ),
-    bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
-  )
-  grid = expand.grid(grid)
+  grid = makeGrid_aDDM(bestEst, stepsize)
   write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/aDDM_Loss.csv"), row.names=F)
 }
 
 for (j in study2participants) {
   bestEst = getEst(study2dir, "Gain", j, "aDDM_likelihood")
-  grid = list(
-    d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
-    sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    theta = seq(
-      max(bestEst$theta-stepsize$theta, 0), 
-      min(bestEst$theta+stepsize$theta, 1), 
-      stepsize$theta
-    ),
-    bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
-  )
-  grid = expand.grid(grid)
+  grid = makeGrid_aDDM(bestEst, stepsize)
   write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/aDDM_Gain.csv"), row.names=F)
   
   bestEst = getEst(study2dir, "Loss", j, "aDDM_likelihood")
-  grid = list(
-    d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
-    sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    theta = seq(
-      max(bestEst$theta-stepsize$theta, 0), 
-      min(bestEst$theta+stepsize$theta, 1), 
-      stepsize$theta
-    ),
-    bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
-  )
-  grid = expand.grid(grid)
+  grid = makeGrid_aDDM(bestEst, stepsize)
   write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/aDDM_Loss.csv"), row.names=F)
 }
 
@@ -107,46 +141,22 @@ for (j in study2participants) {
 
 for (j in study1participants) {
   bestEst = getEst(study1dir, "Gain", j, "AddDDM_likelihood")
-  grid = list(
-    d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
-    sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    eta = seq(bestEst$eta-stepsize$eta, bestEst$eta+stepsize$eta, stepsize$eta),
-    bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
-  )
-  grid = expand.grid(grid)
+  grid = makeGrid_AddDDM(bestEst, stepsize)
   write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/AddDDM_Gain.csv"), row.names=F)
   
   bestEst = getEst(study1dir, "Loss", j, "AddDDM_likelihood")
-  grid = list(
-    d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
-    sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    eta = seq(bestEst$eta-stepsize$eta, bestEst$eta+stepsize$eta, stepsize$eta),
-    bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
-  )
-  grid = expand.grid(grid)
+  grid = makeGrid_AddDDM(bestEst, stepsize)
   write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/AddDDM_Loss.csv"), row.names=F)
 }
 
 for (j in study2participants) {
   bestEst = getEst(study2dir, "Gain", j, "AddDDM_likelihood")
-  grid = list(
-    d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
-    sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    eta = seq(bestEst$eta-stepsize$eta, bestEst$eta+stepsize$eta, stepsize$eta),
-    bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
-  )
-  grid = expand.grid(grid)
+  grid = makeGrid_AddDDM(bestEst, stepsize)
   write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/AddDDM_Gain.csv"), row.names=F)
   
   bestEst = getEst(study2dir, "Loss", j, "AddDDM_likelihood")
-  grid = list(
-    d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
-    sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    eta = seq(bestEst$eta-stepsize$eta, bestEst$eta+stepsize$eta, stepsize$eta),
-    bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
-  )
-  grid = expand.grid(grid)
-  write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/AddDDM_Loss.csv"), row.names=F)
+  grid = makeGrid_AddDDM(bestEst, stepsize)
+  write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/AddDDM_Gain.csv"), row.names=F)
 }
 
 
@@ -156,65 +166,21 @@ for (j in study2participants) {
 
 for (j in study1participants) {
   bestEst = getEst(study1dir, "Gain", j, "RaDDM_likelihood")
-  grid = list(
-    d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
-    sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    theta = seq(
-      max(bestEst$theta-stepsize$theta, 0), 
-      min(bestEst$theta+stepsize$theta, 1), 
-      stepsize$theta
-    ),
-    bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias),
-    reference = seq(bestEst$reference-stepsize$reference, bestEst$reference+stepsize$reference, stepsize$reference)
-  )
-  grid = expand.grid(grid)
+  grid = makeGrid_RaDDM(bestEst, stepsize)
   write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/RaDDM_Gain.csv"), row.names=F)
   
   bestEst = getEst(study1dir, "Loss", j, "RaDDM_likelihood")
-  grid = list(
-    d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
-    sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    theta = seq(
-      max(bestEst$theta-stepsize$theta, 0), 
-      min(bestEst$theta+stepsize$theta, 1), 
-      stepsize$theta
-    ),
-    bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias),
-    reference = seq(bestEst$reference-stepsize$reference, bestEst$reference+stepsize$reference, stepsize$reference)
-  )
-  grid = expand.grid(grid)
+  grid = makeGrid_RaDDM(bestEst, stepsize)
   write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/RaDDM_Loss.csv"), row.names=F)
 }
 
 for (j in study2participants) {
   bestEst = getEst(study2dir, "Gain", j, "RaDDM_likelihood")
-  grid = list(
-    d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
-    sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    theta = seq(
-      max(bestEst$theta-stepsize$theta, 0), 
-      min(bestEst$theta+stepsize$theta, 1), 
-      stepsize$theta
-    ),
-    bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias),
-    reference = seq(bestEst$reference-stepsize$reference, bestEst$reference+stepsize$reference, stepsize$reference)
-  )
-  grid = expand.grid(grid)
+  grid = makeGrid_RaDDM(bestEst, stepsize)
   write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/RaDDM_Gain.csv"), row.names=F)
   
   bestEst = getEst(study2dir, "Loss", j, "RaDDM_likelihood")
-  grid = list(
-    d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
-    sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    theta = seq(
-      max(bestEst$theta-stepsize$theta, 0), 
-      min(bestEst$theta+stepsize$theta, 1), 
-      stepsize$theta
-    ),
-    bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias),
-    reference = seq(bestEst$reference-stepsize$reference, bestEst$reference+stepsize$reference, stepsize$reference)
-  )
-  grid = expand.grid(grid)
+  grid = makeGrid_RaDDM(bestEst, stepsize)
   write.csv(grid, file=paste0("stage3_parameter_grids/", j, "/RaDDM_Loss.csv"), row.names=F)
 }
 
