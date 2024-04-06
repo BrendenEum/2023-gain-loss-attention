@@ -14,11 +14,12 @@ library(latex2exp)
 
 #------------- Things you should edit at the start -------------
 .dataset = "e"
+.timestamp = "2024.04.05-18.22/Stage3"
 .colors = list(Gain="Green4", Loss="Red3")
 #---------------------------------------------------------------
 
 .codedir = getwd()
-.datadir = file.path(paste0("../../outputs/temp/model_fitting/", .dataset))
+.datadir = file.path(paste0("../../outputs/temp/model_fitting/", .timestamp))
 .cfrdir = file.path("../../../data/processed_data")
 load(file.path(.cfrdir, paste0(.dataset, "cfr.RData")))
 .figdir = file.path("../../outputs/figures")
@@ -26,8 +27,8 @@ load(file.path(.cfrdir, paste0(.dataset, "cfr.RData")))
 source(file.path(.optdir, "GainLossColorPalette.R"))
 source(file.path(.optdir, "MyPlotOptions.R"))
 
-.Study1_folder = file.path(.datadir, "Study1")
-.Study2_folder = file.path(.datadir, "Study2")
+.Study1_folder = file.path(.datadir, "Study1E")
+.Study2_folder = file.path(.datadir, "Study2E")
 
 Study1_subjects = unique(ecfr$subject[ecfr$studyN==1])
 Study2_subjects = unique(ecfr$subject[ecfr$studyN==2])

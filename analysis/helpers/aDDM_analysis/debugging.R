@@ -13,7 +13,7 @@ library(readr)
 library(latex2exp)
 
 #------------- Things you should edit at the start -------------
-.dataset = "2024.04.03-Stage3/Stage3/Study1E"
+.dataset = "2024.04.05-18.22/Stage3"
 .colors = list(Gain="Green4", Loss="Red3")
 #---------------------------------------------------------------
 
@@ -60,7 +60,8 @@ getData = function(folder, subjectList) {
   return(posteriors)
 }
 
-Study1 = getData(.datadir, c(3, 5, 7, 9, 10))
+Study1 = getData(file.path(.datadir,"Study1E"), Study1_subjects)
+Study2 = getData(file.path(.datadir,"Study2E"), Study2_subjects)
 
 
 ##############################################################################

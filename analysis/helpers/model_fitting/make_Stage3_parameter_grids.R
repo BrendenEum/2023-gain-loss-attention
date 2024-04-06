@@ -27,20 +27,7 @@ getEst = function(directory, condition, participant, likelihood_fn) {
   return(bestEst)
 }
 
-# Function to make and write grid
-writeGrid = function(bestEst, stepsize, fn) {
-  grid = list(
-    d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
-    sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    theta = seq(bestEst$theta-stepsize$theta, bestEst$theta+stepsize$theta, stepsize$theta),
-    bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
-  )
-  grid = expand.grid(grid)
-  write.csv(grid, file=fn, row.names=F)
-}
-
 # Step sizes
-stepsizes = read.csv("stepsizes.txt")
 stepsize = data.frame(
   d = .00125,
   sigma = .01,
@@ -59,7 +46,11 @@ for (j in study1participants) {
   grid = list(
     d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
     sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    theta = seq(bestEst$theta-stepsize$theta, bestEst$theta+stepsize$theta, stepsize$theta),
+    theta = seq(
+      max(bestEst$theta-stepsize$theta, 0), 
+      min(bestEst$theta+stepsize$theta, 1), 
+      stepsize$theta
+    ),
     bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
   )
   grid = expand.grid(grid)
@@ -69,7 +60,11 @@ for (j in study1participants) {
   grid = list(
     d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
     sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    theta = seq(bestEst$theta-stepsize$theta, bestEst$theta+stepsize$theta, stepsize$theta),
+    theta = seq(
+      max(bestEst$theta-stepsize$theta, 0), 
+      min(bestEst$theta+stepsize$theta, 1), 
+      stepsize$theta
+    ),
     bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
   )
   grid = expand.grid(grid)
@@ -81,7 +76,11 @@ for (j in study2participants) {
   grid = list(
     d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
     sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    theta = seq(bestEst$theta-stepsize$theta, bestEst$theta+stepsize$theta, stepsize$theta),
+    theta = seq(
+      max(bestEst$theta-stepsize$theta, 0), 
+      min(bestEst$theta+stepsize$theta, 1), 
+      stepsize$theta
+    ),
     bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
   )
   grid = expand.grid(grid)
@@ -91,7 +90,11 @@ for (j in study2participants) {
   grid = list(
     d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
     sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    theta = seq(bestEst$theta-stepsize$theta, bestEst$theta+stepsize$theta, stepsize$theta),
+    theta = seq(
+      max(bestEst$theta-stepsize$theta, 0), 
+      min(bestEst$theta+stepsize$theta, 1), 
+      stepsize$theta
+    ),
     bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias)
   )
   grid = expand.grid(grid)
@@ -156,7 +159,11 @@ for (j in study1participants) {
   grid = list(
     d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
     sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    theta = seq(bestEst$theta-stepsize$theta, bestEst$theta+stepsize$theta, stepsize$theta),
+    theta = seq(
+      max(bestEst$theta-stepsize$theta, 0), 
+      min(bestEst$theta+stepsize$theta, 1), 
+      stepsize$theta
+    ),
     bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias),
     reference = seq(bestEst$reference-stepsize$reference, bestEst$reference+stepsize$reference, stepsize$reference)
   )
@@ -167,7 +174,11 @@ for (j in study1participants) {
   grid = list(
     d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
     sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    theta = seq(bestEst$theta-stepsize$theta, bestEst$theta+stepsize$theta, stepsize$theta),
+    theta = seq(
+      max(bestEst$theta-stepsize$theta, 0), 
+      min(bestEst$theta+stepsize$theta, 1), 
+      stepsize$theta
+    ),
     bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias),
     reference = seq(bestEst$reference-stepsize$reference, bestEst$reference+stepsize$reference, stepsize$reference)
   )
@@ -180,7 +191,11 @@ for (j in study2participants) {
   grid = list(
     d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
     sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    theta = seq(bestEst$theta-stepsize$theta, bestEst$theta+stepsize$theta, stepsize$theta),
+    theta = seq(
+      max(bestEst$theta-stepsize$theta, 0), 
+      min(bestEst$theta+stepsize$theta, 1), 
+      stepsize$theta
+    ),
     bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias),
     reference = seq(bestEst$reference-stepsize$reference, bestEst$reference+stepsize$reference, stepsize$reference)
   )
@@ -191,7 +206,11 @@ for (j in study2participants) {
   grid = list(
     d = seq(bestEst$d-stepsize$d, bestEst$d+stepsize$d, stepsize$d),
     sigma = seq(bestEst$sigma-stepsize$sigma, bestEst$sigma+stepsize$sigma, stepsize$sigma),
-    theta = seq(bestEst$theta-stepsize$theta, bestEst$theta+stepsize$theta, stepsize$theta),
+    theta = seq(
+      max(bestEst$theta-stepsize$theta, 0), 
+      min(bestEst$theta+stepsize$theta, 1), 
+      stepsize$theta
+    ),
     bias = seq(bestEst$bias-stepsize$bias, bestEst$bias+stepsize$bias, stepsize$bias),
     reference = seq(bestEst$reference-stepsize$reference, bestEst$reference+stepsize$reference, stepsize$reference)
   )
