@@ -19,12 +19,11 @@ Threads.@threads for k in collect(keys(study2))
     cur_subj_data = study2[k]
 
     # Get parameter grid
-    global subject = k;
-    include("merge_parameter_grid.jl");
+    param_grid = all_param_grid_Gain["$(k)"]
 
     # Fit the model via grid search.
     subj_best_pars, subj_nll_df, subj_trial_posteriors, subj_trial_likelihoods = ADDM.grid_search(
-        cur_subj_data, param_grid_Gain, nothing, fixed_params, likelihood_args=my_likelihood_args; 
+        cur_subj_data, param_grid, nothing, fixed_params, likelihood_args=my_likelihood_args; 
         return_model_posteriors=true, 
         return_trial_likelihoods=true,
         verbose=verbose, threadNum=Threads.threadid()
@@ -38,7 +37,7 @@ Threads.@threads for k in collect(keys(study2))
     nTrials = length(study2[k]);
     subj_model_posteriors = Dict(zip(keys(subj_trial_posteriors), [x[nTrials] for x in values(subj_trial_posteriors)]));
     subj_model_posteriors_df = DataFrame();
-    for (k, v) in param_grid_Gain
+    for (k, v) in param_grid
         cur_row = DataFrame([v])
         cur_row.posterior = [subj_model_posteriors[k]]
         subj_model_posteriors_df = vcat(subj_model_posteriors_df, cur_row, cols=:union)
@@ -72,12 +71,11 @@ Threads.@threads for k in collect(keys(study2))
     cur_subj_data = study2[k]
 
     # Get parameter grid
-    global subject = k;
-    include("merge_parameter_grid.jl");
+    param_grid = all_param_grid_Loss["$(k)"]
 
     # Fit the model via grid search.
     subj_best_pars, subj_nll_df, subj_trial_posteriors, subj_trial_likelihoods = ADDM.grid_search(
-        cur_subj_data, param_grid_Loss, nothing, fixed_params, likelihood_args=my_likelihood_args; 
+        cur_subj_data, param_grid, nothing, fixed_params, likelihood_args=my_likelihood_args; 
         return_model_posteriors=true, 
         return_trial_likelihoods=true,
         verbose=verbose, threadNum=Threads.threadid()
@@ -91,7 +89,7 @@ Threads.@threads for k in collect(keys(study2))
     nTrials = length(study2[k]);
     subj_model_posteriors = Dict(zip(keys(subj_trial_posteriors), [x[nTrials] for x in values(subj_trial_posteriors)]));
     subj_model_posteriors_df = DataFrame();
-    for (k, v) in param_grid_Loss
+    for (k, v) in param_grid
         cur_row = DataFrame([v])
         cur_row.posterior = [subj_model_posteriors[k]]
         subj_model_posteriors_df = vcat(subj_model_posteriors_df, cur_row, cols=:union)

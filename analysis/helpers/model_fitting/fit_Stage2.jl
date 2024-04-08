@@ -19,10 +19,13 @@ include("custom_functions/aDDM_likelihood.jl")
 include("custom_functions/AddDDM_likelihood.jl")
 include("custom_functions/RaDDM_likelihood.jl")
 
+# Prep param_grid functions
+include("merge_parameter_grid.jl");
+
 # Common model settings (! ! !)
 fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :decay=>0.0);
 my_likelihood_args = (timeStep = 10.0, approxStateStep = 0.01); #ms, RDV units
-verbose = false;
+verbose = true;
 
 # Prep output folder
 time = Dates.format(now(), "yyyy.mm.dd-H.M");
@@ -32,27 +35,46 @@ end
 datefolder = "../../outputs/temp/model_fitting/" * time * "/"
 mkpath(datefolder);
 
+# List of study 1 and 2 participants
+expdata = "../../../data/processed_data/dots/e/expdataGain.csv";
+fixdata = "../../../data/processed_data/dots/e/fixationsGain.csv";
+study1 = ADDM.load_data_from_csv(expdata, fixdata);
+CSV.write("Study1_participants.csv", DataFrame(participants = collect(keys(study1))))
+expdata = "../../../data/processed_data/numeric/e/expdataGain.csv";
+fixdata = "../../../data/processed_data/numeric/e/fixationsGain.csv";
+study2 = ADDM.load_data_from_csv(expdata, fixdata);
+CSV.write("Study2_participants.csv", DataFrame(participants = collect(keys(study2))))
+
 
 ##################################################################################################################
 # Stage 2
 ##################################################################################################################
 stage = "Stage2";
+println("=====" * stage * "=====")
+flush(stdout)
 
 # Prep output folder
 stagefolder = datefolder * stage * "/";
-stage2folder = stagefolder;
+stage1folder = stagefolder;
 mkpath(stagefolder);
 
-# Prep parameter grids (param_grid)
-study1participants = CSV.read("Study1_participants.csv", DataFrame).participants
-Stage2_parameter_grid_folder = stage*"_parameter_grids/";
-all_param_grid_Gain = Dict();
-all_param_grid_Loss = Dict();
-for j in study1participants
-    parameter_grid_folder = Stage2_parameter_grid_folder * "$(j)/";
-    include("merge_parameter_grid_Study1.jl");
-    all_param_grid_Gain[j] = param_grid_Gain;
-    all_param_grid_Loss[j] = param_grid_Loss;
+# Prep all parameter grids
+all_parameter_grid_folder = stage*"_parameter_grids/";
+all_param_grid_Gain_Study1 = Dict();
+all_param_grid_Loss_Study1 = Dict();
+for j in collect(keys(study1))
+    parameter_grid_folder = all_parameter_grid_folder * "$(j)/";
+    param_grid_Gain, param_grid_Loss = merge_parameter_grid(parameter_grid_folder);
+    all_param_grid_Gain_Study1[j] = param_grid_Gain;
+    all_param_grid_Loss_Study1[j] = param_grid_Loss;
+end
+all_param_grid_Gain_Study2 = Dict();
+all_param_grid_Loss_Study2 = Dict();
+for j in collect(keys(study2))
+    parameter_grid_folder = all_parameter_grid_folder * "$(j)/";
+    param_grid_Gain, param_grid_Loss = merge_parameter_grid(parameter_grid_folder);
+    all_param_grid_Gain_Study2[j] = param_grid_Gain;
+    all_param_grid_Loss_Study2[j] = param_grid_Loss;
 end
 
 
@@ -67,11 +89,9 @@ flush(stdout)
 outdir = stagefolder * study * "/"; # change this to datefolder once you're on stage3.
 mkpath(outdir);
 
-# Prep parameter grid for specific subject
-parameter_grid_folder = 
-include("merge_parameter_grid_Study1.jl");
-
 # Fitting
+all_param_grid_Gain = all_param_grid_Gain_Study1;
+all_param_grid_Loss = all_param_grid_Loss_Study1;
 include("fit_Study1E.jl")
 
 ###########
@@ -85,9 +105,7 @@ flush(stdout)
 outdir = stagefolder * study * "/"; # change this to datefolder once you're on stage3.
 mkpath(outdir);
 
-# Prep parameter grid (param_grid)
-parameter_grid_folder = stage*"_parameter_grids/";
-include("merge_parameter_grid_Study2.jl");
-
 # Fitting
+all_param_grid_Gain = all_param_grid_Gain_Study2;
+all_param_grid_Loss = all_param_grid_Loss_Study2;
 include("fit_Study2E.jl")
