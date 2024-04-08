@@ -77,7 +77,11 @@ makeGrid_AddDDM = function(bestEst, stepsize) {
       bestEst$sigma, 
       bestEst$sigma+stepsize$sigma
     )),
-    eta = unique(c(bestEst$eta-stepsize$eta, bestEst$eta, bestEst$eta+stepsize$eta)),
+    eta = unique(c(
+      max(bestEst$eta-stepsize$eta, 0), 
+      bestEst$eta, 
+      bestEst$eta+stepsize$eta
+    )),
     bias = unique(c(bestEst$bias-stepsize$bias, bestEst$bias, bestEst$bias))
   )
   grid = expand.grid(grid)

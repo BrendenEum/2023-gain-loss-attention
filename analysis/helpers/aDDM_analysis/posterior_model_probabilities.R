@@ -14,7 +14,7 @@ library(latex2exp)
 
 #------------- Things you should edit at the start -------------
 dataset = "e"
-datafolder = "2024.04.05-18.22/Stage3"
+datafolder = "2024.04.06-11.22/Stage3"
 colors = list(Gain="Green4", Loss="Red3")
 #---------------------------------------------------------------
 

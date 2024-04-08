@@ -14,7 +14,7 @@ library(latex2exp)
 
 #------------- Things you should edit at the start -------------
 .dataset = "e"
-.timestamp = "2024.04.05-18.22/Stage3"
+.timestamp = "2024.04.06-11.22/Stage3"
 .colors = list(Gain="Green4", Loss="Red3")
 #---------------------------------------------------------------
 
@@ -99,6 +99,9 @@ if (sum(.duplicate_rows) != 0) {
   print("You don't have any duplicate observations. It's safe to continue!")
 }
 
+# If you got the duplicate observation warning, first check if any estimated thetas are 1. This can result in multiple reference points since our approximate estimation doesn't have the resolution to tease these apart (SUPER subtle differences). If so, you'll usually want to keep the highest reference point since thats usually the closest to the minimum value in a context.
+.duplicate_rows = duplicated(data[,c("study","subject","condition")])
+data = data[!.duplicate_rows,]
 
 ##############################################################################
 # Group Averages Table
@@ -114,6 +117,8 @@ tdata = data %>%
     t_mean = mean(theta) %>% round(2),
     t_se = std.error(theta) %>% round(2),
     b_mean = mean(bias) %>% round(2),
-    b_se = std.error(bias) %>% round(2)
+    b_se = std.error(bias) %>% round(2),
+    r_mean = mean(reference) %>% round(2),
+    r_se = std.error(reference) %>% round(2)
   )
 tdata
