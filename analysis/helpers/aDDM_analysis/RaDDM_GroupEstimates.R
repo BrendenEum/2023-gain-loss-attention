@@ -11,6 +11,7 @@ library(ggpubr)
 library(ggsci)
 library(readr)
 library(latex2exp)
+library(effsize)
 
 #------------- Things you should edit at the start -------------
 .dataset = "e"
@@ -122,3 +123,114 @@ tdata = data %>%
     r_se = std.error(reference) %>% round(2)
   )
 tdata
+
+##############################################################################
+# t-tests for parameters
+##############################################################################
+
+## Study 1
+
+print("Study1 d")
+t.test(data$d[data$study==1 & data$condition=="Gain"] - data$d[data$study==1 & data$condition=="Loss"])
+cohen.d(data$d[data$study==1 & data$condition=="Gain"], data$d[data$study==1 & data$condition=="Loss"])
+
+print("Study1 sigma")
+t.test(data$sigma[data$study==1 & data$condition=="Gain"] - data$sigma[data$study==1 & data$condition=="Loss"])
+cohen.d(data$sigma[data$study==1 & data$condition=="Gain"], data$sigma[data$study==1 & data$condition=="Loss"])
+
+print("Study1 bias")
+t.test(data$bias[data$study==1 & data$condition=="Gain"])
+cohen.d(data$bias[data$study==1 & data$condition=="Gain"], rep(0,length(data$bias[data$study==1 & data$condition=="Gain"])))
+t.test(data$bias[data$study==1 & data$condition=="Gain"] - data$bias[data$study==1 & data$condition=="Loss"])
+cohen.d(data$bias[data$study==1 & data$condition=="Gain"], data$bias[data$study==1 & data$condition=="Loss"])
+
+print("Study1 theta")
+t.test(data$theta[data$study==1 & data$condition=="Gain"] - data$theta[data$study==1 & data$condition=="Loss"])
+cohen.d(data$theta[data$study==1 & data$condition=="Gain"], data$theta[data$study==1 & data$condition=="Loss"])
+
+print("Study1 reference")
+t.test(data$reference[data$study==1 & data$condition=="Gain"] - data$reference[data$study==1 & data$condition=="Loss"])
+cohen.d(data$reference[data$study==1 & data$condition=="Gain"], data$reference[data$study==1 & data$condition=="Loss"])
+t.test(data$reference[data$study==1 & data$condition=="Gain"])
+cohen.d(data$reference[data$study==1 & data$condition=="Gain"], rep(0,length(data$reference[data$study==1 & data$condition=="Gain"])))
+
+## Study 2
+
+print("Study2 d")
+t.test(data$d[data$study==2 & data$condition=="Gain"] - data$d[data$study==2 & data$condition=="Loss"])
+cohen.d(data$d[data$study==2 & data$condition=="Gain"], data$d[data$study==2 & data$condition=="Loss"])
+
+print("Study2 sigma")
+t.test(data$sigma[data$study==2 & data$condition=="Gain"] - data$sigma[data$study==2 & data$condition=="Loss"])
+cohen.d(data$sigma[data$study==2 & data$condition=="Gain"], data$sigma[data$study==2 & data$condition=="Loss"])
+
+print("Study2 bias")
+t.test(data$bias[data$study==2 & data$condition=="Gain"])
+cohen.d(data$bias[data$study==2 & data$condition=="Gain"], rep(0,length(data$bias[data$study==2 & data$condition=="Gain"])))
+t.test(data$bias[data$study==2 & data$condition=="Loss"])
+cohen.d(data$bias[data$study==2 & data$condition=="Loss"], rep(0,length(data$bias[data$study==2 & data$condition=="Loss"])))
+
+print("Study2 theta")
+t.test(data$theta[data$study==2 & data$condition=="Gain"] - data$theta[data$study==2 & data$condition=="Loss"])
+cohen.d(data$theta[data$study==2 & data$condition=="Gain"], data$theta[data$study==2 & data$condition=="Loss"])
+
+print("Study2 reference")
+t.test(data$reference[data$study==2 & data$condition=="Gain"] - data$reference[data$study==2 & data$condition=="Loss"])
+cohen.d(data$reference[data$study==2 & data$condition=="Gain"], data$reference[data$study==2 & data$condition=="Loss"])
+
+
+##############################################################################
+# t-tests: reference points vs minimum value
+##############################################################################
+
+# Study 1 Gain
+est = data$reference[data$study==1 & data$condition=="Gain"]
+minV = rep(4.5, length(est))
+t.test(est - minV)
+cohen.d(est, minV)
+
+# Study 1 Loss
+est = data$reference[data$study==1 & data$condition=="Loss"]
+minV = rep(-5.5, length(est))
+t.test(est - minV)
+cohen.d(est, minV)
+
+# Study 2 Gain
+est = data$reference[data$study==2 & data$condition=="Gain"]
+minV = rep(1, length(est))
+t.test(est - minV)
+cohen.d(est, minV)
+
+# Study 2 Loss
+est = data$reference[data$study==2 & data$condition=="Loss"]
+minV = rep(-6, length(est))
+t.test(est - minV)
+cohen.d(est, minV)
+
+
+
+##############################################################################
+# reg: theta ~ reference-point
+##############################################################################
+
+# Study 1 Gain
+test1 = data$reference[data$study==1 & data$condition=="Gain"]
+test2 = data$theta[data$study==1 & data$condition=="Gain"]
+lm(test1 ~ test2) %>% summary()
+
+# Study 1 Loss
+test1 = data$reference[data$study==1 & data$condition=="Loss"]
+test2 = data$theta[data$study==1 & data$condition=="Loss"]
+lm(test1 ~ test2) %>% summary()
+
+
+# Study 2 Gain
+test1 = data$reference[data$study==2 & data$condition=="Gain"]
+test2 = data$theta[data$study==2 & data$condition=="Gain"]
+lm(test1 ~ test2) %>% summary()
+
+
+# Study 2 Loss
+test1 = data$reference[data$study==2 & data$condition=="Loss"]
+test2 = data$theta[data$study==2 & data$condition=="Loss"]
+lm(test1 ~ test2) %>% summary()

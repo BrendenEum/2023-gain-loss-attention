@@ -14,7 +14,7 @@ library(latex2exp)
 
 #------------- Things you should edit at the start -------------
 .dataset = "e"
-.timestamp = "2024.04.06-11.22/Stage3"
+.timestamp = "2024.04.06-11.22-bounded-free-refpt/Stage3"
 .colors = list(Gain="Green4", Loss="Red3")
 #---------------------------------------------------------------
 

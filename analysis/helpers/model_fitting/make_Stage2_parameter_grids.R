@@ -35,7 +35,7 @@ getEst = function(directory, condition, participant, likelihood_fn) {
 # Step sizes
 stepsize = data.frame(
   d = .0025,
-  sigma = .03,
+  sigma = .01,
   theta = .1,
   bias = .1,
   eta = .0025,
@@ -53,7 +53,7 @@ makeGrid_aDDM = function(bestEst, stepsize) {
     sigma = unique(c(
       max(bestEst$sigma-stepsize$sigma, 0), 
       bestEst$sigma, 
-      bestEst$sigma+stepsize$sigma
+      min(bestEst$sigma+stepsize$sigma, .095) #Shinn condition (eq 5)
     )),
     theta = unique(c(
       max(bestEst$theta-stepsize$theta, 0), 
@@ -75,7 +75,7 @@ makeGrid_AddDDM = function(bestEst, stepsize) {
     sigma = unique(c(
       max(bestEst$sigma-stepsize$sigma, 0), 
       bestEst$sigma, 
-      bestEst$sigma+stepsize$sigma
+      min(bestEst$sigma+stepsize$sigma, .095)
     )),
     eta = unique(c(
       max(bestEst$eta-stepsize$eta, 0), 
@@ -97,7 +97,7 @@ makeGrid_RaDDM = function(bestEst, stepsize) {
     sigma = unique(c(
       max(bestEst$sigma-stepsize$sigma, 0), 
       bestEst$sigma, 
-      bestEst$sigma+stepsize$sigma
+      min(bestEst$sigma+stepsize$sigma, .095)
     )),
     theta = unique(c(
       max(bestEst$theta-stepsize$theta, 0), 
