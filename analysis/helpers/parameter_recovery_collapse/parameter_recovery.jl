@@ -15,6 +15,7 @@ using DataFrames
 using Random, Distributions, StatsBase
 using Base.Threads
 using Dates
+startTime = now()
 seed = 1337;
 simCount = 20; # how many simulations to run per data generating process?
 include("sim_and_fit.jl")
@@ -25,7 +26,6 @@ approxStateStep = 0.01; # the approximate resolution of the relative-decision-va
 simCutoff = 20000; # maximum decision time for one simulated choice
 verbose = true; # show progress
 """
-
 
 #############
 # Prep experiment data
@@ -86,23 +86,22 @@ Random.seed!(seed)
 model_list = Any[];
 for i in 1:simCount
     model = ADDM.define_model(
-        d = sample([.003, .006, .009, .012]),
-        σ = .1,
-        θ = sample([0, .25, .5, .75, .9]),
+        d = sample([.003, .009]),  #.003, .006, .009
+        σ = sample([.03, .07]), #.03, .05, .07
+        θ = sample([.5, .8]), #.5, .7, .9
         bias = 0,
         nonDecisionTime = 100,
-        decay = 0
+        decay = 0.0002
     ) 
-    model.reference = sample([1.0, 0.0, -1.0]);
-    #model.urgency = sample()
+    model.reference = sample([-1.0]) #1.0, 0.0, -1.0
     push!(model_list, model);
 end
 
 #FIT
-fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :decay=>0.0)
+fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100)
 
 # DO SIM AND FIT
-sim_and_fit(model_list, condition, simulator_fn, param_grid_Gain, fixed_params)
+sim_and_fit(model_list, condition, simulator_fn, param_grid_Gain, fixed_params; timeStep=5.0)
 
 
 ############# 
@@ -117,19 +116,23 @@ Random.seed!(seed)
 model_list = Any[];
 for i in 1:simCount
     model = ADDM.define_model(
-        d = sample([.003, .006, .009, .012]),
-        σ = .1,
-        θ = sample([0, .25, .5, .75, .9]),
+        d = sample([.003, .009]),
+        σ = sample([.03, .07]),
+        θ = sample([.5, .8]),
         bias = 0,
         nonDecisionTime = 100,
-        decay = 0
+        decay = 0.0002
     ) 
-    model.reference = sample([-6.0, 0.0, -8.0])
+    model.reference = sample([-8.0])
     push!(model_list, model);
 end
 
 #FIT
-fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100, :decay=>0.0)
+fixed_params = Dict(:barrier=>1, :nonDecisionTime=>100)
 
 # DO SIM AND FIT
-sim_and_fit(model_list, condition, simulator_fn, param_grid_Loss, fixed_params)
+sim_and_fit(model_list, condition, simulator_fn, param_grid_Loss, fixed_params; timeStep=5.0)
+
+
+endTime = now()
+println("Run time: ", (endTime - startTime)/Millisecond(60000), " mins")

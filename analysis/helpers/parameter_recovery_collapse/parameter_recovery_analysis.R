@@ -14,7 +14,7 @@ library(latex2exp)
 
 #------------- Things you should edit at the start -------------
 simCount = 20 # How many simulated datasets per model-condition?
-date_folder = "2024.04.16-12.55" # yyyy.mm.dd.H.M of the results you want to look at.
+date_folder = "2024.04.17-15.35" # yyyy.mm.dd.H.M of the results you want to look at.
 colors = list(Gain="Green4", Loss="Red3")
 #---------------------------------------------------------------
 
@@ -78,6 +78,52 @@ RaDDM_results = getRecoveryData(RaDDM_folder)
 
 
 ######################################################
+# Model Recovery
+######################################################
+
+## Clean model recovery data
+
+# Binary for if the fitting process matchese the data generating process
+RaDDM_results$compare$sameprocess = factor(RaDDM_results$compare$likelihood_fn=="RaDDM", levels=c(T,F))
+
+RaDDM_results$compare$generating = "RaDDM"
+
+data_compare = RaDDM_results$compare
+data_compare$generating = factor(
+  data_compare$generating, 
+  levels=c("aDDM","AddDDM","RaDDM"),
+  labels=c("aDDM Simulations","AddDDM Simulations","RaDDM Simulations")
+)
+
+## Plot model recovery
+plt = ggplot(data_compare, aes(x=likelihood_fn, y=posterior_sum)) +
+    myPlot + 
+    
+    geom_hline(yintercept=.33, color="lightgrey") +
+    #geom_violin(aes(fill=condition, alpha=sameprocess), color=NA) +
+    geom_boxplot(aes(fill=condition, alpha=sameprocess), width=.4) +
+    geom_dotplot(binaxis="y", stackdir="center", dotsize=1, fill="white") +
+    
+    labs(
+      y = "Posterior Model Probability",
+      x = "Model",
+      fill = "Condition"
+    ) +
+    scale_y_continuous(breaks=c(0, .33, .67, 1)) +
+    scale_alpha_manual(values = c(.85, .25), guide = "none") +
+    facet_grid(rows=vars(condition), cols=vars(generating)) +
+    theme(
+      strip.text.x = element_text(size = 20),
+      strip.background = element_blank(),
+      strip.text.y = element_blank(),
+      panel.spacing = unit(1, "lines"),
+      legend.position = c(.225,.36)
+    )
+plot(plt)
+ggsave(file.path(figdir, "ModelRecovery.pdf"), plot=plt, width = 12, height = 5)
+
+
+######################################################
 # Parameter Recovery
 ######################################################
 
@@ -117,23 +163,23 @@ sigma_pdata = data.frame()
 theta_pdata = data.frame()
 bias_pdata = data.frame()
 ref_pdata = data.frame()
-#decay_pdata = data.frame()
+decay_pdata = data.frame()
 for (post in list(RaDDM_post)) {
   d_p = post %>% mutate(variable="d", value=d) %>% calculateMarginal()
   sigma_p = post %>% mutate(variable="sigma", value=sigma) %>% calculateMarginal()
   theta_p = post %>% mutate(variable="theta", value=theta) %>% calculateMarginal()
   bias_p = post %>% mutate(variable="bias", value=bias) %>% calculateMarginal()
   ref_p = post %>% mutate(variable="reference", value=reference) %>% calculateMarginal()
-  #decay_p = post %>% mutate(variable="decay", value=decay) %>% calculateMarginal()
+  decay_p = post %>% mutate(variable="decay", value=decay) %>% calculateMarginal()
   d_pdata = rbind(d_pdata, d_p)
   sigma_pdata = rbind(sigma_pdata, sigma_p)
   theta_pdata = rbind(theta_pdata, theta_p)
   bias_pdata = rbind(bias_pdata, bias_p)
   ref_pdata = rbind(ref_pdata, ref_p)
-  #decay_pdata = rbind(decay_pdata, decay_p)
+  decay_pdata = rbind(decay_pdata, decay_p)
 }
 
-pdata = do.call("rbind", list(d_pdata, sigma_pdata, theta_pdata, bias_pdata, ref_pdata))#, decay_pdata))
+pdata = do.call("rbind", list(d_pdata, sigma_pdata, theta_pdata, bias_pdata, ref_pdata, decay_pdata))
 pdata$variable = factor(
   pdata$variable,
   levels = c("d","sigma","theta","bias","decay", "reference"),
@@ -159,16 +205,15 @@ for (row in 1:nrow(pdata)) {
   d = parse_number(x$V10)
   sigma = parse_number(x$V7)
   if (tInd==1) {theta = parse_number(x$V22); eta = parse_number(x$V25); reference = 0} 
-  else if (tInd==0) {theta = parse_number(x$V25); eta = parse_number(x$V28); reference = parse_number(x$V16)}
+  else if (tInd==0) {theta = parse_number(x$V25); eta = parse_number(x$V28); reference = parse_number(x$V16); decay = parse_number(x$V22)}
   bias = parse_number(x$V13)
-  decay = parse_number(x$V19)
   
   if (variable == "d") {pdata$truth[row]=d}
   else if (variable == "sigma") {pdata$truth[row]=sigma}
   else if (variable == "theta") {pdata$truth[row]=theta}
   else if (variable == "bias") {pdata$truth[row]=bias}
   else if (variable == "reference") {pdata$truth[row]=reference}
-  #else if (variable == "decay") {pdata$truth[row]=decay}
+  else if (variable == "decay") {pdata$truth[row]=decay}
 }
 pdata$truth = factor(pdata$truth)
 

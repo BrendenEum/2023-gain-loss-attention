@@ -16,13 +16,14 @@ function sim_and_fit(model_list, condition, simulator_fn, param_grid, fixed_para
         end
         MyModel = model_list[m];
         MyArgs = (timeStep = timeStep, cutOff = simCutoff, fixationData = MyFixationData);
-        global SimData = ADDM.simulate_data(MyModel, MyStims, simulator_fn, MyArgs);
+        SimData = ADDM.simulate_data(MyModel, MyStims, simulator_fn, MyArgs);
+        global test = DataFrame(SimData)
     
         ############################### Fit simulated data
     
         my_likelihood_args = (timeStep = timeStep, approxStateStep = approxStateStep);
     
-        best_pars, all_nll_df, trial_posteriors = ADDM.grid_search(SimData, param_grid, nothing, fixed_params, likelihood_args=my_likelihood_args, return_model_posteriors=true; verbose=verbose, threadNum=Threads.threadid());
+        best_pars, all_nll_df, trial_posteriors, trial_likelihoods = ADDM.grid_search(SimData, param_grid, nothing, fixed_params, likelihood_args=my_likelihood_args, return_model_posteriors=true, return_trial_likelihoods=true; verbose=verbose, threadNum=Threads.threadid());
     
         sort!(all_nll_df, [:nll])
     
@@ -30,6 +31,7 @@ function sim_and_fit(model_list, condition, simulator_fn, param_grid, fixed_para
         write(outdir*condition*"_model_$(m).txt", string(MyModel)); 
         CSV.write(outdir*condition*"_fit_$(m).csv", all_nll_df);
         CSV.write(outdir*condition*"_trialposteriors_$(m).csv", trial_posteriors);
+        CSV.write(outdir*condition*"_triallikelihoods_$(m).csv", trial_likelihoods);
     
         ############################### Model and Parameter Posteriors
     

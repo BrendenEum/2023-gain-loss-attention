@@ -26,8 +26,8 @@ function RaDDM_simulator(;model::ADDM.aDDM, fixationData::ADDM.FixationData,
     # Due to the shape of the exponential decay function the starting point for the decay is exp(0) = 1
     # Iterate up to the cutoff and get the maximum possible number of time steps.
     maxNumTimeSteps = cutOff÷timeStep
-    barrierUp = exp.(-model.decay .* (0:maxNumTimeSteps-1))
-    barrierDown = -exp.(-model.decay .* (0:maxNumTimeSteps-1))
+    barrierUp = exp.(-model.decay .* (0:(maxNumTimeSteps-1)))
+    barrierDown = -exp.(-model.decay .* (0:(maxNumTimeSteps-1)))
     
     # Sample and iterate over the latency for this trial.
     latency = rand(fixationData.latencies)

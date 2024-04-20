@@ -1,6 +1,6 @@
 ## Plot function
 
-fixprop.fixtype.plt <- function(data) {
+fixprop.fixtype.plt <- function(data, ylim) {
 
   pdata.F <- data[data$firstFix==T,] %>%
     group_by(studyN, subject, condition) %>%
@@ -43,9 +43,9 @@ fixprop.fixtype.plt <- function(data) {
 
   plt <- ggplot(data=pdata, aes(x=x, y=y, shape=studyN, color=condition)) +
     myPlot +
-    geom_hline(yintercept=0.5, color="grey", alpha=0.75) +
+    geom_hline(yintercept=mean(ylim), color="grey", alpha=0.75) +
     geom_pointrange(aes(ymin=y-se, ymax=y+se), fatten=8, linewidth=.75, position=position_dodge(.9)) +
-    ylim(c(0,1)) +
+    ylim(ylim) +
     labs(y="Fixation Duration (s)", x="Fixation Type", shape="Study") +
     guides(
       color="none"

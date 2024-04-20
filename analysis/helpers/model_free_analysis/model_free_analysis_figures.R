@@ -68,7 +68,7 @@ for (dataset in c("ecfr.RData")) { #, "ccfr.RData", "jcfr.RData")) {
   
   # Fixation Duration by Type
   source(file.path(codedir, "FixationProcess_DurationType.R"))
-  plt.fixtype = fixprop.fixtype.plt(cfr) + 
+  plt.fixtype = fixprop.fixtype.plt(cfr, ylim=c(.3,.8)) + 
     theme(plot.background = element_rect(fill = color_back, color = color_back))
   ggsave(
     file.path(figdir, paste0("FixationProcess_DurationType", ext)), 
@@ -142,6 +142,14 @@ for (dataset in c("ecfr.RData")) { #, "ccfr.RData", "jcfr.RData")) {
   ggsave(
     file.path(figdir, paste0("AdditionalFixProp_PrFirstLeft", ext)), 
     plot=plt.firstLeft, width=figw, height=figh, units="in")
+  
+  # Fix num wrt first fix left
+  source(file.path(codedir, "AdditionalFixProp_FixNumFirstFix.R"))
+  plt.numFixFirstFix = psycho.numfixfirstfix.plt(cfr) + 
+    theme(plot.background = element_rect(fill = color_back, color = color_back))
+  ggsave(
+    file.path(figdir, paste0("AdditionalFixProp_FixNumFirstFix", ext)), 
+    plot=plt.numFixFirstFix, width=figw, height=figh, units="in")
   
   # Second Fix Dur
   source(file.path(codedir, "AdditionalFixProp_SecondFixDur.R"))

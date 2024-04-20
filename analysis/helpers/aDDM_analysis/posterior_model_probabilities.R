@@ -14,7 +14,7 @@ library(latex2exp)
 
 #------------- Things you should edit at the start -------------
 dataset = "e"
-datafolder = "2024.04.06-11.22/Stage3"
+datafolder = "2024.04.06-11.22-bounded-free-refpt/Stage3"
 colors = list(Gain="Green4", Loss="Red3")
 #---------------------------------------------------------------
 
@@ -101,6 +101,7 @@ plt = ggplot(pdata, aes(x=likelihood_fn, y=posterior_sum)) +
   myPlot + 
   
   geom_hline(yintercept=.33, color="lightgrey") +
+  geom_line(aes(group=subject), color="grey", alpha=.2) +
   geom_boxplot(aes(fill=condition), width=.4) +
   geom_dotplot(binaxis="y", stackdir="center", dotsize=1, fill="white") +
   

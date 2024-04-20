@@ -38,8 +38,8 @@ function RaDDM_likelihood(;model::ADDM.aDDM, trial::ADDM.Trial, timeStep::Number
     numTimeSteps += 1
     
     # The values of the barriers can change over time.
-    barrierUp = exp.(-model.decay .* (0:numTimeSteps-1))
-    barrierDown = -exp.(-model.decay .* (0:numTimeSteps-1))
+    barrierUp = exp.(-model.decay .* (0:(numTimeSteps-1)))
+    barrierDown = -exp.(-model.decay .* (0:(numTimeSteps-1)))
     
     # Obtain correct state step.
     halfNumStateBins = ceil(model.barrier / approxStateStep)

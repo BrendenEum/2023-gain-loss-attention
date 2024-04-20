@@ -235,16 +235,6 @@ plt.compare.t.e <- ggplot(data=pdata) +
   scale_y_continuous(breaks = c(0, coord.lim/2, coord.lim), labels=c("0", "0.5", "1")) +
   scale_x_continuous(breaks = c(0, coord.lim/2, coord.lim), labels=c("0", "0.5", "1")) 
 
-# reference_gradient <- expand.grid(x=seq(-16,5,21/gradient_resolution), y=seq(-16,5,21/gradient_resolution))
-# plt.compare.r.e <- ggplot(data=pdata) +
-#   geom_tile(data=reference_gradient, aes(x=x, y=y, fill=abs(y-x)), show.legend = F) +
-#   scale_fill_gradient(low=close, high=far) +
-#   geom_abline(intercept=0, slope=1, color='grey30') +
-#   geom_count(aes(x=reference_Gain, y=reference_Loss, color=study), alpha=.7) +
-#   labs(x = TeX(r"(Gain $\theta$)"), y = TeX(r"(Loss $\theta$)"), color = "Study") +
-#   scale_y_continuous(breaks = c(-15, -6, 1, 5), labels=c("-15", "-6", "1", "5")) +
-#   scale_x_continuous(breaks = c(-15, -6, 1, 5), labels=c("-15", "-6", "1", "5"))
-
 nBins = 10 #ceiling(max(pdata$reference_Gain) - min(pdata$reference_Gain)) + 1
 plt.compare.r.e.gain <- ggplot(data=pdata) +
   geom_histogram(aes(x=reference_Gain, color=study, fill=study), bins=nBins, alpha=.7) +
@@ -282,4 +272,6 @@ plt.compare.param.e <- grid.arrange(
   plt.compare.t.e, plt.compare.r.e.gain, plt.compare.r.e.loss,
   nrow = 2, ncol = 3)
 
-ggsave(file.path(.figdir, "RaDDM_IndividualEstimates.pdf"), plt.compare.param.e, height=figh*1.3, width=figw*1.4, units="in")
+plot(plt.compare.param.e)
+
+#ggsave(file.path(.figdir, "RaDDM_IndividualEstimates.pdf"), plt.compare.param.e, height=figh*1.3, width=figw*1.4, units="in")
