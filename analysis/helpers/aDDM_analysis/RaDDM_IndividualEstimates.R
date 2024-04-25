@@ -7,6 +7,8 @@ set.seed(4)
 library(tidyverse)
 library(plotrix)
 library(gridExtra)
+library(grid)
+library(gridtext)
 library(ggpubr)
 library(ggsci)
 library(readr)
@@ -103,7 +105,7 @@ if (sum(.duplicate_rows) != 0) {
 data = data[!.duplicate_rows,]
 
 # Long to wide format (1 obs should have gain and loss estiamtes)
-pdata = pivot_wider(
+pdata_raw = pivot_wider(
   data, 
   id_cols = c("study","subject"), 
   names_from = "condition", 
@@ -115,10 +117,13 @@ pdata = pivot_wider(
 # Plot options
 ##############################################################################
 
-gradient_resolution = 100
+gradient_resolution = 250
 exact = 'grey40'
-close = 'grey70'
+close = 'grey68'
 far = 'white'
+s1c = "dodgerblue3"
+s2c = "deeppink4"
+dot_alpha = .45
 
 # Color palette
 my_colors = list(
@@ -166,7 +171,7 @@ ggplot <- function(...) ggplot2::ggplot(...) +
     legend.key = element_rect(fill = NA),
     legend.spacing.x = unit(0.01, 'cm'),
     legend.spacing.y = unit(0.01, 'cm'),
-    plot.margin = unit(c(.62,.62,.62,.62), "cm"),
+    plot.margin = unit(rep(.6, 4), "cm"),
     panel.grid.major = element_blank(),
     panel.grid.minor = element_blank(),
     plot.title = element_text(size = 12),
@@ -179,99 +184,180 @@ ggplot <- function(...) ggplot2::ggplot(...) +
 
 
 ##############################################################################
-# Plot model comparison
+# Plot study 1
 ##############################################################################
 
+pdata = pdata_raw[pdata_raw$study==1,]
+
 coord.lim <- .0215
-margin = .0005
+margin = .002
 d_gradient <- expand.grid(x=seq(-margin,coord.lim+margin,(coord.lim+2*margin)/gradient_resolution), y=seq(-margin,coord.lim+margin,(coord.lim+2*margin)/gradient_resolution))
-plt.compare.d.e <- ggplot(data=pdata) +
+plt1.compare.d.e <- ggplot(data=pdata) +
   geom_tile(data=d_gradient, aes(x=x, y=y, fill=abs(y-x))) + #add gradient background
   scale_fill_gradient(low=close, high=far) +
   geom_abline(intercept=0, slope=1, color=exact) +
-  geom_count(aes(x=d_Gain, y=d_Loss, color=study), alpha=.7) +
+  geom_count(aes(x=d_Gain, y=d_Loss), alpha=dot_alpha, color=s1c) +
   labs(x = TeX(r"(Gain $d$)"), y = TeX(r"(Loss $d$)")) +
-  scale_y_continuous(breaks = c(0, .01, .02), labels=c(0, .01, .02)) +
-  scale_x_continuous(breaks = c(0, .01, .02), labels=c(0, .01, .02))  
+  coord_cartesian(xlim = c(0, coord.lim+margin), ylim = c(0, coord.lim+margin), expand=F) +
+  scale_y_continuous(breaks = c(0, .01, .02), labels=c("0", ".010", ".020")) +
+  scale_x_continuous(breaks = c(0, .01, .02), labels=c("0", ".010", ".020")) 
 
-coord.lim <- .105
+coord.lim <- .110
 sig_gradient <- expand.grid(x=seq(0,coord.lim,coord.lim/gradient_resolution), y=seq(0,coord.lim,coord.lim/gradient_resolution))
-plt.compare.s.e <- ggplot(data=pdata) +
+plt1.compare.s.e <- ggplot(data=pdata) +
   geom_tile(data=sig_gradient, aes(x=x, y=y, fill=abs(y-x))) +
   scale_fill_gradient(low=close, high=far) +
   geom_abline(intercept=0, slope=1, color=exact) +
-  geom_count(aes(x=sigma_Gain, y=sigma_Loss, color=study), alpha=.7) +
-  coord_cartesian(xlim=c(0,coord.lim), ylim=c(0,coord.lim), expand=F) +
+  geom_count(aes(x=sigma_Gain, y=sigma_Loss), alpha=dot_alpha, color=s1c) +
   labs(x = TeX(r"(Gain $\sigma$)"), y = TeX(r"(Loss $\sigma$)")) +
-  scale_y_continuous(breaks = c(0, 0.05, 0.1), labels=c(0, 0.05, 0.1)) +
-  scale_x_continuous(breaks = c(0, 0.05, 0.1), labels=c(0, 0.05, 0.1)) 
+  coord_cartesian(xlim=c(0,coord.lim), ylim=c(0,coord.lim), expand=F) +
+  scale_y_continuous(breaks = c(0, 0.05, 0.1), labels=c("0", ".05", ".1")) +
+  scale_x_continuous(breaks = c(0, 0.05, 0.1), labels=c("0", ".05", ".1")) 
 
-coord.lim <- 1
+coord.lim <- .5
 bias_gradient <- expand.grid(x=seq(-coord.lim,coord.lim,coord.lim/gradient_resolution), y=seq(-coord.lim,coord.lim,coord.lim/gradient_resolution))
-plt.compare.b.e <- ggplot(data=pdata) +
+plt1.compare.b.e <- ggplot(data=pdata) +
   geom_tile(data=bias_gradient, aes(x=x, y=y, fill=abs(y-x)), show.legend=F) +
   scale_fill_gradient(low=close, high=far) +
   geom_abline(intercept=0, slope=1, color=exact) +
-  geom_count(aes(x=bias_Gain, y=bias_Loss, color=study), alpha=.7) +
+  geom_count(aes(x=bias_Gain, y=bias_Loss), alpha=dot_alpha, color=s1c) +
+  labs(x = TeX(r"(Gain $b$)"), y = TeX(r"(Loss $b$)")) +
   coord_cartesian(xlim=c(-coord.lim,coord.lim), ylim=c(-coord.lim,coord.lim), expand=F) +
-  labs(x = TeX(r"(Gain $b$)"), y = TeX(r"(Loss $b$)"), color = "Study") +
-  scale_y_continuous(breaks = c(-coord.lim, 0, coord.lim), labels=c("-1.0", "0.0", "1.0")) +
-  scale_x_continuous(breaks = c(-coord.lim, 0, coord.lim), labels=c("-1.0", "0.0", "1.0")) +
-  guides(size="none") +
-  theme(
-    legend.position = c(.17, .75),
-    legend.background = element_rect(colour = "black", fill = "white", linewidth = .2, linetype = "solid")
-  ) 
+  scale_y_continuous(breaks = c(-coord.lim, 0, coord.lim), labels=c("-.5", "0", ".5")) +
+  scale_x_continuous(breaks = c(-coord.lim, 0, coord.lim), labels=c("-.5", "0", ".5"))
 
 coord.lim <- 1
-margin = .05
+margin = .08
 theta_gradient <- expand.grid(x=seq(-margin,coord.lim+margin,(coord.lim+2*margin)/gradient_resolution), y=seq(-margin,coord.lim+margin,(coord.lim+2*margin)/gradient_resolution))
-plt.compare.t.e <- ggplot(data=pdata) +
+plt1.compare.t.e <- ggplot(data=pdata) +
   geom_tile(data=theta_gradient, aes(x=x, y=y, fill=abs(y-x)), show.legend = F) +
   scale_fill_gradient(low='orange', high=far) +
   geom_abline(intercept=0, slope=1, color='grey30') +
-  geom_count(aes(x=theta_Gain, y=theta_Loss, color=study), alpha=.7) +
+  geom_count(aes(x=theta_Gain, y=theta_Loss), alpha=dot_alpha, color=s1c) +
   labs(x = TeX(r"(Gain $\theta$)"), y = TeX(r"(Loss $\theta$)"), color = "Study") +
-  scale_y_continuous(breaks = c(0, coord.lim/2, coord.lim), labels=c("0", "0.5", "1")) +
-  scale_x_continuous(breaks = c(0, coord.lim/2, coord.lim), labels=c("0", "0.5", "1")) 
+  coord_cartesian(xlim=c(-margin,coord.lim+margin), ylim=c(-margin,coord.lim+margin), expand=F) +
+  scale_y_continuous(breaks = c(0, coord.lim/2, coord.lim), labels=c("0", ".5", "1")) +
+  scale_x_continuous(breaks = c(0, coord.lim/2, coord.lim), labels=c("0", ".5", "1"))
 
-nBins = 10 #ceiling(max(pdata$reference_Gain) - min(pdata$reference_Gain)) + 1
-plt.compare.r.e.gain <- ggplot(data=pdata) +
-  geom_histogram(aes(x=reference_Gain, color=study, fill=study), bins=nBins, alpha=.7) +
-  geom_vline(xintercept = 4.5, color = "dodgerblue3", linewidth = 1.5, linetype = "dotted") +
-  geom_vline(xintercept = 1, color = "deeppink4", linewidth = 1.5, linetype = "dotted") + 
-  coord_cartesian(ylim = c(0, 16), expand = T) +
-  labs(x = TeX(r"(Gain $r$)"), y = TeX(r"(Frequency)"), color = "Study") +
-  scale_x_continuous(
-    breaks = c(min(pdata$reference_Gain), 1, 4.5, max(pdata$reference_Gain)), 
-    labels=c(min(pdata$reference_Gain), 1, 4.5, max(pdata$reference_Gain))
-  ) +
-  scale_y_continuous(
-    breaks = c(0, 8, 16),
-    labels = c(0, 8, 16)
-  )
+minValue_Gain = 4.5
+minValue_Loss = -5.5
+margin = 2
+xbreaks = c(round(min(pdata$reference_Gain)*2)/2, minValue_Gain)
+ybreaks = c(round(min(pdata$reference_Loss)*2)/2, minValue_Loss)
+xlims = c(round(min(pdata$reference_Gain)*2)/2 - margin, round(max(pdata$reference_Gain)*2)/2 + margin)
+ylims = c(round(min(pdata$reference_Loss)*2)/2 - margin, round(max(pdata$reference_Loss)*2)/2 + margin)
+reference_gradient <- expand.grid(x=seq(xlims[1],xlims[2],(xlims[2]-xlims[1])/gradient_resolution), y=seq(ylims[1],ylims[2],(ylims[2]-ylims[1])/gradient_resolution))
+plt1.compare.r.e <- ggplot(data=pdata) +
+  geom_tile(data=reference_gradient, aes(x=x, y=y, fill=abs(minValue_Gain-x) + abs(minValue_Loss-y)), show.legend = F) +
+  scale_fill_gradient(low=close, high=far) +
+  geom_vline(xintercept = minValue_Gain, color = exact) +
+  geom_hline(yintercept = minValue_Loss, color = exact) +
+  geom_count(aes(x=reference_Gain, y=reference_Loss), alpha=dot_alpha, color=s1c) +
+  labs(x = TeX(r"(Gain $r$)"), y = TeX(r"(Loss $r$)")) +
+  coord_cartesian(xlim = xlims, ylim = ylims, expand=F) +
+  scale_x_continuous(breaks = xbreaks) +
+  scale_y_continuous(breaks = ybreaks) 
 
-nBins = 10 #ceiling(max(pdata$reference_Loss) - min(pdata$reference_Loss)) + 1
-plt.compare.r.e.loss <- ggplot(data=pdata) +
-  geom_histogram(aes(x=reference_Loss, color=study, fill=study), bins=nBins, alpha=.7) +
-  geom_vline(xintercept = -5.5, color = "dodgerblue3", linewidth = 1.5, linetype = "dotted") +
-  geom_vline(xintercept = -6, color = "deeppink4", linewidth = 1.5, linetype = "dotted") + 
-  coord_cartesian(ylim = c(0, 16), expand = T) +
-  labs(x = TeX(r"(Loss $r$)"), y = TeX(r"(Frequency)"), color = "Study") +
-  scale_x_continuous(
-    breaks = c(min(pdata$reference_Loss), -5.5), 
-    labels=c(min(pdata$reference_Loss), -5.5)
-  ) +
-  scale_y_continuous(
-    breaks = c(0, 8, 16),
-    labels = c(0, 8, 16)
-  )
+
+##############################################################################
+# Plot study 2
+##############################################################################
+
+pdata = pdata_raw[pdata_raw$study==2,]
+
+coord.lim <- .006
+margin = .001
+d_gradient <- expand.grid(x=seq(-margin,coord.lim+margin,(coord.lim+2*margin)/gradient_resolution), y=seq(-margin,coord.lim+margin,(coord.lim+2*margin)/gradient_resolution))
+plt2.compare.d.e <- ggplot(data=pdata) +
+  geom_tile(data=d_gradient, aes(x=x, y=y, fill=abs(y-x))) + #add gradient background
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_count(aes(x=d_Gain, y=d_Loss), alpha=dot_alpha, color=s2c) +
+  labs(x = TeX(r"(Gain $d$)"), y = TeX(r"(Loss $d$)")) +
+  coord_cartesian(xlim = c(0, coord.lim+margin), ylim = c(0, coord.lim+margin), expand=F) +
+  scale_y_continuous(breaks = c(0, .003, .006), labels=c("0", ".003", ".006")) +
+  scale_x_continuous(breaks = c(0, .003, .006), labels=c("0", ".003", ".006")) 
+
+coord.lim <- .110
+sig_gradient <- expand.grid(x=seq(0,coord.lim,coord.lim/gradient_resolution), y=seq(0,coord.lim,coord.lim/gradient_resolution))
+plt2.compare.s.e <- ggplot(data=pdata) +
+  geom_tile(data=sig_gradient, aes(x=x, y=y, fill=abs(y-x))) +
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_count(aes(x=sigma_Gain, y=sigma_Loss), alpha=dot_alpha, color=s2c) +
+  labs(x = TeX(r"(Gain $\sigma$)"), y = TeX(r"(Loss $\sigma$)")) +
+  coord_cartesian(xlim=c(0,coord.lim), ylim=c(0,coord.lim), expand=F) +
+  scale_y_continuous(breaks = c(0, 0.05, 0.1), labels=c("0", ".05", ".1")) +
+  scale_x_continuous(breaks = c(0, 0.05, 0.1), labels=c("0", ".05", ".1")) 
+
+coord.lim <- .2
+bias_gradient <- expand.grid(x=seq(-coord.lim,coord.lim,coord.lim/gradient_resolution), y=seq(-coord.lim,coord.lim,coord.lim/gradient_resolution))
+plt2.compare.b.e <- ggplot(data=pdata) +
+  geom_tile(data=bias_gradient, aes(x=x, y=y, fill=abs(y-x)), show.legend=F) +
+  scale_fill_gradient(low=close, high=far) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  geom_count(aes(x=bias_Gain, y=bias_Loss), alpha=dot_alpha, color=s2c) +
+  labs(x = TeX(r"(Gain $b$)"), y = TeX(r"(Loss $b$)")) +
+  coord_cartesian(xlim=c(-coord.lim,coord.lim), ylim=c(-coord.lim,coord.lim), expand=F) +
+  scale_y_continuous(breaks = c(-coord.lim, 0, coord.lim), labels=c("-.2", "0", ".2")) +
+  scale_x_continuous(breaks = c(-coord.lim, 0, coord.lim), labels=c("-.2", "0", ".2"))
+
+coord.lim <- 1
+margin = .08
+theta_gradient <- expand.grid(x=seq(-margin,coord.lim+margin,(coord.lim+2*margin)/gradient_resolution), y=seq(-margin,coord.lim+margin,(coord.lim+2*margin)/gradient_resolution))
+plt2.compare.t.e <- ggplot(data=pdata) +
+  geom_tile(data=theta_gradient, aes(x=x, y=y, fill=abs(y-x)), show.legend = F) +
+  scale_fill_gradient(low='orange', high=far) +
+  geom_abline(intercept=0, slope=1, color='grey30') +
+  geom_count(aes(x=theta_Gain, y=theta_Loss), alpha=dot_alpha, color=s2c) +
+  labs(x = TeX(r"(Gain $\theta$)"), y = TeX(r"(Loss $\theta$)"), color = "Study") +
+  coord_cartesian(xlim=c(-margin,coord.lim+margin), ylim=c(-margin,coord.lim+margin), expand=F) +
+  scale_y_continuous(breaks = c(0, coord.lim/2, coord.lim), labels=c("0", ".5", "1")) +
+  scale_x_continuous(breaks = c(0, coord.lim/2, coord.lim), labels=c("0", ".5", "1"))
+
+minValue_Gain = 1
+minValue_Loss = -6
+margin = 2
+xbreaks = c(round(min(pdata$reference_Gain)*2)/2, minValue_Gain)
+ybreaks = c(round(min(pdata$reference_Loss)*2)/2, minValue_Loss)
+xlims = c(round(min(pdata$reference_Gain)*2)/2 - margin, round(max(pdata$reference_Gain)*2)/2 + margin)
+ylims = c(round(min(pdata$reference_Loss)*2)/2 - margin, round(max(pdata$reference_Loss)*2)/2 + margin)
+reference_gradient <- expand.grid(x=seq(xlims[1],xlims[2],(xlims[2]-xlims[1])/gradient_resolution), y=seq(ylims[1],ylims[2],(ylims[2]-ylims[1])/gradient_resolution))
+plt2.compare.r.e <- ggplot(data=pdata) +
+  geom_tile(data=reference_gradient, aes(x=x, y=y, fill=abs(minValue_Gain-x) + abs(minValue_Loss-y)), show.legend = F) +
+  scale_fill_gradient(low=close, high=far) +
+  geom_vline(xintercept = minValue_Gain, color = exact) +
+  geom_hline(yintercept = minValue_Loss, color = exact) +
+  geom_count(aes(x=reference_Gain, y=reference_Loss), alpha=dot_alpha, color=s2c) +
+  labs(x = TeX(r"(Gain $r$)"), y = TeX(r"(Loss $r$)")) +
+  coord_cartesian(xlim = xlims, ylim = ylims, expand=F) +
+  scale_x_continuous(breaks = xbreaks) +
+  scale_y_continuous(breaks = ybreaks) 
+
+
+##############################################################################
+# Combine plots
+##############################################################################
 
 plt.compare.param.e <- grid.arrange(
-  plt.compare.d.e, plt.compare.s.e, plt.compare.b.e,
-  plt.compare.t.e, plt.compare.r.e.gain, plt.compare.r.e.loss,
-  nrow = 2, ncol = 3)
+  arrangeGrob(
+    plt1.compare.d.e, plt1.compare.s.e, plt1.compare.b.e, plt1.compare.t.e, plt1.compare.r.e,
+    left = textGrob( expression(bold("      Study 1")), rot=90, gp=gpar(fontsize=17) ),
+    ncol = 5
+  ),
+  arrangeGrob(
+    plt2.compare.d.e, plt2.compare.s.e, plt2.compare.b.e, plt2.compare.t.e, plt2.compare.r.e, 
+    left = textGrob( expression(bold("      Study 2")), rot=90, gp=gpar(fontsize=17) ),
+    ncol = 5
+  ),
+  nrow = 2
+)
+
+# plt.compare.param.e <- grid.arrange(
+#   plt1.compare.d.e, plt1.compare.s.e, plt1.compare.b.e, plt1.compare.t.e, plt1.compare.r.e,
+#   plt2.compare.d.e, plt2.compare.s.e, plt2.compare.b.e, plt2.compare.t.e, plt2.compare.r.e,
+#   nrow = 2)
 
 plot(plt.compare.param.e)
 
-#ggsave(file.path(.figdir, "RaDDM_IndividualEstimates.pdf"), plt.compare.param.e, height=figh*1.3, width=figw*1.4, units="in")
+ggsave(file.path(.figdir, "RaDDM_IndividualEstimates.pdf"), plt.compare.param.e, height=4, width=11, units="in")
