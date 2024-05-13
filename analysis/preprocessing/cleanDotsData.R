@@ -24,6 +24,7 @@ edatadir <- file.path("../../data/processed_data/dots/e")
 cdatadir <- file.path("../../data/processed_data/dots/c")
 jdatadir <- file.path("../../data/processed_data/dots/j")
 tempdir = file.path("../outputs/temp")
+experimentdir = file.path("../../experiment/dots/recruitment/")
 
 # Get list of exploratory and confirmatory subjects
 
@@ -32,6 +33,8 @@ exploratory_subs <- raw_subs[1:floor(length(raw_subs)/2)]
 confirmatory_subs <- raw_subs[(floor(length(raw_subs)/2)+1):length(raw_subs)]
 joint_subs <- raw_subs
 
+# Get the order of blocks
+blockOrder <- read.csv(file.path(experimentdir, "dots_subject_blockOrder.csv"))
 
 #####################
 # Functions
@@ -163,6 +166,9 @@ clean.choices <- function(choices) {
     ind = ind + 1
   }
   choices = do.call("rbind", choicesSubjectList)
+  
+  choices = merge(choices, blockOrder, by="subject")
+  choices$blockOrder = factor(choices$blockOrder, levels=c("gl","lg"), labels=c("Gain-Loss", "Loss-Gain"))
   
   return(choices)
 }

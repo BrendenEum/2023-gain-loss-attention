@@ -12,7 +12,7 @@ edatadir.numeric <- file.path("../../data/processed_data/numeric/e")
 cdatadir.numeric <- file.path("../../data/processed_data/numeric/c")
 jdatadir.numeric <- file.path("../../data/processed_data/numeric/j")
 
-processed.datadir = file.path("../../data/processed_data")
+processed.datadir = file.path("../../data/processed_data/datasets")
 
 ##########
 # Exploratory

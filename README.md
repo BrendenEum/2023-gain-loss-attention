@@ -181,7 +181,7 @@ Note that in each script, you'll need to change the data directory. It "cd"s int
   - trialPosteriors: posterior probability after each trial
 
 ```
-analysis/helpers/model_fitting/fit_all_models.jl
+analysis/helpers/model_fitting/do_all_fitting.jl
 ```
 
 ### Model comparison

@@ -50,6 +50,7 @@ rawdatadir <- file.path("../../data/raw_data/good/numeric")
 edatadir <- file.path(rawdatadir, "../../../processed_data/numeric/e")
 cdatadir <- file.path(rawdatadir, "../../../processed_data/numeric/c")
 jdatadir <- file.path(rawdatadir, "../../../processed_data/numeric/j")
+experimentdir = file.path("../../experiment/numeric/recruitment")
 
 # Get each subject that passed quality control.
 
@@ -57,6 +58,9 @@ raw_subs <- list.dirs(path = rawdatadir, full.names = F, recursive = F)
 exploratory_subs <- raw_subs[1:25]#raw_subs[1:floor(length(raw_subs)/2)]
 confirmatory_subs <- raw_subs[26:50]
 joint_subs <- raw_subs
+
+# Get the order of blocks
+blockOrder <- read.csv(file.path(experimentdir, "numeric_subject_blockOrder.csv"))
 
 # Helpful functions before running loop.
 
@@ -232,6 +236,10 @@ make_cfr = function(data_directory, list_of_subjects) {
     }
     data = do.call("rbind", choicesSubjectList)
     
+    # Block order
+    data = merge(data, blockOrder, by="subject")
+    choices$blockOrder = factor(choices$blockOrder, levels=c("gl","lg"), labels=c("Gain-Loss", "Loss-Gain"))
+    
     ####################################################
     ## Transform ET data from list to long data. Clean it.
     ####################################################
@@ -339,7 +347,8 @@ make_cfr = function(data_directory, list_of_subjects) {
       "minValue",
       "maxValue",
       "sanity",
-      "fixCrossLoc"
+      "fixCrossLoc",
+      "blockOrder"
     )
     choicedata = data[, voi]
     

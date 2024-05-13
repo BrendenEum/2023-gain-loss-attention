@@ -1,0 +1,50 @@
+---
+title: "Reference-Dependence Models"
+output: html_notebook
+---
+
+Fit reference-dependence models to see which fit best for each subject. Goal is to use this as input into the RaDDM.
+
+# Preamble
+
+```{r}
+rm(list=ls())
+set.seed(4)
+library(tidyverse)
+
+load("../../../data/processed_data/datasets/ecfr.RData")
+data = ecfr[ecfr$subject==1 & ecfr$firstFix==T, ]
+```
+
+# Status Quo
+
+```{r}
+StatusQuo = function(target_lottery, other_lottery, parameters) {
+  
+  if (target_lottery$amt > 0) {targetAmt = target_lottery$amt} else {targetAmt = parameters$lambda * target_lottery$amt}
+  if (other_lottery$amt > 0) {otherAmt = other_lottery$amt} else {otherAmt = parameters$lambda * other_lottery$amt}
+  
+  targetEV = targetAmt * target_lottery$prob
+  otherEV = otherAmt * other_lottery$prob
+}
+```
+
+# MaxMin
+
+```{r}
+MaxMin = function(target_lottery, other_lottery, parameters) {
+  
+}
+```
+
+# Trial Likelihood
+
+```{r}
+trial_likelihood = function(left_lottery, right_lottery, parameters, rp_func) {
+  invlike = 1 + exp(temperature * (rp_func(right_lottery, left_lottery, parameters) - rp_func(left_lottery, right_lottery, parameters) ))
+  like = 1/invlike
+  return(like)
+}
+```
+
+
