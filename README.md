@@ -70,6 +70,20 @@ analysis/helpers/fix_cross_analysis/fix_cross_analysis_figures.R
 
 # aDDM
 
+## Check reference-dependence models
+
+Which reference point rules best fit each subject? Fit prospect theory first, then prospect theory estimates with subject-specific reference point rule to generate E[V] signals to feed into aDDM.
+
+Input:
+- /data/processed_data/{dataset}cfr.RData
+
+Output:
+- /analysis/outputs/figures/ProspectTheory_*.pdf
+
+```
+analysis/reference-dependence/FitAndPlotProspectTheory.R
+```
+
 ## Convert data
 
 Fit the various versions of aDDM to the data. Converting cfr to aDDM data takes a little bit of time since I couldn't think of a clever way to do it, so I use a roundabout way with a bunch of for loops. Sue me.

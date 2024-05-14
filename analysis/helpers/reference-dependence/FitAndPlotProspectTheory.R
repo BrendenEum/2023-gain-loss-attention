@@ -1,15 +1,7 @@
----
-title: "Reference-Dependence Models"
-output: html_notebook
----
-
-Fit reference-dependence models to see which fit best for each subject. Goal is to use this as input into the RaDDM.
-
-See https://www.thegreatstatsby.com/posts/2021-03-08-ml-prospect/#the-choices for a great tutorial!
-
+####################################
 # Preamble
+####################################
 
-```{r}
 rm(list=ls())
 set.seed(4)
 library(tidyverse)
@@ -24,12 +16,12 @@ source("../plot_options/SE.R")
 load("../../../data/processed_data/datasets/ecfr.RData")
 data = ecfr[ecfr$firstFix==T & ecfr$trial%%2==1, ] # Only one observation per trial and only in-sample trials!
 outsample = ecfr[ecfr$firstFix==T & ecfr$trial%%2==0, ] # Out-of-sample data
-```
 
 
-# Functions for prospect theory
+####################################
+# Functions for Prospect Theory
+####################################
 
-```{r}
 # Calculate subjective utility given lambda/rho.
 # Takes a vector of values and parameters and returns subjective utilities.
 calc_subjective_utility <- function(vals, lambda, rho) {
@@ -45,36 +37,12 @@ calc_utility_diff <- function(tgt_amt, tgt_prob, oth_amt, oth_prob) {
 calc_prob_tgt <- function(utility_diff, temperature) {
   (1 + exp(-temperature * (utility_diff)))^-1
 }
-```
 
 
-# Example of a single iteration of MLE
+####################################
+# NLL function we will optimize over
+####################################
 
-```{r eval=F, collapse=T}
-example_data = data[data$subject==1, ]
-lambda_par = 1.4
-rho_par = .83
-temperature_par = 2.57
-example_data = example_data %>%
-  mutate(
-    L_su = calc_subjective_utility(LAmt, lambda_par, rho_par),
-    R_su = calc_subjective_utility(RAmt, lambda_par, rho_par),
-    utility_diff = calc_utility_diff(L_su, LProb, R_su, RProb),
-    prob_accept = calc_prob_tgt(utility_diff, temperature = temperature_par),
-    prob_accept_rc = case_when(
-      prob_accept == 1 ~ 1-.Machine$double.eps,
-      prob_accept == 0 ~ 0+.Machine$double.eps,
-      TRUE ~ prob_accept
-    ),
-    log_likelihood_trial = choice * log(prob_accept_rc) + (1-choice) * log(1-prob_accept_rc)
-  )
--sum(example_data$log_likelihood_trial)
-```
-
-
-# NLL function which we will optimize over
-
-```{r}
 minimize_LL_prospect <- function(df, par) {
   lambda_par <- par[1]
   rho_par <- par[2]
@@ -96,101 +64,54 @@ minimize_LL_prospect <- function(df, par) {
   -sum(df_updated$log_likelihood_trial)
 }
 
-optim( # convergence = 0 is good.
-  par = c(1.4, .83, 2.57),
-  fn = minimize_LL_prospect,
-  df = data[data$subject==201 & data$condition=="Gain", ],
-  method = "L-BFGS-B", # optimizer over bounds
-  lower = c(0,0,0),
-  upper = c(Inf, 10, Inf)
-)
-```
 
+####################################
+# Create nested data
+####################################
 
-# Create nested dataframe for elegant looping
-
-```{r}
 data_nested = data %>%
   nest(data = -c(studyN, subject, condition))
 
-head(data_nested)
-```
 
+####################################
+# Optimize over nested data with 4 different starting points (computationally heavy, but parallelized)
+####################################
 
-# Optim using nest
-
-```{r eval=F, collapse=T}
-data_optim = data_nested %>%
-  mutate(
-    optim_out = map(
-      data,
-      ~ optim(
-        par = c(1.24, .83, 2.57),
-        fn = minimize_LL_prospect,
-        df = .,
-        method = "L-BFGS-B",
-        lower = c(0,0,0),
-        upper = c(Inf, 10, Inf)
-      )
-    )
-  )
-```
-
-
-# Extract optimization results
-
-```{r eval=F, collapse=T}
-data_optim_pars = data_optim %>%
-  mutate(
-    convergence = map_dbl(optim_out, "convergence"),
-    pars = map(optim_out, "par"),
-    lambda = map_dbl(pars, ~ .[1]),
-    rho = map_dbl(pars, ~ .[2]),
-    temperature = map_dbl(pars, ~ .[3])
-  )
-
-data_optim_pars
-```
-
-
-# Optimize with multiple starting points (and parallelization)
-
-```{r}
 future::plan(multisession, workers = 4)
 
 data_optim_quad <- data_nested %>%
   mutate(optim_out_1 = future_map(data, ~ optim(par = c(1.24, .83, 2.57),
-                                               fn = minimize_LL_prospect,
-                                               df = .,
-                                               method = 'L-BFGS-B',
-                                               lower = c(.01,.01,.01),
-                                               upper = c(20, 10, 20))),
+                                                fn = minimize_LL_prospect,
+                                                df = .,
+                                                method = 'L-BFGS-B',
+                                                lower = c(.01,.01,.01),
+                                                upper = c(20, 10, 20))),
          optim_out_2 = future_map(data, ~ optim(par = c(1, 1, 1),
-                                               fn = minimize_LL_prospect,
-                                               df = .,
-                                               method = 'L-BFGS-B',
-                                               lower = c(.01,.01,.01),
-                                               upper = c(20, 10, 20))),
+                                                fn = minimize_LL_prospect,
+                                                df = .,
+                                                method = 'L-BFGS-B',
+                                                lower = c(.01,.01,.01),
+                                                upper = c(20, 10, 20))),
          optim_out_3 = future_map(data, ~ optim(par = c(2, 1, .9),
-                                               fn = minimize_LL_prospect,
-                                               df = .,
-                                               method = 'L-BFGS-B',
-                                               lower = c(.01,.01,.01),
-                                               upper = c(20, 10, 20))),
+                                                fn = minimize_LL_prospect,
+                                                df = .,
+                                                method = 'L-BFGS-B',
+                                                lower = c(.01,.01,.01),
+                                                upper = c(20, 10, 20))),
          optim_out_4 = future_map(data, ~ optim(par = c(1.5, .83, 4.22),
-                                               fn = minimize_LL_prospect,
-                                               df = .,
-                                               method = 'L-BFGS-B',
-                                               lower = c(.01,.01,.01),
-                                               upper = c(20, 10, 20))))
-```
+                                                fn = minimize_LL_prospect,
+                                                df = .,
+                                                method = 'L-BFGS-B',
+                                                lower = c(.01,.01,.01),
+                                                upper = c(20, 10, 20))))
 
 
-# Compare results from different starting points and take the best
+####################################
+# Compare results across different starting points and store the best
+####################################
 
-```{r}
 evaluate_model <- function(model_list) {
-
+  
   names(model_list) <- str_c('m', 1:length(model_list))
   models_tibble <- as_tibble(model_list)
   
@@ -215,39 +136,40 @@ data_optim_quad_pars <- data_optim_quad %>%
          temperature = map_dbl(pars, ~ .[3]))
 
 if (sum(data_optim_quad_pars$convergence)>0) {warning("OPTIM DIDNT CONVERGE FOR AT LEAST ONE SUBJECT-CONDITION!")}
-```
 
 
-# Plot parameters
+####################################
+# Plot individual Estimates
+####################################
 
-```{r}
 hist_lambda <- data_optim_quad_pars %>% 
   filter(convergence == 0) %>% 
   ggplot(aes(x = lambda)) +
-    myPlot +
-    geom_histogram() +
-    geom_vline(xintercept = 1, color="red") +
-    labs(title = 'loss aversion')
+  myPlot +
+  geom_histogram() +
+  geom_vline(xintercept = 1, color="red", linewidth=1.5) +
+  labs(title = 'loss aversion')
 hist_rho <- data_optim_quad_pars %>% 
   filter(convergence == 0) %>% 
   ggplot(aes(x = rho)) +
-    myPlot +
-    geom_histogram() +
-    labs(title = 'diminishing marginal returns')
+  myPlot +
+  geom_histogram() +
+  labs(title = 'diminishing marginal returns')
 hist_temperature <- data_optim_quad_pars %>% 
   filter(convergence == 0) %>% 
   ggplot(aes(x = temperature)) +
-    myPlot +
-    geom_histogram() +
-    labs(title = 'temperature')
+  myPlot +
+  geom_histogram() +
+  labs(title = 'temperature')
 
-hist_lambda + hist_rho + hist_temperature
-```
+plt = hist_lambda + hist_rho + hist_temperature
+ggsave(file.path(.figdir, "ProspectTheory_IndividualEstimates.pdf"), plt, width=figw*2.5, height=figh)
 
 
-# Group-Level Out-of-Sample Prediction
+####################################
+# Group-Level Out-of-Sample Predictions
+####################################
 
-```{r}
 pdataA = merge(
   outsample, 
   data_optim_quad_pars[,c("studyN", "subject", "condition", "lambda", "rho", "temperature")], 
@@ -279,13 +201,13 @@ pdataB = pdataA %>% mutate(y = yhat, y_se = yhat_se, simulated = 1)
 pdata = rbind(pdataA, pdataB)
 pdata$simulated = factor(pdata$simulated, levels = c(0,1), labels = c("Observed", "Simulated"))
 pdata$studyN = factor(pdata$studyN, levels = c(1,2), labels = c("Study 1", "Study 2"))
-  
+
 plt = ggplot(data = pdata, aes(x = nvDiff, y = y)) +
   myPlot +
   
   geom_line(aes(color=simulated), linewidth=linewidth, show.legend = F) +
   geom_ribbon(aes(ymin = y-y_se, ymax = y+y_se, fill = simulated), alpha = .5) +
-    
+  
   facet_grid(rows = vars(studyN), cols = vars(condition)) +
   labs(x = "Norm. Left - Right E[V]", y = "Pr(Choose Left)") +
   theme(
@@ -297,6 +219,65 @@ plt = ggplot(data = pdata, aes(x = nvDiff, y = y)) +
   scale_x_continuous(breaks=c(-1, 0, 1)) +
   scale_y_continuous(breaks=c(0, .5, 1))
 
-ggsave(file.path(.figdir, "ProspectTheory_OutSamplePredictions_Choice.pdf"), plt, width=figw*1.2, height=figh*1.2)
-```
+ggsave(file.path(.figdir, "ProspectTheory_GroupOutSamplePredictions.pdf"), plt, width=figw*1.2, height=figh*1.2)
 
+
+####################################
+# Individual-Level Out-of-Sample Predictions
+####################################
+
+set.seed(4)
+study1subjects = sample(unique(outsample$subject[outsample$studyN==1]), 4)
+study2subjects = sample(unique(outsample$subject[outsample$studyN==2]), 4)
+outsample = outsample[outsample$subject %in% c(study1subjects, study2subjects),]
+
+pdataA = merge(
+  outsample, 
+  data_optim_quad_pars[,c("studyN", "subject", "condition", "lambda", "rho", "temperature")], 
+  by=c("studyN", "subject", "condition")
+)
+
+pdataA = pdataA %>%
+  mutate(
+    L_su = calc_subjective_utility(LAmt, lambda, rho),
+    R_su = calc_subjective_utility(RAmt, lambda, rho),
+    LR_diff = calc_utility_diff(L_su, LProb, R_su, RProb),
+    pred_choice = calc_prob_tgt(LR_diff, temperature)
+  ) %>%
+  select("studyN", "subject", "condition", "choice", "pred_choice", "nvDiff") %>%
+  group_by(studyN, subject, condition, nvDiff) %>%
+  summarize(
+    y = mean(choice),
+    y_se = SE(choice),
+    yhat = mean(pred_choice),
+    yhat_se = SE(pred_choice),
+    simulated = 0
+  )
+pdataB = pdataA %>% mutate(y = yhat, y_se = yhat_se, simulated = 1)
+pdataFull = rbind(pdataA, pdataB)
+pdataFull$simulated = factor(pdataFull$simulated, levels = c(0,1), labels = c("Observed", "Simulated"))
+pdataFull$studyN = factor(pdataFull$studyN, levels = c(1,2), labels = c("Study 1", "Study 2"))
+pdataFull[is.na(pdataFull)] = 0
+
+for (sID in c(study1subjects, study2subjects)) {
+  pdata = pdataFull[pdataFull$subject==sID, ]
+  
+  plt = ggplot(data = pdata, aes(x = nvDiff, y = y)) +
+    myPlot +
+    
+    geom_line(aes(color=simulated), linewidth=linewidth, show.legend = F) +
+    geom_ribbon(aes(ymin = y-y_se, ymax = y+y_se, fill = simulated), alpha = .5) +
+    
+    facet_grid(rows = vars(studyN), cols = vars(condition)) +
+    labs(x = "Norm. Left - Right E[V]", y = "Pr(Choose Left)") +
+    theme(
+      legend.position = c(.1, .92),
+      panel.spacing = unit(2, "lines")
+    ) +
+    scale_fill_manual(name = "", values=c("Observed" = "grey", "Simulated" = "dodgerblue"), labels = c("Observed", "Simulated")) +
+    coord_cartesian(xlim=c(-1,1), ylim=c(0,1), expand=F) +
+    scale_x_continuous(breaks=c(-1, 0, 1)) +
+    scale_y_continuous(breaks=c(0, .5, 1))
+  
+  ggsave(file.path(.figdir, paste0("ProspectTheory_IndivOutSamplePredictions_", sID, ".pdf")), plt, width=figw*1.2, height=figh*1.2)
+}
