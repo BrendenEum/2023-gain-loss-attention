@@ -17,10 +17,11 @@ load(file.path(.tempdir, "ref_dept_values.RData"))
 # Get plot data
 ####################################
 
+bounds = 25
 pdataA = RDValuesDF[,c("L_RDVal", "Model", "condition")] %>% rename(RDVal = L_RDVal)
 pdataB = RDValuesDF[,c("R_RDVal", "Model", "condition")] %>% rename(RDVal = R_RDVal)
 pdata = rbind(pdataA, pdataB)
-pdata = pdata %>% mutate(RDVal = pmin(pmax(RDVal, -25), 25))
+pdata = pdata %>% mutate(RDVal = pmin(pmax(RDVal, -bounds), bounds))
 pdata$Model = factor(pdata$Model, levels=c("Status Quo", "MaxMin", "MinMax", "XatMaxP", "Expected Value", "Prospect Itself"))
 
 

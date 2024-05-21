@@ -110,7 +110,7 @@ set.seed(4)
 source("FitandPlotKozegiRabin.R")
 results$ProspectItself = data_optim_quad_pars
 RDValues$Model = "Prospect Itself"
-RDValuesDF = rbind(RDValuesDF, RDValues)
+RDValuesDF = bind_rows(RDValuesDF, RDValues)
 
 
 ####################################

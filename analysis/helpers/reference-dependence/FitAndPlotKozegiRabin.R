@@ -25,15 +25,23 @@ outsample = cfr[cfr$firstFix==T & cfr$trial%%2==0, ] # Out-of-sample data
 # Functions for Prospect Theory
 ####################################
 
-# Calculate utility difference from vectors of gains, losses, and certainty.
-calc_utility_diff <- function(L_a, L_p, R_a, R_p, lambda, rho, loss_id) {
+# Calculate reweighted probability according to Prelec 1998..
+calc_prelec_prob <- function(prob, gamma) {
+  exp(-(-log(prob))^gamma)
+}
+
+# Calculate KR CPE ref dept value.
+calc_RDVal <- function(L1_a, L1_wp, L2_wp, lambda, rho, loss_id) {
   ifelse(
     loss_id,
-    (L_p*L_a + (1-lambda) * L_p * (1-L_p) * -(abs(L_a)^rho)) - 
-      (R_p*R_a + (1-lambda) * R_p * (1-R_p) * -(abs(R_a)^rho)),
-    (L_p * L_a + (1-lambda) * L_p * (1-L_p) * (L_a^rho)) - 
-      (R_p * R_a + (1-lambda) * R_p * (1-R_p) * (R_a^rho))
+    (L1_wp*L1_a) + L1_wp * L2_wp * (abs(L1_a)^rho) * (lambda-1),
+    (L1_wp*L1_a) + L1_wp * L2_wp * (abs(L1_a)^rho) * (1-lambda)
   )
+}
+
+# Calculate utility difference from vectors of gains, losses, and certainty.
+calc_utility_diff <- function(L_RDVal, R_RDVal) {
+  L_RDVal - R_RDVal
 }
 
 # Calculate the probability of accepting a gamble, given a difference in subjective utility and temperature.
@@ -52,10 +60,17 @@ minimize_LL_prospect <- function(df, par) {
   rho_par <- par[2]
   temperature_G_par <- par[3]
   temperature_L_par <- par[4]
+  gamma_par <- par[5]
   df_updated = df %>%
     mutate(
       loss_id = (LAmt<0),
-      utility_diff = calc_utility_diff(LAmt, LProb, RAmt, RProb, lambda_par, rho_par, loss_id),
+      L1_wp = calc_prelec_prob(LProb, gamma_par),
+      L2_wp = calc_prelec_prob(1-LProb, gamma_par),
+      R1_wp = calc_prelec_prob(RProb, gamma_par),
+      R2_wp = calc_prelec_prob(1-RProb, gamma_par),
+      L_RDVal = calc_RDVal(LAmt, L1_wp, L2_wp, lambda_par, rho_par, loss_id),
+      R_RDVal = calc_RDVal(RAmt, R1_wp, R2_wp, lambda_par, rho_par, loss_id),
+      utility_diff = calc_utility_diff(L_RDVal, R_RDVal),
       prob_choose_L = calc_prob_L(utility_diff, temperature_G_par, temperature_L_par, loss_id),
       prob_choose_L_rc = case_when(
         prob_choose_L == 1 ~ 1-.Machine$double.eps,
@@ -73,7 +88,7 @@ minimize_LL_prospect <- function(df, par) {
 # Create nested data
 ####################################
 
-data_nested = data %>%
+.data_nested = data %>%
   nest(data = -c(studyN, subject, condition))
 
 
@@ -84,29 +99,29 @@ data_nested = data %>%
 future::plan(multisession, workers = 4)
 
 # lambda, rho, temperature_G, temperature_L
-lower_bounds = c(.01, .01, .01, .01)
-upper_bounds = c(20, 10, 20, 20)
+lower_bounds = c(.01, .01, .01, .01, .01)
+upper_bounds = c(10, 4, 20, 20, 1)
 
-data_optim_quad <- data_nested %>%
-  mutate(optim_out_1 = future_map(data, ~ optim(par = c(1.24, .83, 2.57, 2.57), # Sokol-Hessner et al. 2009 means
+.data_optim_quad <- .data_nested %>%
+  mutate(optim_out_1 = future_map(data, ~ optim(par = c(1.24, .83, 2.57, 2.57, 1), # Sokol-Hessner et al. 2009 means
                                                 fn = minimize_LL_prospect,
                                                 df = .,
                                                 method = 'L-BFGS-B',
                                                 lower = lower_bounds,
                                                 upper = upper_bounds)),
-         optim_out_2 = future_map(data, ~ optim(par = c(1.24, .91, 3.15, 3.15), # Stillman et al. 2020 means
+         optim_out_2 = future_map(data, ~ optim(par = c(1.24, .91, 3.15, 3.15, 1), # Stillman et al. 2020 means
                                                 fn = minimize_LL_prospect,
                                                 df = .,
                                                 method = 'L-BFGS-B',
                                                 lower = lower_bounds,
                                                 upper = upper_bounds)),
-         optim_out_3 = future_map(data, ~ optim(par = c(1.68, .47, .9, .05), # Toubia et al. 2013 means (lambda, sigma, delta, delta)
+         optim_out_3 = future_map(data, ~ optim(par = c(1.68, .47, .9, .05, .53), # Toubia et al. 2013 means (lambda, sigma, delta, delta)
                                                 fn = minimize_LL_prospect,
                                                 df = .,
                                                 method = 'L-BFGS-B',
                                                 lower = lower_bounds,
                                                 upper = upper_bounds)),
-         optim_out_4 = future_map(data, ~ optim(par = c(1.59, .44, 10.89, 10.89), # Baillon et al. 2020 medians
+         optim_out_4 = future_map(data, ~ optim(par = c(1.59, .44, 10.89, 10.89, .43), # Baillon et al. 2020 medians
                                                 fn = minimize_LL_prospect,
                                                 df = .,
                                                 method = 'L-BFGS-B',
@@ -135,7 +150,7 @@ evaluate_model <- function(model_list) {
   as.matrix(models_tibble)[index_mat] # for each row, return the optim output that had minimum LL
 }
 
-data_optim_quad_pars <- data_optim_quad %>% 
+data_optim_quad_pars <- .data_optim_quad %>% 
   mutate(best_model = evaluate_model(list(optim_out_1, optim_out_2, optim_out_3, optim_out_4)),
          convergence = map_dbl(best_model, 'convergence'),
          NLL = map_dbl(best_model, 'value'),
@@ -143,7 +158,8 @@ data_optim_quad_pars <- data_optim_quad %>%
          lambda = map_dbl(pars, ~ .[1]),
          rho = map_dbl(pars, ~ .[2]),
          temperature_G = map_dbl(pars, ~ .[3]),
-         temperature_L = map_dbl(pars, ~ .[4]))
+         temperature_L = map_dbl(pars, ~ .[4]),
+         gamma = map_dbl(pars, ~ .[5]))
 
 
 if (sum(data_optim_quad_pars$convergence)>0) {warning("OPTIM DIDNT CONVERGE FOR AT LEAST ONE SUBJECT-CONDITION!")}
@@ -153,7 +169,7 @@ if (sum(data_optim_quad_pars$convergence)>0) {warning("OPTIM DIDNT CONVERGE FOR 
 # Plot individual Estimates
 ####################################
 
-hist_lambda <- data_optim_quad_pars %>% 
+.hist_lambda <- data_optim_quad_pars %>% 
   filter(convergence == 0) %>% 
   ggplot(aes(x = lambda)) +
   myPlot +
@@ -161,49 +177,66 @@ hist_lambda <- data_optim_quad_pars %>%
   geom_vline(xintercept = 1, color="red", linewidth=1.5) +
   labs(title = 'loss aversion') +
   coord_cartesian(expand = T)
-hist_rho <- data_optim_quad_pars %>% 
+.hist_rho <- data_optim_quad_pars %>% 
   filter(convergence == 0) %>% 
   ggplot(aes(x = rho)) +
   myPlot +
   geom_histogram() +
   labs(title = 'diminishing marginal returns') +
   coord_cartesian(expand = T)
-hist_temperature_G <- data_optim_quad_pars %>% 
+.hist_temperature_G <- data_optim_quad_pars %>% 
   filter(convergence == 0) %>% 
   ggplot(aes(x = temperature_G)) +
   myPlot +
   geom_histogram() +
   labs(title = 'temperature gain') +
   coord_cartesian(expand = T)
-hist_temperature_L <- data_optim_quad_pars %>% 
+.hist_temperature_L <- data_optim_quad_pars %>% 
   filter(convergence == 0) %>% 
   ggplot(aes(x = temperature_L)) +
   myPlot +
   geom_histogram() +
   labs(title = 'temperature loss') +
   coord_cartesian(expand = T)
+.hist_gamma <- data_optim_quad_pars %>% 
+  filter(convergence == 0) %>% 
+  ggplot(aes(x = gamma)) +
+  myPlot +
+  geom_histogram() +
+  labs(title = 'probability weighting') +
+  coord_cartesian(expand = T)
 
-plt = hist_lambda + hist_rho + hist_temperature_G + hist_temperature_L
-fn = paste0("ProspectTheory_", RDRule, "_IndividualEstimates.pdf")
-ggsave(file.path(.figdir, fn), plt, width=figw*1.5, height=figh*1.5)
+.plt = .hist_lambda + .hist_rho + .hist_temperature_G + .hist_temperature_L + .hist_gamma
+.fn = paste0("ProspectTheory_", RDRule, "_IndividualEstimates.pdf")
+ggsave(file.path(.figdir, .fn), .plt, width=figw*1.75, height=figh*1.75)
 
 
 ####################################
 # Group-Level Out-of-Sample Predictions
 ####################################
 
-pdataA = merge(
+.pdataA = merge(
   outsample, 
-  data_optim_quad_pars[,c("studyN", "subject", "condition", "lambda", "rho", "temperature_G", "temperature_L")], 
+  data_optim_quad_pars[,c("studyN", "subject", "condition", "lambda", "rho", "temperature_G", "temperature_L", "gamma")], 
   by=c("studyN", "subject", "condition")
 )
 
-pdataA = pdataA %>%
+.pdataA = .pdataA %>%
   mutate(
     loss_id = (LAmt < 0), 
-    LR_diff = calc_utility_diff(LAmt, LProb, RAmt, RProb, lambda, rho, loss_id),
-    pred_choice = calc_prob_L(LR_diff, temperature_G, temperature_L, loss_id)
-  ) %>%
+    L1_wp = calc_prelec_prob(LProb, gamma),
+    L2_wp = calc_prelec_prob(1-LProb, gamma),
+    R1_wp = calc_prelec_prob(RProb, gamma),
+    R2_wp = calc_prelec_prob(1-RProb, gamma),
+    L_RDVal = calc_RDVal(LAmt, L1_wp, L2_wp, lambda, rho, loss_id),
+    R_RDVal = calc_RDVal(RAmt, R1_wp, R2_wp, lambda, rho, loss_id),
+    utility_diff = calc_utility_diff(L_RDVal, R_RDVal),
+    pred_choice = calc_prob_L(utility_diff, temperature_G, temperature_L, loss_id)
+  )
+.pdataGroup = .pdataA
+RDValues = .pdataA[,c("studyN", "subject", "condition", "L_RDVal", "R_RDVal",
+                      "LAmt", "L1_wp", "L2_wp", "RAmt", "R1_wp", "R2_wp")]
+.pdataA = .pdataA %>%
   select("studyN", "subject", "condition", "choice", "pred_choice", "nvDiff") %>%
   group_by(studyN, subject, condition, nvDiff) %>%
   summarize(
@@ -218,12 +251,12 @@ pdataA = pdataA %>%
     yhat_se = SE(pred_choice),
     simulated = 0
   )
-pdataB = pdataA %>% mutate(y = yhat, y_se = yhat_se, simulated = 1)
-pdata = rbind(pdataA, pdataB)
-pdata$simulated = factor(pdata$simulated, levels = c(0,1), labels = c("Observed", "Simulated"))
-pdata$studyN = factor(pdata$studyN, levels = c(1,2), labels = c("Study 1", "Study 2"))
+.pdataB = .pdataA %>% mutate(y = yhat, y_se = yhat_se, simulated = 1)
+.pdata = rbind(.pdataA, .pdataB)
+.pdata$simulated = factor(.pdata$simulated, levels = c(0,1), labels = c("Observed", "Simulated"))
+.pdata$studyN = factor(.pdata$studyN, levels = c(1,2), labels = c("Study 1", "Study 2"))
 
-plt = ggplot(data = pdata, aes(x = nvDiff, y = y)) +
+.plt = ggplot(data = .pdata, aes(x = nvDiff, y = y)) +
   myPlot +
   
   geom_line(aes(color=simulated), linewidth=linewidth, show.legend = T) +
@@ -241,8 +274,8 @@ plt = ggplot(data = pdata, aes(x = nvDiff, y = y)) +
   scale_x_continuous(breaks=c(-1, 0, 1)) +
   scale_y_continuous(breaks=c(0, .5, 1))
 
-fn = paste0("ProspectTheory_", RDRule, "_GroupOutSamplePredictions.pdf")
-ggsave(file.path(.figdir, fn), plt, width=figw*1.2, height=figh*1.2)
+.fn = paste0("ProspectTheory_", RDRule, "_GroupOutSamplePredictions.pdf")
+ggsave(file.path(.figdir, .fn), .plt, width=figw*1.2, height=figh*1.2)
 
 
 ####################################
@@ -250,22 +283,10 @@ ggsave(file.path(.figdir, fn), plt, width=figw*1.2, height=figh*1.2)
 ####################################
 
 set.seed(4)
-study1subjects = sample(unique(outsample$subject[outsample$studyN==1]), 4)
-study2subjects = sample(unique(outsample$subject[outsample$studyN==2]), 4)
-smalloutsample = outsample[outsample$subject %in% c(study1subjects, study2subjects),]
+.study1subjects = sample(unique(outsample$subject[outsample$studyN==1]), 4)
+.study2subjects = sample(unique(outsample$subject[outsample$studyN==2]), 4)
 
-pdataA = merge(
-  smalloutsample, 
-  data_optim_quad_pars[,c("studyN", "subject", "condition", "lambda", "rho", "temperature_G", "temperature_L")], 
-  by=c("studyN", "subject", "condition")
-)
-
-pdataA = pdataA %>%
-  mutate(
-    loss_id = (LAmt < 0), 
-    LR_diff = calc_utility_diff(LAmt, LProb, RAmt, RProb, lambda, rho, loss_id),
-    pred_choice = calc_prob_L(LR_diff, temperature_G, temperature_L, loss_id)
-  ) %>%
+.pdataA = .pdataGroup[.pdataGroup$subject %in% c(.study1subjects, .study2subjects),] %>%
   select("studyN", "subject", "condition", "choice", "pred_choice", "nvDiff") %>%
   group_by(studyN, subject, condition, nvDiff) %>%
   summarize(
@@ -275,16 +296,16 @@ pdataA = pdataA %>%
     yhat_se = SE(pred_choice),
     simulated = 0
   )
-pdataB = pdataA %>% mutate(y = yhat, y_se = yhat_se, simulated = 1)
-pdataFull = rbind(pdataA, pdataB)
-pdataFull$simulated = factor(pdataFull$simulated, levels = c(0,1), labels = c("Observed", "Simulated"))
-pdataFull$studyN = factor(pdataFull$studyN, levels = c(1,2), labels = c("Study 1", "Study 2"))
-pdataFull[is.na(pdataFull)] = 0
+.pdataB = .pdataA %>% mutate(y = yhat, y_se = yhat_se, simulated = 1)
+.pdataFull = rbind(.pdataA, .pdataB)
+.pdataFull$simulated = factor(.pdataFull$simulated, levels = c(0,1), labels = c("Observed", "Simulated"))
+.pdataFull$studyN = factor(.pdataFull$studyN, levels = c(1,2), labels = c("Study 1", "Study 2"))
+.pdataFull[is.na(.pdataFull)] = 0
 
-for (sID in c(study1subjects, study2subjects)) {
-  pdata = pdataFull[pdataFull$subject==sID, ]
+for (sID in c(.study1subjects, .study2subjects)) {
+  .pdata = .pdataFull[.pdataFull$subject==sID, ]
   
-  plt = ggplot(data = pdata, aes(x = nvDiff, y = y)) +
+  .plt = ggplot(data = .pdata, aes(x = nvDiff, y = y)) +
     myPlot +
     
     geom_line(aes(color=simulated), linewidth=linewidth, show.legend = F) +
@@ -302,6 +323,6 @@ for (sID in c(study1subjects, study2subjects)) {
     scale_x_continuous(breaks=c(-1, 0, 1)) +
     scale_y_continuous(breaks=c(0, .5, 1))
   
-  fn = paste0("ProspectTheory_", RDRule, "_IndivOutSamplePredictions_", sID, ".pdf")
-  ggsave(file.path(.figdir, fn), plt, width=figw*1.2, height=figh*1.2)
+  .fn = paste0("ProspectTheory_", RDRule, "_IndivOutSamplePredictions_", sID, ".pdf")
+  ggsave(file.path(.figdir, .fn), .plt, width=figw*1.2, height=figh*1.2)
 }
