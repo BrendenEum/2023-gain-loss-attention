@@ -12,6 +12,7 @@ datadir = "test_data/";
 tempdir = "../../outputs/aDDM_fitting/";
 
 # Data
+expdata = DataFrame(CSV.File(datadir * "expdataGain.csv", delim=","));
 full_data = ADDM.load_data_from_csv(datadir * "expdataGain.csv", datadir * "fixationsGain.csv");
 subj_data = full_data["201"]; # 201 has half the original data for 201. 202 is full original.
 

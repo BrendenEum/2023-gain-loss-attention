@@ -61,6 +61,12 @@ mutable struct Trial
     uninterruptedLastFixTime::Number
     RDV::Vector{Number}
     dynamicValue::Vector{Number}
+    vL_StatusQuo::Number
+    vR_StatusQuo::Number
+    vL_MaxMin::Number
+    vR_MaxMin::Number
+    vL_MinOutcome::Number
+    vR_MinOutcome::Number
 
     # Incomplete initialization allows for defining optional components later
     # To create a Trial one must only provide the choice, RT and values

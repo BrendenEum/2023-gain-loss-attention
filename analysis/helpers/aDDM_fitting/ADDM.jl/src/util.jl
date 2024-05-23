@@ -69,6 +69,22 @@ function load_data_from_csv(expdataFileName, fixationsFileName = nothing; stimsO
         end
     end
     
+    # Add optional data here (reference-dependent values)
+    for subjectId in subjectIds
+      parcode_df = df[df.parcode .== subjectId, :]
+      trialIds = unique(parcode_df.trial)
+      for (t, trialId) in enumerate(trialIds)
+        trial_df = parcode_df[parcode_df.trial .== trialId, :]
+        dataTrial = Matrix(trial_df)
+        data[subjectId][t].vL_StatusQuo = trial_df.vL_StatusQuo[1]
+        data[subjectId][t].vR_StatusQuo = trial_df.vR_StatusQuo[1]
+        data[subjectId][t].vL_MaxMin = trial_df.vL_MaxMin[1]
+        data[subjectId][t].vR_MaxMin = trial_df.vR_MaxMin[1]
+        data[subjectId][t].vL_MinOutcome = trial_df.vL_MinOutcome[1]
+        data[subjectId][t].vR_MinOutcome = trial_df.vR_MinOutcome[1]
+      end
+    end
+
     # Load fixation data from CSV file if specified.
     if fixationsFileName != nothing
       try
