@@ -148,25 +148,6 @@ clean.choices <- function(choices) {
         nchoice.corr = choice - mean(choice)
       )
   
-  choices$minValue = NA
-  choices$maxValue = NA
-  choicesSubjectList = list()
-  ind = 1
-  for (i in unique(choices$subject)) {
-    choicesSubject = choices[choices$subject==i,]
-    choicesG = choicesSubject[choicesSubject$condition=="Gain",]
-    choicesL = choicesSubject[choicesSubject$condition=="Loss",]
-    for (i in c(1:nrow(choicesG))){
-      choicesG$minValue[i] = min(c(choicesG$vL[1:i], choicesG$vR[1:i]))
-      choicesG$maxValue[i] = max(c(choicesG$vL[1:i], choicesG$vR[1:i]))}
-    for (i in c(1:nrow(choicesL))){
-      choicesL$minValue[i] = min(c(choicesL$vL[1:i], choicesL$vR[1:i]))
-      choicesL$maxValue[i] = max(c(choicesL$vL[1:i], choicesL$vR[1:i]))}
-    choicesSubjectList[[ind]] = rbind(choicesG, choicesL)
-    ind = ind + 1
-  }
-  choices = do.call("rbind", choicesSubjectList)
-  
   choices = merge(choices, blockOrder, by="subject")
   choices$blockOrder = factor(choices$blockOrder, levels=c("gl","lg"), labels=c("Gain-Loss", "Loss-Gain"))
   

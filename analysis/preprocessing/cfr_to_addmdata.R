@@ -5,8 +5,20 @@ rm(list=ls())
 set.seed(4)
 library(tidyverse)
 datadir = file.path("../../data/processed_data")
+.tempdir = file.path("../outputs/temp")
 dots_datadir = file.path(datadir, "dots")
 numeric_datadir = file.path(datadir, "numeric")
+
+# Get reference dependent vL and vR
+load(file.path(.tempdir, "ref_dept/ref_dept_values.RData"))
+RD_StatusQuo = RDValuesDF[RDValuesDF$Model=="StatusQuo", c("subject", "trial", "condition", "L_RDVal", "R_RDVal")] %>%
+  rename(vL_StatusQuo = L_RDVal, vR_StatusQuo = R_RDVal)
+RD_MaxMin = RDValuesDF[RDValuesDF$Model=="MaxMin", c("subject", "trial", "condition", "L_RDVal", "R_RDVal")] %>%
+  rename(vL_MaxMin = L_RDVal, vR_MaxMin = R_RDVal)
+RD_MinOutcome = RDValuesDF[RDValuesDF$Model=="minOutcome", c("subject", "trial", "condition", "L_RDVal", "R_RDVal")] %>%
+  rename(vL_MinOutcome = L_RDVal, vR_MinOutcome = R_RDVal)
+RDValues = merge(RD_StatusQuo, RD_MaxMin, by=c("subject", "trial", "condition"))
+RDValues = merge(RDValues, RD_MinOutcome, by=c("subject", "trial", "condition"))
 
 
 ##########################################################################################
@@ -18,6 +30,7 @@ numeric_datadir = file.path(datadir, "numeric")
 make_expdata = function(data, studydir="error", dataset="error") {
   data = data[data$trial%%2==1,]                 # ODD TRIALS ONLY!!!
   data = data[data$firstFix==T,]         # ONLY NEED ONE OBS PER TRIAL.
+  data = merge(data, RDValues, by = c("subject", "trial", "condition"), all.x=T) # Get ref dept values
   data.gain = data[data$condition=="Gain",]
   data.loss = data[data$condition=="Loss",]
   if (data.gain$trial[1]!=1) {data.gain$trial=data.gain$trial-min(data.gain$trial)+1} 
@@ -29,8 +42,9 @@ make_expdata = function(data, studydir="error", dataset="error") {
     choice = (data.gain$choice*2-1)*-1, #L:-1, R:1... Tavares toolbox.
     item_left = data.gain$vL,
     item_right = data.gain$vR,
-    minValue = data.gain$minValue,
-    maxValue = data.gain$maxValue)
+    vL_StatusQuo = data.gain$vL_StatusQuo, vR_StatusQuo = data.gain$vR_StatusQuo,
+    vL_MaxMin = data.gain$vL_MaxMin, vR_MaxMin = data.gain$vR_MaxMin,
+    vL_MinOutcome = data.gain$vL_MinOutcome, vR_MinOutcome = data.gain$vR_MinOutcome)
   expdataLoss = data.frame(
     parcode = data.loss$subject,
     trial = data.loss$trial,
@@ -38,8 +52,9 @@ make_expdata = function(data, studydir="error", dataset="error") {
     choice = (data.loss$choice*2-1)*-1,
     item_left = data.loss$vL,
     item_right = data.loss$vR,
-    minValue = data.loss$minValue,
-    maxValue = data.loss$maxValue)
+    vL_StatusQuo = data.loss$vL_StatusQuo, vR_StatusQuo = data.loss$vR_StatusQuo,
+    vL_MaxMin = data.loss$vL_MaxMin, vR_MaxMin = data.loss$vR_MaxMin,
+    vL_MinOutcome = data.loss$vL_MinOutcome, vR_MinOutcome = data.loss$vR_MinOutcome)
   write.csv(
     expdataGain,
     file=file.path(studydir, paste0(dataset, "/expdataGain.csv")), 

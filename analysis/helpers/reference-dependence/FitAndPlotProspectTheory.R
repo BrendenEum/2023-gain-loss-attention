@@ -10,9 +10,6 @@ library(patchwork)
 source("../plot_options/GainLossColorPalette.R")
 source("../plot_options/MyPlotOptions.R")
 source("../plot_options/SE.R")
-.figdir = file.path("../../outputs/figures")
-.tempdir = file.path("../../outputs/figures/ref_dept")
-if (!dir.exists(.tempdir)) {dir.create(.tempdir)}
 
 print(RDRule)
 
@@ -101,18 +98,22 @@ minimize_LL_prospect <- function(df, par) {
 
 future::plan(multisession, workers = 4)
 
-# lambda, rho, temperature_G, temperature_L
+# lambda, rho, temperature_G, temperature_L, gamma
+# Stillman has lambda range from 0 to 20. Baillon has lambdas ranging from 0 to ~37.
+# Stillman and Baillon have rho's ranging from 0 to just over 2.
+# Stillman has temperatures from 0 to 20, with some bunching at 20. Baillon has temperatures upwards of 35.
+# I think Prelec prob reweighting should be bounded above by 1. Gonzalez and Wu (1999) found gamma between .55 and .95.
 lower_bounds = c(.01, .01, .01, .01, .01)
-upper_bounds = c(10, 4, 20, 20, 1)
+upper_bounds = c(10, 4, 30, 30, 1)
 
 .data_optim_quad <- .data_nested %>%
-  mutate(optim_out_1 = future_map(data, ~ optim(par = c(1.24, .83, 2.57, 2.57, 1), # Sokol-Hessner et al. 2009 means
+  mutate(optim_out_1 = future_map(data, ~ optim(par = c(1.24, .83, 2.57, 2.57, .99), # Sokol-Hessner et al. 2009 means
                                                 fn = minimize_LL_prospect,
                                                 df = .,
                                                 method = 'L-BFGS-B',
                                                 lower = lower_bounds,
                                                 upper = upper_bounds)),
-         optim_out_2 = future_map(data, ~ optim(par = c(1.24, .91, 3.15, 3.15, 1), # Stillman et al. 2020 means
+         optim_out_2 = future_map(data, ~ optim(par = c(1.24, .91, 3.15, 3.15, .99), # Stillman et al. 2020 means
                                                 fn = minimize_LL_prospect,
                                                 df = .,
                                                 method = 'L-BFGS-B',
@@ -139,17 +140,17 @@ upper_bounds = c(10, 4, 20, 20, 1)
 evaluate_model <- function(model_list) {
   
   names(model_list) <- str_c('m', 1:length(model_list))
-  models_tibble <<- as_tibble(model_list)
+  models_tibble <- as_tibble(model_list)
   
-  convergence_mat <<- models_tibble %>% 
+  convergence_mat <- models_tibble %>% 
     summarise(across(everything(), ~ map_dbl(., 'convergence'))) # convergence 
-  ll_mat <<- models_tibble %>% 
+  ll_mat <- models_tibble %>% 
     summarise(across(everything(), ~ map_dbl(., 'value'))) # log likelihood
   
-  ll_mat[convergence_mat != 0] <<- NA # set LL of non-converging models to be NA
-  lowest_likelihood <<- apply(ll_mat, 1, which.min) # choose the minimum LL from each row
+  ll_mat[convergence_mat != 0] <- NA # set LL of non-converging models to be NA
+  lowest_likelihood <- apply(ll_mat, 1, which.min) # choose the minimum LL from each row
   
-  index_mat <<- matrix(c(1:nrow(models_tibble), lowest_likelihood), ncol = 2, byrow=FALSE)
+  index_mat <- matrix(c(1:nrow(models_tibble), lowest_likelihood), ncol = 2, byrow=FALSE)
   return(as.matrix(models_tibble)[index_mat]) # for each row, return the optim output that had minimum LL
 }
 
@@ -165,7 +166,6 @@ data_optim_quad_pars <- .data_optim_quad %>%
          gamma = map_dbl(pars, ~ .[5]))
 
 if (sum(data_optim_quad_pars$convergence)>0) {warning("OPTIM DIDNT CONVERGE FOR AT LEAST ONE SUBJECT-CONDITION!")}
-save(data_optim_quad_pars, file=file.path(.tempdir, paste0(RDRule, ".RData")))
 
 
 ####################################
@@ -241,8 +241,6 @@ ggsave(file.path(.figdir, .fn), .plt, width=figw*1.75, height=figh*1.75)
     pred_choice = calc_prob_L(LR_diff, temperature_G, temperature_L, loss_id)
   )
 .pdataGroup = .pdataA
-RDValues = .pdataA[,c("studyN", "subject", "condition", "L_RDVal", "R_RDVal",
-                     "LAmt", "L1_su", "L1_wp", "L2_su", "L2_wp", "RAmt", "R1_su", "R1_wp", "R2_su", "R2_wp")]
 .pdataA = .pdataA %>%
   select("studyN", "subject", "condition", "choice", "pred_choice", "nvDiff") %>%
   group_by(studyN, subject, condition, nvDiff) %>%
@@ -333,3 +331,34 @@ for (sID in c(.study1subjects, .study2subjects)) {
   .fn = paste0("ProspectTheory_", RDRule, "_IndivOutSamplePredictions_", sID, ".pdf")
   ggsave(file.path(.figdir, .fn), .plt, width=figw*1.2, height=figh*1.2)
 }
+
+
+####################################
+# Save RDValues for aDDM Fitting
+####################################
+
+.cfr = merge(
+  cfr[cfr$firstFix==T,], 
+  data_optim_quad_pars[,c("studyN", "subject", "condition", "lambda", "rho", "temperature_G", "temperature_L", "gamma")], 
+  by=c("studyN", "subject", "condition")
+)
+
+.cfr = .cfr %>%
+  mutate(
+    loss_id = (LAmt < 0), 
+    L1_su = calc_subjective_utility(LAmt, LRef, lambda, rho),
+    L2_su = calc_subjective_utility(0, LRef, lambda, rho),
+    R1_su = calc_subjective_utility(RAmt, RRef, lambda, rho),
+    R2_su = calc_subjective_utility(0, RRef, lambda, rho),
+    L1_wp = calc_prelec_prob(LProb, gamma),
+    L2_wp = calc_prelec_prob(1-LProb, gamma),
+    R1_wp = calc_prelec_prob(RProb, gamma),
+    R2_wp = calc_prelec_prob(1-RProb, gamma),
+    L_RDVal = L1_su * L1_wp + L2_su * L2_wp,
+    R_RDVal = R1_su * R1_wp + R2_su * R2_wp,
+    LR_diff = calc_utility_diff(L1_su, L2_su, L1_wp, L2_wp, R1_su, R2_su, R1_wp, R2_wp),
+    pred_choice = calc_prob_L(LR_diff, temperature_G, temperature_L, loss_id)
+  )
+RDValues = .cfr[,c("studyN", "subject", "trial", "condition", "L_RDVal", "R_RDVal",
+                   "L1_su", "L1_wp", "L2_su", "L2_wp", "R1_su", "R1_wp", "R2_su", "R2_wp",
+                   "lambda", "rho", "temperature_G", "temperature_L", "gamma")]

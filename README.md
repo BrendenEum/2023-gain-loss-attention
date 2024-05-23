@@ -79,9 +79,12 @@ Input:
 
 Output:
 - /analysis/outputs/figures/ProspectTheory_*.pdf
+- /analysis/outputs/temp/ref_dept/*.RData
 
 ```
-analysis/reference-dependence/FitAndPlotProspectTheory.R
+analysis/reference-dependence/FitAndPlotRefDeptModels.R
+analysis/reference-dependence/CheckNLLs.R
+analysis/reference-dependence/CheckRDValues.R
 ```
 
 ## Convert data
@@ -156,7 +159,7 @@ analysis/helpers/parameter_recovery/model_parameter_grids.R
 When that's done, we open a shell and start julia in an ADDM environment. I like to start it with 4 threads. Multi-threading will significantly speed up the speed at which this gets done.
 
 ```
-julia --project=/Users/brenden/Toolboxes/ADDM.jl --threads=4
+julia --project=/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/aDDM_fitting/ADDM.jl --threads=4
 ```
 
 In Julia, run the following code to do all the parameter recovery exercises.

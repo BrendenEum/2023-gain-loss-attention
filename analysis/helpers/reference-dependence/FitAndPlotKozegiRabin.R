@@ -234,8 +234,6 @@ ggsave(file.path(.figdir, .fn), .plt, width=figw*1.75, height=figh*1.75)
     pred_choice = calc_prob_L(utility_diff, temperature_G, temperature_L, loss_id)
   )
 .pdataGroup = .pdataA
-RDValues = .pdataA[,c("studyN", "subject", "condition", "L_RDVal", "R_RDVal",
-                      "LAmt", "L1_wp", "L2_wp", "RAmt", "R1_wp", "R2_wp")]
 .pdataA = .pdataA %>%
   select("studyN", "subject", "condition", "choice", "pred_choice", "nvDiff") %>%
   group_by(studyN, subject, condition, nvDiff) %>%
@@ -326,3 +324,29 @@ for (sID in c(.study1subjects, .study2subjects)) {
   .fn = paste0("ProspectTheory_", RDRule, "_IndivOutSamplePredictions_", sID, ".pdf")
   ggsave(file.path(.figdir, .fn), .plt, width=figw*1.2, height=figh*1.2)
 }
+
+
+####################################
+# Save RDValues for aDDM Fitting
+####################################
+
+.cfr = merge(
+  cfr[cfr$firstFix==T,], 
+  data_optim_quad_pars[,c("studyN", "subject", "condition", "lambda", "rho", "temperature_G", "temperature_L", "gamma")], 
+  by=c("studyN", "subject", "condition")
+)
+
+.cfr = .cfr %>%
+  mutate(
+    loss_id = (LAmt < 0), 
+    L1_wp = calc_prelec_prob(LProb, gamma),
+    L2_wp = calc_prelec_prob(1-LProb, gamma),
+    R1_wp = calc_prelec_prob(RProb, gamma),
+    R2_wp = calc_prelec_prob(1-RProb, gamma),
+    L_RDVal = calc_RDVal(LAmt, L1_wp, L2_wp, lambda, rho, loss_id),
+    R_RDVal = calc_RDVal(RAmt, R1_wp, R2_wp, lambda, rho, loss_id),
+    utility_diff = calc_utility_diff(L_RDVal, R_RDVal),
+    pred_choice = calc_prob_L(utility_diff, temperature_G, temperature_L, loss_id)
+  )
+RDValues = .cfr[,c("studyN", "subject", "trial", "condition", "L_RDVal", "R_RDVal",
+                   "LAmt", "L1_wp", "L2_wp", "RAmt", "R1_wp", "R2_wp")]

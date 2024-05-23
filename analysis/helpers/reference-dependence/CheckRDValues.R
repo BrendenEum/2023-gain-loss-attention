@@ -22,7 +22,7 @@ pdataA = RDValuesDF[,c("L_RDVal", "Model", "condition")] %>% rename(RDVal = L_RD
 pdataB = RDValuesDF[,c("R_RDVal", "Model", "condition")] %>% rename(RDVal = R_RDVal)
 pdata = rbind(pdataA, pdataB)
 pdata = pdata %>% mutate(RDVal = pmin(pmax(RDVal, -bounds), bounds))
-pdata$Model = factor(pdata$Model, levels=c("Status Quo", "MaxMin", "MinMax", "XatMaxP", "Expected Value", "Prospect Itself"))
+pdata$Model = factor(pdata$Model, levels=c("StatusQuo", "MaxMin", "minOutcome"))
 
 
 ####################################

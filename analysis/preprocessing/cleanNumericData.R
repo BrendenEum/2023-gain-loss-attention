@@ -214,31 +214,10 @@ make_cfr = function(data_directory, list_of_subjects) {
       )
     data$correct <- as.integer(data$correctAnswer == data$choice)
     
-    # What's the minimum and maximum value seen so far per subject-condition?
-    # This is excluding sanity check trials.
-    
-    data$minValue = NA
-    data$maxValue = NA
-    choicesSubjectList = list()
-    ind = 1
-    for (i in unique(data$subject)) {
-      choicesSubject = data[data$subject==i,]
-      choicesG = choicesSubject[choicesSubject$condition=="Gain",]
-      choicesL = choicesSubject[choicesSubject$condition=="Loss",]
-      for (i in c(1:nrow(choicesG))){
-        choicesG$minValue[i] = min(c(choicesG$vL[1:i], choicesG$vR[1:i]))
-        choicesG$maxValue[i] = max(c(choicesG$vL[1:i], choicesG$vR[1:i]))}
-      for (i in c(1:nrow(choicesL))){
-        choicesL$minValue[i] = min(c(choicesL$vL[1:i], choicesL$vR[1:i]))
-        choicesL$maxValue[i] = max(c(choicesL$vL[1:i], choicesL$vR[1:i]))}
-      choicesSubjectList[[ind]] = rbind(choicesG, choicesL)
-      ind = ind + 1
-    }
-    data = do.call("rbind", choicesSubjectList)
-    
     # Block order
-    data = merge(data, blockOrder, by="subject")
-    choices$blockOrder = factor(choices$blockOrder, levels=c("gl","lg"), labels=c("Gain-Loss", "Loss-Gain"))
+    #data = merge(data, blockOrder, by="subject")
+    #data$blockOrder = factor(data$blockOrder, levels=c("gl","lg"), labels=c("Gain-Loss", "Loss-Gain"))
+    
     
     ####################################################
     ## Transform ET data from list to long data. Clean it.
@@ -344,11 +323,9 @@ make_cfr = function(data_directory, list_of_subjects) {
       "RAmt",
       "correct",
       "correctAnswer",
-      "minValue",
-      "maxValue",
       "sanity",
-      "fixCrossLoc",
-      "blockOrder"
+      "fixCrossLoc"
+      #"blockOrder"
     )
     choicedata = data[, voi]
     
@@ -489,5 +466,5 @@ save(cfr_numeric, file=file.path(cdatadir, "cfr_numeric.Rdata"))
 # Joint
 #####################
 
-cfr_numeric = make_cfr(rawdatadir, exploratory_subs)
+cfr_numeric = make_cfr(rawdatadir, joint_subs)
 save(cfr_numeric, file=file.path(jdatadir, "cfr_numeric.Rdata"))
