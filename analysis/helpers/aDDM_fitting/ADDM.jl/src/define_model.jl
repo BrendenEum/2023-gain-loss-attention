@@ -61,6 +61,10 @@ mutable struct Trial
     uninterruptedLastFixTime::Number
     RDV::Vector{Number}
     dynamicValue::Vector{Number}
+    LAmt::Number
+    LProb::Number
+    RAmt::Number
+    RProb::Number
     vL_StatusQuo::Number
     vR_StatusQuo::Number
     vL_MaxMin::Number

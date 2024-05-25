@@ -1,7 +1,7 @@
 using Distributions
 using LinearAlgebra
 
-function MaxMin_likelihood(;model::ADDM.aDDM, trial::ADDM.Trial, timeStep::Number = 10.0, approxStateStep::Number = 0.01)
+function MaxMin_likelihood(;model::ADDM.aDDM, trial::ADDM.Trial, timeStep::Number = 10.0, stateStep::Number = 0.01)
     
     # Iterate over the fixations and discount the non-decision time.
     if model.nonDecisionTime > 0
@@ -42,7 +42,7 @@ function MaxMin_likelihood(;model::ADDM.aDDM, trial::ADDM.Trial, timeStep::Numbe
     barrierDown = -exp.(-model.decay .* (0:numTimeSteps-1))
     
     # Obtain correct state step.
-    halfNumStateBins = ceil(model.barrier / approxStateStep)
+    halfNumStateBins = ceil(model.barrier / stateStep)
     stateStep = model.barrier / (halfNumStateBins + 0.5)
     
     # The vertical axis is divided into states.
@@ -64,8 +64,8 @@ function MaxMin_likelihood(;model::ADDM.aDDM, trial::ADDM.Trial, timeStep::Numbe
     
     # Dictionary of μ values from fItem.
     μDict = Dict{Number, Number}()
-    vL = trial.valueLeft - model.reference
-    vR = trial.valueRight - model.reference
+    vL = trial.vL_MaxMin
+    vR = trial.vR_MaxMin
     for fItem in 0:2
         if fItem == 1
             μ = model.d*(vL - (model.θ * vR))

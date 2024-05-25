@@ -15,10 +15,7 @@ RD_StatusQuo = RDValuesDF[RDValuesDF$Model=="StatusQuo", c("subject", "trial", "
   rename(vL_StatusQuo = L_RDVal, vR_StatusQuo = R_RDVal)
 RD_MaxMin = RDValuesDF[RDValuesDF$Model=="MaxMin", c("subject", "trial", "condition", "L_RDVal", "R_RDVal")] %>%
   rename(vL_MaxMin = L_RDVal, vR_MaxMin = R_RDVal)
-RD_MinOutcome = RDValuesDF[RDValuesDF$Model=="minOutcome", c("subject", "trial", "condition", "L_RDVal", "R_RDVal")] %>%
-  rename(vL_MinOutcome = L_RDVal, vR_MinOutcome = R_RDVal)
 RDValues = merge(RD_StatusQuo, RD_MaxMin, by=c("subject", "trial", "condition"))
-RDValues = merge(RDValues, RD_MinOutcome, by=c("subject", "trial", "condition"))
 
 
 ##########################################################################################
@@ -44,7 +41,10 @@ make_expdata = function(data, studydir="error", dataset="error") {
     item_right = data.gain$vR,
     vL_StatusQuo = data.gain$vL_StatusQuo, vR_StatusQuo = data.gain$vR_StatusQuo,
     vL_MaxMin = data.gain$vL_MaxMin, vR_MaxMin = data.gain$vR_MaxMin,
-    vL_MinOutcome = data.gain$vL_MinOutcome, vR_MinOutcome = data.gain$vR_MinOutcome)
+    LAmt = data.gain$LAmt,
+    LProb = data.gain$LProb,
+    RAmt = data.gain$RAmt,
+    RProb = data.gain$RProb)
   expdataLoss = data.frame(
     parcode = data.loss$subject,
     trial = data.loss$trial,
@@ -54,7 +54,10 @@ make_expdata = function(data, studydir="error", dataset="error") {
     item_right = data.loss$vR,
     vL_StatusQuo = data.loss$vL_StatusQuo, vR_StatusQuo = data.loss$vR_StatusQuo,
     vL_MaxMin = data.loss$vL_MaxMin, vR_MaxMin = data.loss$vR_MaxMin,
-    vL_MinOutcome = data.loss$vL_MinOutcome, vR_MinOutcome = data.loss$vR_MinOutcome)
+    LAmt = data.loss$LAmt,
+    LProb = data.loss$LProb,
+    RAmt = data.loss$RAmt,
+    RProb = data.loss$RProb)
   write.csv(
     expdataGain,
     file=file.path(studydir, paste0(dataset, "/expdataGain.csv")), 

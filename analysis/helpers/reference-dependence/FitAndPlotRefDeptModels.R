@@ -27,7 +27,7 @@ cfr = ecfr %>%
     RRef = 0
   )
 set.seed(4)
-source("FitandPlotProspectTheory.R")
+source("FitandPlotChoiceSpecificModels.R")
 results$StatusQuo = data_optim_quad_pars
 RDValues$Model = RDRule
 RDValuesDF = RDValues
@@ -44,37 +44,38 @@ cfr = ecfr %>% # in losses
   )
 cfr[cfr$condition=="Gain", c("LRef", "RRef")] = 0 # in gains
 set.seed(4)
-source("FitandPlotProspectTheory.R")
+source("FitandPlotChoiceSpecificModels.R")
 results$MaxMin = data_optim_quad_pars
 RDValues$Model = RDRule
 RDValuesDF = rbind(RDValuesDF, RDValues)
 
 
 ####################################
-# minOutcome
-####################################
-RDRule = "minOutcome"
-min_study1L = min(ecfr$LAmt[ecfr$studyN==1 & ecfr$condition=="Loss"], ecfr$RAmt[ecfr$studyN==1 & ecfr$condition=="Loss"], 0)
-min_study2L = min(ecfr$LAmt[ecfr$studyN==2 & ecfr$condition=="Loss"], ecfr$RAmt[ecfr$studyN==2 & ecfr$condition=="Loss"], 0)
-min_study1G = min(ecfr$LAmt[ecfr$studyN==1 & ecfr$condition=="Gain"], ecfr$RAmt[ecfr$studyN==1 & ecfr$condition=="Gain"], 0)
-min_study2G = min(ecfr$LAmt[ecfr$studyN==2 & ecfr$condition=="Gain"], ecfr$RAmt[ecfr$studyN==2 & ecfr$condition=="Gain"], 0)
-cfr = ecfr %>% mutate(LRef = NA)
-cfr$LRef[cfr$studyN==1 & cfr$condition=="Loss"] = min_study1L
-cfr$LRef[cfr$studyN==2 & cfr$condition=="Loss"] = min_study2L
-cfr$LRef[cfr$studyN==1 & cfr$condition=="Gain"] = min_study1G
-cfr$LRef[cfr$studyN==2 & cfr$condition=="Gain"] = min_study2G
-cfr$RRef = cfr$LRef
-set.seed(4)
-source("FitAndPlotMinOutcome.R")
-results$minOutcome = data_optim_quad_pars
-RDValues$Model = RDRule
-RDValuesDF = rbind(RDValuesDF, RDValues)
-
-####################################
 # Save
 ####################################
 save(results, file=file.path(.tempdir, "ref_dept_results.RData"))
 save(RDValuesDF, file=file.path(.tempdir, "ref_dept_values.RData"))
+
+
+# ####################################
+# # minOutcome
+# ####################################
+# RDRule = "minOutcome"
+# min_study1L = min(ecfr$LAmt[ecfr$studyN==1 & ecfr$condition=="Loss"], ecfr$RAmt[ecfr$studyN==1 & ecfr$condition=="Loss"], 0)
+# min_study2L = min(ecfr$LAmt[ecfr$studyN==2 & ecfr$condition=="Loss"], ecfr$RAmt[ecfr$studyN==2 & ecfr$condition=="Loss"], 0)
+# min_study1G = min(ecfr$LAmt[ecfr$studyN==1 & ecfr$condition=="Gain"], ecfr$RAmt[ecfr$studyN==1 & ecfr$condition=="Gain"], 0)
+# min_study2G = min(ecfr$LAmt[ecfr$studyN==2 & ecfr$condition=="Gain"], ecfr$RAmt[ecfr$studyN==2 & ecfr$condition=="Gain"], 0)
+# cfr = ecfr %>% mutate(LRef = NA)
+# cfr$LRef[cfr$studyN==1 & cfr$condition=="Loss"] = min_study1L
+# cfr$LRef[cfr$studyN==2 & cfr$condition=="Loss"] = min_study2L
+# cfr$LRef[cfr$studyN==1 & cfr$condition=="Gain"] = min_study1G
+# cfr$LRef[cfr$studyN==2 & cfr$condition=="Gain"] = min_study2G
+# cfr$RRef = cfr$LRef
+# set.seed(4)
+# source("FitAndPlotMinOutcome.R")
+# results$minOutcome = data_optim_quad_pars
+# RDValues$Model = RDRule
+# RDValuesDF = rbind(RDValuesDF, RDValues)
 
 
 # ----------------------------------------------------------------------------------------------------------------------------------
@@ -95,7 +96,7 @@ save(RDValuesDF, file=file.path(.tempdir, "ref_dept_values.RData"))
 # cfr$LRef[cfr$studyN==2 & cfr$condition=="Gain"] = min_study2G
 # cfr$RRef = cfr$LRef
 # set.seed(4)
-# source("FitandPlotProspectTheory.R")
+# source("FitandPlotChoiceSpecificModels.R")
 # results$MaxMin = data_optim_quad_pars
 # RDValues$Model = RDRule
 # RDValuesDF = rbind(RDValuesDF, RDValues)
@@ -112,7 +113,7 @@ save(RDValuesDF, file=file.path(.tempdir, "ref_dept_values.RData"))
 #   )
 # cfr[cfr$condition=="Loss", c("LRef", "RRef")] = 0 # in losses
 # set.seed(4)
-# source("FitandPlotProspectTheory.R")
+# source("FitandPlotChoiceSpecificModels.R")
 # results$MinMax = data_optim_quad_pars
 # RDValues$Model = "MinMax"
 # RDValuesDF = rbind(RDValuesDF, RDValues)
@@ -131,7 +132,7 @@ save(RDValuesDF, file=file.path(.tempdir, "ref_dept_values.RData"))
 #   cfr$LRef[i] = XatMaxP; cfr$RRef[i] = XatMaxP
 # }
 # set.seed(4)
-# source("FitandPlotProspectTheory.R")
+# source("FitandPlotChoiceSpecificModels.R")
 # results$XatMaxP = data_optim_quad_pars
 # RDValues$Model = "XatMaxP"
 # RDValuesDF = rbind(RDValuesDF, RDValues)
@@ -147,7 +148,7 @@ save(RDValuesDF, file=file.path(.tempdir, "ref_dept_values.RData"))
 #     RRef = RAmt * RProb
 #   )
 # set.seed(4)
-# source("FitandPlotProspectTheory.R")
+# source("FitandPlotChoiceSpecificModels.R")
 # results$ExpectedValue = data_optim_quad_pars
 # RDValues$Model = "Expected Value"
 # RDValuesDF = rbind(RDValuesDF, RDValues)

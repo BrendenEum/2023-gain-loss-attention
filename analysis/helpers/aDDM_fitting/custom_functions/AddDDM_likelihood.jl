@@ -1,7 +1,7 @@
 using Distributions
 using LinearAlgebra
 
-function AddDDM_likelihood(;model::ADDM.aDDM, trial::ADDM.Trial, timeStep::Number = 10.0, approxStateStep::Number = 0.01)
+function AddDDM_likelihood(;model::ADDM.aDDM, trial::ADDM.Trial, timeStep::Number = 10.0, stateStep::Number = 0.01)
     
     # Iterate over the fixations and discount the non-decision time.
     if model.nonDecisionTime > 0
@@ -42,7 +42,7 @@ function AddDDM_likelihood(;model::ADDM.aDDM, trial::ADDM.Trial, timeStep::Numbe
     barrierDown = -exp.(-model.decay .* (0:numTimeSteps-1))
     
     # Obtain correct state step.
-    halfNumStateBins = ceil(model.barrier / approxStateStep)
+    halfNumStateBins = ceil(model.barrier / stateStep)
     stateStep = model.barrier / (halfNumStateBins + 0.5)
     
     # The vertical axis is divided into states.

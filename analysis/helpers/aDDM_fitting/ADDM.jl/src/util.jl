@@ -69,7 +69,7 @@ function load_data_from_csv(expdataFileName, fixationsFileName = nothing; stimsO
         end
     end
     
-    # Add optional data here (reference-dependent values)
+    # Add optional data here (reference-dependent values and amts and probabilities)
     for subjectId in subjectIds
       parcode_df = df[df.parcode .== subjectId, :]
       trialIds = unique(parcode_df.trial)
@@ -80,8 +80,11 @@ function load_data_from_csv(expdataFileName, fixationsFileName = nothing; stimsO
         data[subjectId][t].vR_StatusQuo = trial_df.vR_StatusQuo[1]
         data[subjectId][t].vL_MaxMin = trial_df.vL_MaxMin[1]
         data[subjectId][t].vR_MaxMin = trial_df.vR_MaxMin[1]
-        data[subjectId][t].vL_MinOutcome = trial_df.vL_MinOutcome[1]
-        data[subjectId][t].vR_MinOutcome = trial_df.vR_MinOutcome[1]
+
+        data[subjectId][t].LAmt = trial_df.LAmt[1]
+        data[subjectId][t].LProb = trial_df.LProb[1]
+        data[subjectId][t].RAmt = trial_df.RAmt[1]
+        data[subjectId][t].RProb = trial_df.RProb[1]
       end
     end
 
