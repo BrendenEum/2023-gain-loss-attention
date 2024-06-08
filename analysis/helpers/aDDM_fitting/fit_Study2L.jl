@@ -1,25 +1,29 @@
 # For the terminal:
-# cd "/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/aDDM_fitting"
-# julia --project=/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/aDDM_fitting/ADDM.jl --threads=4 "fit_Study2L.jl"
+# cd "/Users/brendeneum/Desktop/aDDM_fitting"
+# julia --project=/Users/brendeneum/Desktop/aDDM_fitting/ADDM.jl --threads=4 "fit_Study2L.jl"
 
 ##############################################
 # Preamble
 ##############################################
 
-# Libraries and directories
+# Libraries
 using ADDM, CSV, DataFrames, DataFramesMeta, Distributed, Distributions, LinearAlgebra, Base.Threads
-tempdir = "results/";
 
 #---------------------------------------------------------------------------------------
 # THINGS TO CHANGE
 
 # Participants
-#study2_participants = DataFrame(CSV.File("Study2_participants.csv", delim=","))[:,1];
-study2_participants = [201, 202]; # DELETE LATER
+study_participants = DataFrame(CSV.File("Study2_participants.csv", delim=","))[:,1];
+#study_participants = [201, 202] # testing
+
+# Directories
+tempdir = "results/study2L/";
 
 # Data
-datadir = "test_data/";
-full_data = ADDM.load_data_from_csv(datadir * "study2L_expdata.csv", datadir * "study2L_fixations.csv");
+full_data = ADDM.load_data_from_csv(
+    "/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/numeric/e/expdataLoss_train.csv", 
+    "/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/numeric/e/fixationsLoss_train.csv"
+);
 #---------------------------------------------------------------------------------------
 
 # Likelihood functions
@@ -64,7 +68,7 @@ param_grid = vcat(param_grid1, param_grid2, param_grid3, param_grid4);
 # Loop through all participants and save
 ##############################################
 
-Threads.@threads for k in study2_participants
+Threads.@threads for k in study_participants
 
     # Subset data
     println("Starting Participant $(k).")
@@ -105,15 +109,11 @@ Threads.@threads for k in study2_participants
     gdf = groupby(posteriors_df, :likelihood_fn);
     combdf = combine(gdf, :posterior => sum);
 
-    # Parameter posteriors
-    param_posteriors = ADDM.marginal_posteriors(model_posteriors);
-
     # Save it all in temp folder
     CSV.write(tempdir * "mle/mle_$(k).csv", mle);
     CSV.write(tempdir * "nll_df/nll_df_$(k).csv", nll_df);
     CSV.write(tempdir * "model_posteriors/model_posteriors_$(k).csv", model_posteriors);
     CSV.write(tempdir * "model_posteriors/posteriors_df_$(k).csv", posteriors_df);
     CSV.write(tempdir * "model_comparison/combdf_$(k).csv", combdf);
-    CSV.write(tempdir * "individual_parameter_posteriors/param_posteriors_$(k).csv", param_posteriors);
 
 end

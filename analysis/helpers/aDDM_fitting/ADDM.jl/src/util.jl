@@ -70,6 +70,10 @@ function load_data_from_csv(expdataFileName, fixationsFileName = nothing; stimsO
     end
     
     # Add optional data here (reference-dependent values and amts and probabilities)
+    if (!("vL_StatusQuo" in names(df)) || !("vR_StatusQuo" in names(df)) || !("vL_MaxMin" in names(df)) || !("vR_MaxMin" in names(df)) || !("LAmt" in names(df)) || !("LProb" in names(df)) || !("RAmt" in names(df)) || !("RProb" in names(df)))
+      throw(error("Missing field in experimental data file. Fields required: v*_StatusQuo, v*_MaxMin, *Amt, *Prob."))
+    end
+
     for subjectId in subjectIds
       parcode_df = df[df.parcode .== subjectId, :]
       trialIds = unique(parcode_df.trial)
@@ -160,4 +164,83 @@ function convert_param_text_to_symbol(model)
   end
 
   return model
+end
+
+"""
+Get stimuli from expdata to use in simulations
+"""
+function process_stimuli(data, nTrials)
+  
+  Stims = (
+    valueLeft = reduce(vcat, [[i.valueLeft for i in data[j]] for j in keys(data)])[1:nTrials], 
+    valueRight = reduce(vcat, [[i.valueRight for i in data[j]] for j in keys(data)])[1:nTrials], 
+    LProb = reduce(vcat, [[i.LProb for i in data[j]] for j in keys(data)])[1:nTrials], 
+    LAmt = reduce(vcat, [[i.LAmt for i in data[j]] for j in keys(data)])[1:nTrials], 
+    RProb = reduce(vcat, [[i.RProb for i in data[j]] for j in keys(data)])[1:nTrials], 
+    RAmt = reduce(vcat, [[i.RAmt for i in data[j]] for j in keys(data)])[1:nTrials]
+  );
+  
+  return Stims
+end
+
+"""
+Convert simulated data to behavioral and fixation dataframes
+"""
+function process_simulations(SimulatedData::Vector{ADDM.Trial}, Details::Bool = false)
+  
+  SimDataBehDf = DataFrame()
+  SimDataFixDf = DataFrame()
+  for (i, cur_trial) in enumerate(SimulatedData)
+      # "parcode","trial","fix_time","fix_item"
+      cur_fix_df = DataFrame(:fix_item => cur_trial.fixItem, :fix_time => cur_trial.fixTime)
+      cur_fix_df[!, :parcode] .= 1
+      cur_fix_df[!, :trial] .= i  
+      SimDataFixDf = vcat(SimDataFixDf, cur_fix_df, cols=:union)
+      # "parcode","trial","rt","choice","LProb","LAmt","RProb","RAmt"
+      if Details
+        cur_beh_df = DataFrame(
+          :parcode => 1, :trial => i, :choice => cur_trial.choice, :rt => cur_trial.RT, 
+          :LProb => cur_trial.LProb, :LAmt => cur_trial.LAmt, :RProb => cur_trial.RProb, :RAmt => cur_trial.RAmt
+        )
+      else
+        cur_beh_df = DataFrame(
+          :parcode => 1, :trial => i, :choice => cur_trial.choice, :rt => cur_trial.RT, 
+          :valueLeft => cur_trial.valueLeft, :valueRight => cur_trial.valueRight
+        )
+      end
+      
+      SimDataBehDf = vcat(SimDataBehDf, cur_beh_df, cols=:union)
+  end
+  
+  return [SimDataBehDf, SimDataFixDf]
+end
+
+"""
+Convert trial_likelihoods to something that can be stored sensibly in a csv.
+"""
+function process_trial_likelihoods(trial_likelihoods::Dict)
+  
+  trial_posteriors_df = DataFrame()
+
+  for (k,v) in trial_likelihoods
+    cur_df = DataFrame(Symbol(i) => j for (i, j) in pairs(v))
+
+    rename!(cur_df, :first => :trial_num, :second => :)
+
+    # Unpack parameter info
+    for (a, b) in pairs(k)
+      cur_df[!, a] .= b
+    end
+
+    # Change type of trial num col to sort by
+    cur_df[!, :trial_num] = [parse(Int, (String(i))) for i in cur_df[!,:trial_num]]
+
+    sort!(cur_df, :trial_num)
+
+    # trial_posteriors_df = vcat(trial_posteriors_df, cur_df, cols=:union)
+    append!(trial_posteriors_df, cur_df, cols=:union)
+  end
+
+  return trial_posteriors_df
+
 end

@@ -116,44 +116,8 @@ analysis/helpers/aDDM_predictions/plot_{model}_attnBias+&+rt(ov)_predictions.R
 
 ## Parameter recovery
 
-In previous iterations of code, I ran dozens of parameter recovery (PR) tests on simplified versions of models in this paper. For instance, the original aDDM, the additive aDDM, range-normalized aDDM, and so on. If you want to see that stuff, check out an older version of the main branch on github (3/12/24). That earlier analysis has helped me narrow down the set of models I want to test without the massive computation time that the next set of models will require. 
-
-Now, I will be doing parameter recovery exercises for the 3 model listed below. The idea is to generate data using one model, but go through the fitting pipeline with all three models, and see if the model with the highest posterior probability is the one that generated the data. 
-1.  standard aDDM with collapsing bounds (drift, noise, multiplicative attentional bias, starting point bias, collapse rate)
-2.  additive aDDM with collapsing bounds (drift, noise, additive attentional bias, starting point bias, collapse rate)
-3. reference-dependent aDDM with collapsing bounds (drift, noise, multiplicative attentional bias, starting point bias, collapse rate, reference point)
-
-The range of values that I think are reasonable for each parameter is below:
-- drift: $d \in (.001, .009)$
-- noise: $s \in (.01, .09)$
-- mult. attn. bias: $\theta \in \{(0,1), (1,2)\}$ depending on the model and condition
-- add. attn. bias: $\eta \in (0, .04)$ depending on the model
-- start. pt. bias: $b \in (-.5, .5)$
-- collapse rate: $\lambda \in (0, .004)$
-- reference-point: $r \in \{0, 1, -6\}$ depending on the model and condition
-
-GEN: Based on these ranges, I'll randomly select from 5 possible values (approx close to min, 25%, median, 75%, max) per parameter to generate data. Note that when $\theta=1$, $r$ in the reference-dependent aDDM is not identified, e.g. $\mu = d([V_L-r] - \theta [V_R-r])$. Because of this, I will avoid $\theta=1$ in my PR exercises. I also assume non-decision time is fixed at 100 ms. Per model and condition, I will simulate 20 datasets using randomly drawn parameters. I chose 20 because it is a multiple of the 4 performance cores I have on my laptop.
-- drift: $d \in \{.003, .005, .007, .009\}$
-- noise: $s \in \{.02, .04, .06, .08\}$
-- mult. attn. bias: $\theta \in \{0, .25, .5, .75, .9\}$ or $\theta \in \{1.1, 1.25, 1.5, 1.75, 2\}$ 
-- add. attn. bias: $\eta \in \{0, .01, .02, .03, .04\}$
-- start. pt. bias: $b \in \{-.2, -.1, 0, .1, .2\}$
-- collapse rate: $\lambda \in \{0, .001, .002, .003, .004\}$
-- reference-point: $r=0$, $r=1$, or $r=-6$
-
-FIT: I'm going to try and fit the simulated data (GEN) using the same grid that was sampled from to generated the data. For every trial, this is calculating the likelihood for $5^5=3125$ possible parameter combinations.
-- drift: $d \in \{.003, .005, .007, .009\}$
-- noise: $s \in \{.02, .04, .06, .08\}$
-- mult. attn. bias: $\theta \in \{0, .25, .5, .75, .9\}$ or $\theta \in \{1.1, 1.25, 1.5, 1.75, 2\}$ 
-- add. attn. bias: $\eta \in \{0, .01, .02, .03, .04\}$
-- start. pt. bias: $b \in \{-.2, -.1, 0, .1, .2\}$
-- collapse rate: $\lambda \in \{0, .001, .002, .003, .004\}$
-- reference-point: $r=0$, $r=1$, or $r=-6$
-
-Ok, first things first, we need to generate the grid of possible parameter values that we are going to test.
-
 ```
-analysis/helpers/parameter_recovery/model_parameter_grids.R
+analysis/helpers/parameter_recovery/make_parameter_grid.R
 ```
 
 When that's done, we open a shell and start julia in an ADDM environment. I like to start it with 4 threads. Multi-threading will significantly speed up the speed at which this gets done.
@@ -165,19 +129,16 @@ julia --project=/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers
 In Julia, run the following code to do all the parameter recovery exercises.
 
 ```
-include("parameter_recovery.jl")
+include("{model}_simulate_{condition}.jl")
+include("{model}_fit_{condition}.jl")
 ```
-
-To analyze the output of that parameter recovery, we need to run some R code. We want to check if the most likely fitted model is the same as the data generating model (ModelRecovery). If that's true, and hopefully it is, then we want to check that each model is able to recover it's original parameters (MarginalPosteriors).
-
-Input:
-- analysis/outputs/temp/parameter_recovery/{date in yyyy.mm.dd.H.M}
 
 Output:
-- analysis/outputs/temp/parameter_recovery/{date in yyyy.mm.dd.H.M}/ModelRecovery.pdf
-- analysis/outputs/temp/parameter_recovery/{date in yyyy.mm.dd.H.M}/{model}/Sim{#}_MarginalPosteriors.pdf
+- analysis/helpers/parameter_recovery/results_*/
+- analysis/helpers/parameter_recovery/parameter_recovery_{nTrials}/*.pdf
 
 ```
+analysis/helpers/parameter_recovery/model_recovery_analysis.R
 analysis/helpers/parameter_recovery/parameter_recovery_analysis.R
 ```
 
@@ -187,8 +148,8 @@ analysis/helpers/parameter_recovery/parameter_recovery_analysis.R
 Note that in each script, you'll need to change the data directory. It "cd"s into a folder specific to my computer.
 
 - Input:
-  - data/processed_data/{study}/{dataset}/expdata*.csv
-  - data/processed_data/{study}/{dataset}/fixations*.csv
+  - analysis/helpers/aDDM_fitting/data/study*_expdata.csv
+  - analysis/helpers/aDDM_fitting/data/study*_fixations.csv
 
 - Output:
   - A bunch of files related to model fitting. Each file ends with a number, representing participant number. 
@@ -198,7 +159,7 @@ Note that in each script, you'll need to change the data directory. It "cd"s int
   - trialPosteriors: posterior probability after each trial
 
 ```
-analysis/helpers/model_fitting/do_all_fitting.jl
+analysis/helpers/model_fitting/fit_Study{study}{condition}.jl
 ```
 
 ### Model comparison
@@ -231,6 +192,7 @@ Output:
 ```
 analysis/helpers/aDDM_analysis/RaDDM_IndividualEstimates.R
 analysis/helpers/aDDM_analysis/RaDDM_GroupEstimates.R
+analysis/helpers/aDDM_analysis/RaDDM_ParameterCorrelations.R
 ```
 
 ### RaDDM out-of-sample simulations
@@ -244,5 +206,6 @@ Output:
 - 
   
 ```
+analysis/helpers/aDDM_analysis/simulate_out_of_sample.jl
 analysis/helpers/aDDM_analysis/plot_out_of_sample.Rmd
 ```

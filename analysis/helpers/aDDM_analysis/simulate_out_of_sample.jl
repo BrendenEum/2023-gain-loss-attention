@@ -24,9 +24,7 @@ numFixDists = 2; # How many fixation distributions? (2 = firstFix, MiddleFix)
 #############
 # Prep likelihood and simulator functions
 #############
-include("custom_functions/aDDM_simulator.jl")
-include("custom_functions/AddDDM_simulator.jl")
-include("custom_functions/RaDDM_simulator.jl")
+include("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/parameter_recovery/custom_simulators/RaDDM_simulate_trial.jl")
 
 #############
 # Prep output folder
@@ -47,7 +45,7 @@ println("== GEN: " * m * " ==")
 flush(stdout)
 outdir = prdir * "/" * m * "/";
 mkpath(outdir);
-simulator_fn = RaDDM_simulator      # ! ! !
+simulator_fn = RaDDM_simulate_trial      # ! ! !
 
 
 ############# 
@@ -59,7 +57,7 @@ flush(stdout)
 Random.seed!(seed)
 
 # SIM: Parameters     
-estimates = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/out_of_sample_simulations/study"*string(studyN)*"estimates.csv", DataFrame)
+estimates = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/aDDM_analysis/RaDDM_IndividualEstimates.csv", DataFrame)
 subset_estimates = filter(row ->(row.study == studyN && row.condition == condition), estimates)
 model_list = [];
 for row in eachrow(subset_estimates)
@@ -67,17 +65,17 @@ for row in eachrow(subset_estimates)
         d = row.d,
         σ = row.sigma,
         θ = row.theta,
-        bias = row.bias,
+        bias = 0,
         nonDecisionTime = 100,
         decay = 0
     )
-    model.reference = row.reference;
+    model.ref = row.ref;
     model.subject = row.subject;
     push!(model_list, model);
 end
  # SIM: Data
-expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/expdata"*condition*".csv", DataFrame);
-fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/fixations"*condition*".csv", DataFrame);
+expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/expdata"*condition*"_test.csv", DataFrame);
+fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/fixations"*condition*"_test.csv", DataFrame);
 
 # DO SIM
 for subject in subset_estimates.subject
@@ -97,7 +95,14 @@ for subject in subset_estimates.subject
     data = ADDM.load_data_from_csv(expdata, fixdata; stimsOnly=true);
 
     nTrials = nrow(subset_expdata);
-    Stims = (valueLeft = reduce(vcat, [[i.valueLeft for i in data[j]] for j in keys(data)])[1:nTrials], valueRight = reduce(vcat, [[i.valueRight for i in data[j]] for j in keys(data)])[1:nTrials]);
+    Stims = (
+        valueLeft = reduce(vcat, [[i.valueLeft for i in data[j]] for j in keys(data)])[1:nTrials], 
+        valueRight = reduce(vcat, [[i.valueRight for i in data[j]] for j in keys(data)])[1:nTrials],
+        LProb = reduce(vcat, [[i.LProb for i in data[j]] for j in keys(data)])[1:nTrials],
+        LAmt = reduce(vcat, [[i.LAmt for i in data[j]] for j in keys(data)])[1:nTrials],
+        RProb = reduce(vcat, [[i.RProb for i in data[j]] for j in keys(data)])[1:nTrials],
+        RAmt = reduce(vcat, [[i.RAmt for i in data[j]] for j in keys(data)])[1:nTrials]
+    );
     Fixations = ADDM.process_fixations(data, fixDistType="simple", numFixDists = 2);
 
     ############################### Simulate data
@@ -149,17 +154,17 @@ for row in eachrow(subset_estimates)
         d = row.d,
         σ = row.sigma,
         θ = row.theta,
-        bias = row.bias,
+        bias = 0,
         nonDecisionTime = 100,
         decay = 0
     )
-    model.reference = row.reference;
+    model.ref = row.ref;
     model.subject = row.subject;
     push!(model_list, model);
 end
  # SIM: Data
- expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/expdata"*condition*".csv", DataFrame);
- fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/fixations"*condition*".csv", DataFrame);
+ expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/expdata"*condition*"_test.csv", DataFrame);
+ fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/fixations"*condition*"_test.csv", DataFrame);
 
 # DO SIM
 for subject in subset_estimates.subject
@@ -179,7 +184,14 @@ for subject in subset_estimates.subject
     data = ADDM.load_data_from_csv(expdata, fixdata; stimsOnly=true);
 
     nTrials = nrow(subset_expdata);
-    Stims = (valueLeft = reduce(vcat, [[i.valueLeft for i in data[j]] for j in keys(data)])[1:nTrials], valueRight = reduce(vcat, [[i.valueRight for i in data[j]] for j in keys(data)])[1:nTrials]);
+    Stims = (
+        valueLeft = reduce(vcat, [[i.valueLeft for i in data[j]] for j in keys(data)])[1:nTrials], 
+        valueRight = reduce(vcat, [[i.valueRight for i in data[j]] for j in keys(data)])[1:nTrials],
+        LProb = reduce(vcat, [[i.LProb for i in data[j]] for j in keys(data)])[1:nTrials],
+        LAmt = reduce(vcat, [[i.LAmt for i in data[j]] for j in keys(data)])[1:nTrials],
+        RProb = reduce(vcat, [[i.RProb for i in data[j]] for j in keys(data)])[1:nTrials],
+        RAmt = reduce(vcat, [[i.RAmt for i in data[j]] for j in keys(data)])[1:nTrials]
+    );
     Fixations = ADDM.process_fixations(data, fixDistType="simple", numFixDists = 2);
 
     ############################### Simulate data
@@ -226,7 +238,7 @@ println("== GEN: " * m * " ==")
 flush(stdout)
 outdir = prdir * "/" * m * "/";
 mkpath(outdir);
-simulator_fn = RaDDM_simulator      # ! ! !
+simulator_fn = RaDDM_simulate_trial      # ! ! !
 
 
 ############# 
@@ -238,7 +250,7 @@ flush(stdout)
 Random.seed!(seed)
 
 # SIM: Parameters      # ! ! !
-estimates = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/out_of_sample_simulations/study"*string(studyN)*"estimates.csv", DataFrame)
+estimates = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/aDDM_analysis/RaDDM_IndividualEstimates.csv", DataFrame)
 subset_estimates = filter(row ->(row.study == studyN && row.condition == condition), estimates)
 model_list = [];
 subject_list = [];
@@ -247,17 +259,17 @@ for row in eachrow(subset_estimates)
         d = row.d,
         σ = row.sigma,
         θ = row.theta,
-        bias = row.bias,
+        bias = 0,
         nonDecisionTime = 100,
         decay = 0
     )
-    model.reference = row.reference;
+    model.ref = row.ref;
     push!(model_list, model);
     push!(subject_list, row.subject);
 end
  # SIM: Data
-expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/expdata"*condition*".csv", DataFrame);
-fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/fixations"*condition*".csv", DataFrame);
+expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/expdata"*condition*"_test.csv", DataFrame);
+fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/fixations"*condition*"_test.csv", DataFrame);
 
 # DO SIM
 for subject in 1:length(subject_list)
@@ -277,7 +289,14 @@ for subject in 1:length(subject_list)
     data = ADDM.load_data_from_csv(expdata, fixdata; stimsOnly=true);
 
     nTrials = nrow(subset_expdata);
-    Stims = (valueLeft = reduce(vcat, [[i.valueLeft for i in data[j]] for j in keys(data)])[1:nTrials], valueRight = reduce(vcat, [[i.valueRight for i in data[j]] for j in keys(data)])[1:nTrials]);
+    Stims = (
+        valueLeft = reduce(vcat, [[i.valueLeft for i in data[j]] for j in keys(data)])[1:nTrials], 
+        valueRight = reduce(vcat, [[i.valueRight for i in data[j]] for j in keys(data)])[1:nTrials],
+        LProb = reduce(vcat, [[i.LProb for i in data[j]] for j in keys(data)])[1:nTrials],
+        LAmt = reduce(vcat, [[i.LAmt for i in data[j]] for j in keys(data)])[1:nTrials],
+        RProb = reduce(vcat, [[i.RProb for i in data[j]] for j in keys(data)])[1:nTrials],
+        RAmt = reduce(vcat, [[i.RAmt for i in data[j]] for j in keys(data)])[1:nTrials]
+    );
     Fixations = ADDM.process_fixations(data, fixDistType="simple", numFixDists = 2);
 
     ############################### Simulate data
@@ -330,17 +349,17 @@ for row in eachrow(subset_estimates)
         d = row.d,
         σ = row.sigma,
         θ = row.theta,
-        bias = row.bias,
+        bias = 0,
         nonDecisionTime = 100,
         decay = 0
     )
-    model.reference = row.reference;
+    model.ref = row.ref;
     push!(model_list, model);
     push!(subject_list, row.subject);
 end
  # SIM: Data
- expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/expdata"*condition*".csv", DataFrame);
- fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/fixations"*condition*".csv", DataFrame);
+ expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/expdata"*condition*"_test.csv", DataFrame);
+ fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/fixations"*condition*"_test.csv", DataFrame);
 
 # DO SIM
 for subject in 1:length(subject_list)
@@ -360,7 +379,14 @@ for subject in 1:length(subject_list)
     data = ADDM.load_data_from_csv(expdata, fixdata; stimsOnly=true);
 
     nTrials = nrow(subset_expdata);
-    Stims = (valueLeft = reduce(vcat, [[i.valueLeft for i in data[j]] for j in keys(data)])[1:nTrials], valueRight = reduce(vcat, [[i.valueRight for i in data[j]] for j in keys(data)])[1:nTrials]);
+    Stims = (
+        valueLeft = reduce(vcat, [[i.valueLeft for i in data[j]] for j in keys(data)])[1:nTrials], 
+        valueRight = reduce(vcat, [[i.valueRight for i in data[j]] for j in keys(data)])[1:nTrials],
+        LProb = reduce(vcat, [[i.LProb for i in data[j]] for j in keys(data)])[1:nTrials],
+        LAmt = reduce(vcat, [[i.LAmt for i in data[j]] for j in keys(data)])[1:nTrials],
+        RProb = reduce(vcat, [[i.RProb for i in data[j]] for j in keys(data)])[1:nTrials],
+        RAmt = reduce(vcat, [[i.RAmt for i in data[j]] for j in keys(data)])[1:nTrials]
+    );
     Fixations = ADDM.process_fixations(data, fixDistType="simple", numFixDists = 2);
 
     ############################### Simulate data

@@ -24,9 +24,9 @@ RDValues = merge(RD_StatusQuo, RD_MaxMin, by=c("subject", "trial", "condition"))
 # min/maxValue: the min/max value seen in this condition so far.
 ##########################################################################################
 
-make_expdata = function(data, studydir="error", dataset="error") {
-  data = data[data$trial%%2==1,]                 # ODD TRIALS ONLY!!!
+make_expdata = function(data, training, studydir="error", dataset="error") {
   data = data[data$firstFix==T,]         # ONLY NEED ONE OBS PER TRIAL.
+  if (training) {data = data[data$trial%%10!=0,]} else {data = data[data$trial%%10==0,]}
   data = merge(data, RDValues, by = c("subject", "trial", "condition"), all.x=T) # Get ref dept values
   data.gain = data[data$condition=="Gain",]
   data.loss = data[data$condition=="Loss",]
@@ -58,13 +58,21 @@ make_expdata = function(data, studydir="error", dataset="error") {
     LProb = data.loss$LProb,
     RAmt = data.loss$RAmt,
     RProb = data.loss$RProb)
+  
+  if (training) {
+    fnGain = "/expdataGain_train.csv"
+    fnLoss = "/expdataLoss_train.csv"
+  } else {
+    fnGain = "/expdataGain_test.csv"
+    fnLoss = "/expdataLoss_test.csv"
+  }
   write.csv(
     expdataGain,
-    file=file.path(studydir, paste0(dataset, "/expdataGain.csv")), 
+    file=file.path(studydir, paste0(dataset, fnGain)), 
     row.names=F)
   write.csv(
     expdataLoss,
-    file=file.path(studydir, paste0(dataset, "/expdataLoss.csv")), 
+    file=file.path(studydir, paste0(dataset, fnLoss)), 
     row.names=F)}
 
 
@@ -72,10 +80,10 @@ make_expdata = function(data, studydir="error", dataset="error") {
 # FUNCTION: fixations [parcode, trial, fix_item, fix_time]
 ##########################################################################################
 
-make_fixations = function(data, studydir="error", dataset="error") {
+make_fixations = function(data, training, studydir="error", dataset="error") {
   
   #cleaning
-  data = data[data$trial%%2==1,]                 # ODD TRIALS ONLY!!!
+  if (training) {data = data[data$trial%%10!=0,]} else {data = data[data$trial%%10==0,]}
   data$rt = data$rt*1000
   data$fix_start = floor(data$fix_start*1000)
   data$fix_start[data$fix_start==1] = 0 # ET takes a ms to start rec, looks like 1 ms latency.
@@ -137,14 +145,21 @@ make_fixations = function(data, studydir="error", dataset="error") {
   
   # Run the function for the gain and loss trials separately and save.
   fixationsGain = expand_then_collapse_fixations(data.gain)
+  if (training) {
+    fnGain = "/fixationsGain_train.csv"
+    fnLoss = "/fixationsLoss_train.csv"
+  } else {
+    fnGain = "/fixationsGain_test.csv"
+    fnLoss = "/fixationsLoss_test.csv"
+  }
   write.csv(
     fixationsGain,
-    file=file.path(studydir, paste0(dataset, "/fixationsGain.csv")), 
+    file=file.path(studydir, paste0(dataset, fnGain)), 
     row.names=F)
   fixationsLoss = expand_then_collapse_fixations(data.loss)
   write.csv(
     fixationsLoss,
-    file=file.path(studydir, paste0(dataset, "/fixationsLoss.csv")), 
+    file=file.path(studydir, paste0(dataset, fnLoss)), 
     row.names=F)}
 
 
@@ -153,14 +168,14 @@ make_fixations = function(data, studydir="error", dataset="error") {
 ##########################################################################################
 
 load(file.path(dots_datadir, "e/cfr_dots.RData"))
-make_expdata(cfr_dots, studydir = dots_datadir, dataset = "e")
-make_fixations(cfr_dots, studydir = dots_datadir, dataset = "e")
+make_expdata(cfr_dots, F, studydir = dots_datadir, dataset = "e")
+make_fixations(cfr_dots, F, studydir = dots_datadir, dataset = "e")
 load(file.path(dots_datadir, "c/cfr_dots.RData"))
-make_expdata(cfr_dots, studydir = dots_datadir, dataset = "c")
-make_fixations(cfr_dots, studydir = dots_datadir, dataset = "c")
+make_expdata(cfr_dots, F, studydir = dots_datadir, dataset = "c")
+make_fixations(cfr_dots, F, studydir = dots_datadir, dataset = "c")
 load(file.path(dots_datadir, "j/cfr_dots.RData"))
-make_expdata(cfr_dots, studydir = dots_datadir, dataset = "j")
-make_fixations(cfr_dots, studydir = dots_datadir, dataset = "j")
+make_expdata(cfr_dots, F, studydir = dots_datadir, dataset = "j")
+make_fixations(cfr_dots, F, studydir = dots_datadir, dataset = "j")
 
 
 ##########################################################################################
@@ -168,11 +183,11 @@ make_fixations(cfr_dots, studydir = dots_datadir, dataset = "j")
 ##########################################################################################
 
 load(file.path(numeric_datadir, "e/cfr_numeric.RData"))
-make_expdata(cfr_numeric, studydir = numeric_datadir, dataset = "e")
-make_fixations(cfr_numeric, studydir = numeric_datadir, dataset = "e")
+make_expdata(cfr_numeric, F, studydir = numeric_datadir, dataset = "e")
+make_fixations(cfr_numeric, F, studydir = numeric_datadir, dataset = "e")
 load(file.path(numeric_datadir, "c/cfr_numeric.RData"))
-make_expdata(cfr_numeric, studydir = numeric_datadir, dataset = "c")
-make_fixations(cfr_numeric, studydir = numeric_datadir, dataset = "c")
+make_expdata(cfr_numeric, F, studydir = numeric_datadir, dataset = "c")
+make_fixations(cfr_numeric, F, studydir = numeric_datadir, dataset = "c")
 load(file.path(numeric_datadir, "j/cfr_numeric.RData"))
-make_expdata(cfr_numeric, studydir = numeric_datadir, dataset = "j")
-make_fixations(cfr_numeric, studydir = numeric_datadir, dataset = "j")
+make_expdata(cfr_numeric, F, studydir = numeric_datadir, dataset = "j")
+make_fixations(cfr_numeric, F, studydir = numeric_datadir, dataset = "j")

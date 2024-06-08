@@ -14,12 +14,12 @@ library(latex2exp)
 
 #------------- Things you should edit at the start -------------
 dataset = "e"
-datafolder = "2024.04.06-11.22-bounded-free-refpt/Stage3"
 colors = list(Gain="Green4", Loss="Red3")
+nTrials = "146_trials"
 #---------------------------------------------------------------
 
 codedir = getwd()
-datadir = file.path(paste0("../../outputs/temp/model_fitting/", datafolder))
+datadir = file.path(paste0("../aDDM_fitting/results_", nTrials))
 cfrdir = file.path("../../../data/processed_data/datasets")
 load(file.path(cfrdir, paste0(dataset, "cfr.RData")))
 figdir = file.path("../../outputs/figures")
@@ -27,71 +27,53 @@ optdir = file.path("../plot_options/")
 source(file.path(optdir, "GainLossColorPalette.R"))
 source(file.path(optdir, "MyPlotOptions.R"))
 
-Study1_folder = file.path(datadir, "Study1E")
-Study2_folder = file.path(datadir, "Study2E")
+study1G_folder = file.path(datadir, "study1G/model_comparison/")
+study1L_folder = file.path(datadir, "study1L/model_comparison/")
+study2G_folder = file.path(datadir, "study2G/model_comparison/")
+study2L_folder = file.path(datadir, "study2L/model_comparison/")
 
-Study1_subjects = unique(ecfr$subject[ecfr$studyN==1])
-Study2_subjects = unique(ecfr$subject[ecfr$studyN==2])
+study1_subjects = unique(ecfr$subject[ecfr$studyN==1])
+study2_subjects = unique(ecfr$subject[ecfr$studyN==2])
 
 
 ##############
 # Load and Clean Data
 ##############
 
-getData = function(folder, subjectList) {
-  gain_compare = list()
-  loss_compare = list()
-  gain_posterior = list()
-  loss_posterior = list()
+getData = function(folder, studyN, condition, subjectList) {
   
-  for (i in subjectList) {
-    gain_compare[[i]] = read.csv(file = file.path(folder, paste0("Gain_modelComparison_", i, ".csv")))
-    loss_compare[[i]] = read.csv(file = file.path(folder, paste0("Loss_modelComparison_", i, ".csv")))
-    gain_posterior[[i]] = read.csv(file = file.path(folder, paste0("Gain_modelPosteriors_", i, ".csv")))
-    loss_posterior[[i]] = read.csv(file = file.path(folder, paste0("Loss_modelPosteriors_", i, ".csv")))
-    gain_compare[[i]]$subject = i
-    loss_compare[[i]]$subject = i
-    gain_posterior[[i]]$subject = i
-    loss_posterior[[i]]$subject = i
+  subj = c()
+  prob = c()
+  posteriors_df = data.frame()
+  
+  for (i in 1:length(subjectList)) {
+    s = subjectList[i]
+    posteriors = read.csv(file = file.path(folder, paste0("combdf_", s, ".csv")))
+    posteriors$studyN = studyN
+    posteriors$subject = s
+    posteriors$condition = condition
+    posteriors_df = rbind(posteriors_df, posteriors)
   }
-  gc = do.call("rbind", gain_compare)
-  lc = do.call("rbind", loss_compare)
-  gp = do.call("rbind", gain_posterior)
-  lp = do.call("rbind", loss_posterior)
   
-  gc$condition = "Gain"
-  lc$condition = "Loss"
-  gp$condition = "Gain"
-  lp$condition = "Loss"
-  compare = rbind(gc, lc)
-  posteriors = rbind(gp, lp)
-  
-  compare$likelihood_fn = factor(
-    compare$likelihood_fn,
-    levels=c("aDDM_likelihood","AddDDM_likelihood","RaDDM_likelihood"),
-    labels=c("aDDM","AddDDM","RaDDM")
+  posteriors_df$likelihood_fn = factor(
+    posteriors_df$likelihood_fn,
+    levels=c("AddDDM_likelihood","RaDDM_likelihood","MaxMin_likelihood", "StatusQuo_likelihood"),
+    labels=c("AddDDM","RaDDM","MMaDDM", "SQaDDM")
   )
-  posteriors$likelihood_fn = factor(
-    posteriors$likelihood_fn,
-    levels=c("aDDM_likelihood","AddDDM_likelihood","RaDDM_likelihood"),
-    labels=c("aDDM","AddDDM","RaDDM")
-  )
+
+  posteriors_df$study = factor(posteriors_df$studyN, levels=c(1,2), labels=c("Study 1","Study 2"))
   
-  return(list(compare = compare, posteriors = posteriors))
+  return(posteriors_df)
 }
 
-Study1 = getData(Study1_folder, Study1_subjects)
-Study2 = getData(Study2_folder, Study2_subjects)
-
-# Study N
-Study1$compare$study = 1
-Study2$compare$study = 2
+study1G = getData(study1G_folder, 1, "Gain", study1_subjects)
+study1L = getData(study1L_folder, 1, "Loss", study1_subjects)
+study2G = getData(study2G_folder, 2, "Gain", study2_subjects)
+study2L = getData(study2L_folder, 2, "Loss", study2_subjects)
 
 # Combine
-pdata = rbind(Study1$compare, Study2$compare)
+pdata = do.call(rbind, list(study1G, study1L, study2G, study2L))
 
-# Factor
-pdata$study = factor(pdata$study, levels=c(1,2), labels=c("Study 1","Study 2"))
 
 ##############
 # Plot
@@ -100,8 +82,8 @@ pdata$study = factor(pdata$study, levels=c(1,2), labels=c("Study 1","Study 2"))
 plt = ggplot(pdata, aes(x=likelihood_fn, y=posterior_sum)) +
   myPlot + 
   
-  geom_hline(yintercept=.33, color="lightgrey") +
-  geom_line(aes(group=subject), color="grey", alpha=.2) +
+  geom_hline(yintercept=.25, color="lightgrey") +
+  geom_line(aes(group=subject), color="grey", alpha=.4) +
   geom_boxplot(aes(fill=condition), width=.4) +
   geom_dotplot(binaxis="y", stackdir="center", dotsize=1, fill="white") +
   
@@ -110,14 +92,14 @@ plt = ggplot(pdata, aes(x=likelihood_fn, y=posterior_sum)) +
     x = "Model",
     fill = "Condition"
   ) +
-  scale_y_continuous(breaks=c(0, .33, 1)) +
+  scale_y_continuous(breaks=c(0, .25, 1)) +
   facet_grid(rows=vars(condition), cols=vars(study)) +
   theme(
     strip.text.x = element_text(size = 20),
     strip.background = element_blank(),
     strip.text.y = element_blank(),
     panel.spacing = unit(1, "lines"),
-    legend.position = c(.165,.88)
+    legend.position = c(.375,.88)
   )
 plot(plt)
-ggsave(file.path(figdir, "aDDM_modelComparison.pdf"), plot=plt, width = 12, height = 5)
+ggsave(file.path(figdir, "aDDM_modelComparison.pdf"), plot=plt, width = 15.4, height = 5)
