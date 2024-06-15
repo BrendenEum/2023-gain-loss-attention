@@ -67,7 +67,7 @@ for (dataset in c("ecfr.RData", "ccfr.RData", "jcfr.RData")) {
   
   # Fixation Duration by Type
   source(file.path(codedir, "FixationProcess_DurationType.R"))
-  plt.fixtype = fixprop.fixtype.plt(cfr, ylim=c(.3,.8)) + 
+  plt.fixtype = fixprop.fixtype.plt(cfr, ylim=c(.3,.91)) + 
     theme(plot.background = element_rect(fill = color_back, color = color_back))
   ggsave(
     file.path(figdir, paste0("FixationProcess_DurationType", ext)), 

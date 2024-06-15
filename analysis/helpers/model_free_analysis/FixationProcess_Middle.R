@@ -16,7 +16,7 @@ fixprop.mid.plt <- function(data, xlim) {
 
   plt <- ggplot(data=pdata, aes(x=ndifficulty, y=y, color=condition)) +
     myPlot +
-    geom_hline(yintercept=0.5, color="grey", alpha=0.75) +
+    geom_hline(yintercept=.7, color="grey", alpha=0.75) +
     geom_linerange(
       aes(ymin=y-se, ymax=y+se, group=studyN), 
       linewidth=errsize, 
@@ -25,7 +25,7 @@ fixprop.mid.plt <- function(data, xlim) {
     ) +
     geom_line(aes(linetype=studyN), linewidth=linesize) +
     xlim(c(xlim[1],xlim[2])) +
-    ylim(c(.3,.8)) +
+    ylim(c(.4,1)) +
     labs(y="Middle Fix. Duration (s)", x="Norm. Best - Worst E[V]", color="Condition")
 
 

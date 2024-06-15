@@ -45,7 +45,7 @@ fixprop.fixtype.plt <- function(data, ylim) {
     myPlot +
     geom_hline(yintercept=mean(ylim), color="grey", alpha=0.75) +
     geom_pointrange(aes(ymin=y-se, ymax=y+se), fatten=8, linewidth=.75, position=position_dodge(.9)) +
-    ylim(ylim) +
+    coord_cartesian(ylim=ylim, expand=F) +
     labs(y="Fixation Duration (s)", x="Fixation Type", shape="Study") +
     guides(
       color="none"

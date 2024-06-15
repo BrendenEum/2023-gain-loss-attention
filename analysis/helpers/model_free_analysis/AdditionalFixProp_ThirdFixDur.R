@@ -16,7 +16,7 @@ addfixprop.third.plt <- function(data, xlim) {
 
   plt <- ggplot(data=pdata, aes(x=ndifficulty, y=y, color=condition)) +
     myPlot +
-    geom_hline(yintercept=0.5, color="grey", alpha=0.75) +
+    geom_hline(yintercept=0.6, color="grey", alpha=0.75) +
     geom_linerange(
       aes(ymin=y-se, ymax=y+se, group=studyN), 
       linewidth=errsize, 
@@ -24,7 +24,7 @@ addfixprop.third.plt <- function(data, xlim) {
       show.legend=F
     ) +
     geom_line(aes(linetype=studyN), linewidth=linesize) +
-    coord_cartesian(xlim=c(xlim[1],xlim[2]), ylim=c(.3, .7), expand=F) +
+    coord_cartesian(xlim=c(xlim[1],xlim[2]), ylim=c(.3, .9), expand=F) +
     labs(y="Third Fix. Duration (s)", x="Norm. Best - Worst E[V]", color="Condition", linetype="Study")
 
 

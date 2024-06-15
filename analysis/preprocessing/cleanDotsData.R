@@ -49,7 +49,7 @@ read_choices_and_fixations_data <- function(data_directory, list_of_subjects) {
   fixations_gain <- data.frame()
   fixations_loss <- data.frame()
   
-  for (raw_sub in raw_subs[1:length(list_of_subjects)]) {
+  for (raw_sub in list_of_subjects) {
     choices_gain = rbind(
       choices_gain, 
       read.csv(file.path(data_directory,raw_sub,paste0("choice_",raw_sub,"_win.csv")))
