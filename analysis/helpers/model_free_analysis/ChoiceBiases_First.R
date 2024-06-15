@@ -56,12 +56,12 @@ bias.firstfix.plt <- function(data, xlim) {
     geom_vline(xintercept=0, color="grey", alpha=0.75) +
     geom_linerange(
       aes(ymin=y-se, ymax=y+se, group=studyN), 
-      size=errsize, 
+      linewidth=errsize, 
       position=position_jitter(width=.01, seed=4), 
       show.legend=F
     ) +
-    geom_line(aes(linetype=studyN), size=linesize) +
-    coord_cartesian(xlim=c(xlim[1],xlim[2]), ylim=c(0,1)) +
+    geom_line(aes(linetype=studyN), linewidth=linesize) +
+    coord_cartesian(xlim=c(xlim[1],xlim[2]), ylim=c(0,1), expand=F) +
     labs(y="Pr(Choose First Fix. Option)", x="Norm. First - Other E[V]", color="Condition", linetype="Study")
 
   return(plt)

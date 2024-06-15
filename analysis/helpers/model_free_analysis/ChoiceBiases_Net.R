@@ -28,13 +28,13 @@ bias.netfix.plt <- function(data, xlim) {
     geom_vline(xintercept=0, color="grey", alpha=0.75) +
     geom_linerange(
       aes(ymin=y-se, ymax=y+se, group=studyN), 
-      size=errsize, 
+      linewidth=errsize, 
       position=position_jitter(width=.01, seed=4), 
       show.legend=F
     ) +
-    geom_line(aes(linetype=studyN), size=linesize) +
+    geom_line(aes(linetype=studyN), linewidth=linesize) +
     labs(y="Corr. Pr(Choose Left)", x="Net Fixation (L-R, s)", color="Condition", linetype="Study") +
-    coord_cartesian(xlim=c(xlim[1],xlim[2])) +
+    coord_cartesian(xlim=c(xlim[1],xlim[2]), ylim=c(-.4,.4), expand=F) +
     theme(
       legend.position = c(0.25,0.74)
     )

@@ -70,38 +70,6 @@ analysis/helpers/fix_cross_analysis/fix_cross_analysis_figures.R
 
 # aDDM
 
-## Check reference-dependence models
-
-Which reference point rules best fit each subject? Fit prospect theory first, then prospect theory estimates with subject-specific reference point rule to generate E[V] signals to feed into aDDM.
-
-Input:
-- /data/processed_data/{dataset}cfr.RData
-
-Output:
-- /analysis/outputs/figures/ProspectTheory_*.pdf
-- /analysis/outputs/temp/ref_dept/*.RData
-
-```
-analysis/reference-dependence/FitAndPlotRefDeptModels.R
-analysis/reference-dependence/CheckNLLs.R
-analysis/reference-dependence/CheckRDValues.R
-```
-
-## Convert data
-
-Fit the various versions of aDDM to the data. Converting cfr to aDDM data takes a little bit of time since I couldn't think of a clever way to do it, so I use a roundabout way with a bunch of for loops. Sue me.
-
-Input:
-- /data/processed_data/{dataset}cfr.RData
-
-Output:
-- data/processed_data/{study}/{dataset}/expdata*.csv
-- data/processed_data/{study}/{dataset}/fixations*.csv
-
-```
-analysis/helpers/aDDM/cfr_to_addmdata.R
-```
-
 ## What versions of the aDDM can predict the choice biases that we observe?
 
 Input:
@@ -142,6 +110,37 @@ analysis/helpers/parameter_recovery/model_recovery_analysis.R
 analysis/helpers/parameter_recovery/parameter_recovery_analysis.R
 ```
 
+## Check reference-dependence models
+
+Which reference point rules best fit each subject? Fit prospect theory first, then prospect theory estimates with subject-specific reference point rule to generate E[V] signals to feed into aDDM.
+
+Input:
+- /data/processed_data/{dataset}cfr.RData
+
+Output:
+- /analysis/outputs/figures/ProspectTheory_*.pdf
+- /analysis/outputs/temp/ref_dept/*.RData
+
+```
+analysis/reference-dependence/FitAndPlotRefDeptModels.R
+analysis/reference-dependence/CheckNLLs.R
+analysis/reference-dependence/CheckRDValues.R
+```
+
+## Convert data
+
+Fit the various versions of aDDM to the data. Converting cfr to aDDM data takes a little bit of time since I couldn't think of a clever way to do it, so I use a roundabout way with a bunch of for loops. Sue me.
+
+Input:
+- /data/processed_data/{dataset}cfr.RData
+
+Output:
+- data/processed_data/{study}/{dataset}/expdata*.csv
+- data/processed_data/{study}/{dataset}/fixations*.csv
+
+```
+analysis/helpers/aDDM/cfr_to_addmdata.R
+```
 
 ## Fit real data
 
@@ -193,6 +192,7 @@ Output:
 analysis/helpers/aDDM_analysis/RaDDM_IndividualEstimates.R
 analysis/helpers/aDDM_analysis/RaDDM_GroupEstimates.R
 analysis/helpers/aDDM_analysis/RaDDM_ParameterCorrelations.R
+analysis/helpers/aDDM_analysis/subjects_using_same_model.R
 ```
 
 ### RaDDM out-of-sample simulations

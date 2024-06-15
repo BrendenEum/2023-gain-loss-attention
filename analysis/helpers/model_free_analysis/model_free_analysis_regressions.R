@@ -22,8 +22,8 @@ iter = 18000 # warmup + posterior samples
 brm <- function(...)
   brms::brm(
     ...,
-    iter = iter,#6000, #samples from the posterior
-    warmup = floor(iter/2),#3000, #part of a healthy workout
+    iter = iter, #samples from the posterior
+    warmup = floor(iter/2), #part of a healthy workout
     chains = 3, 
     cores = 3, 
     backend = 'rstan',
@@ -32,8 +32,7 @@ brm <- function(...)
     file_refit = refit) 
 
 # Loop through each dataset
-dataset = "ecfr.RData"
-for (dataset in c("ecfr.RData")) { #, "ccfr.RData", "jcfr.RData")) {
+for (dataset in c("ccfr.RData", "jcfr.RData")) { # already ran ecfr before. add it if you want to run all datasets.
   
   load(file.path(datadir, dataset))
   if (dataset=="ecfr.RData") {cfr = ecfr; ext="_E.pdf"; dataset="E"}

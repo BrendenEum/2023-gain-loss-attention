@@ -18,7 +18,7 @@ source(file.path(optdir, "MyPlotOptions.R"))
 figw = 10 # make the figures wider than before
 
 # Loop through each dataset
-dataset = "e/cfr_numeric.RData" #"j/cfr_numeric.RData"
+dataset = "j/cfr_numeric.RData" #"j/cfr_numeric.RData"
 
 load(file.path(datadir, dataset))
 cfr = cfr_numeric

@@ -10,7 +10,10 @@ dots_datadir = file.path(datadir, "dots")
 numeric_datadir = file.path(datadir, "numeric")
 
 # Get reference dependent vL and vR
-load(file.path(.tempdir, "ref_dept/ref_dept_values.RData"))
+# -------------------------------------------------------------------------------------------
+# Change to correct dataset ! ! !
+load(file.path(.tempdir, "ref_dept/ref_dept_values_C.RData"))
+# -------------------------------------------------------------------------------------------
 RD_StatusQuo = RDValuesDF[RDValuesDF$Model=="StatusQuo", c("subject", "trial", "condition", "L_RDVal", "R_RDVal")] %>%
   rename(vL_StatusQuo = L_RDVal, vR_StatusQuo = R_RDVal)
 RD_MaxMin = RDValuesDF[RDValuesDF$Model=="MaxMin", c("subject", "trial", "condition", "L_RDVal", "R_RDVal")] %>%
@@ -167,27 +170,39 @@ make_fixations = function(data, training, studydir="error", dataset="error") {
 # Dots
 ##########################################################################################
 
-load(file.path(dots_datadir, "e/cfr_dots.RData"))
-make_expdata(cfr_dots, F, studydir = dots_datadir, dataset = "e")
-make_fixations(cfr_dots, F, studydir = dots_datadir, dataset = "e")
+#load(file.path(dots_datadir, "e/cfr_dots.RData"))
+#make_expdata(cfr_dots, T, studydir = dots_datadir, dataset = "e")
+#make_fixations(cfr_dots, T, studydir = dots_datadir, dataset = "e")
+#make_expdata(cfr_dots, F, studydir = dots_datadir, dataset = "e")
+#make_fixations(cfr_dots, F, studydir = dots_datadir, dataset = "e")
+
 load(file.path(dots_datadir, "c/cfr_dots.RData"))
+make_expdata(cfr_dots, T, studydir = dots_datadir, dataset = "c")
+make_fixations(cfr_dots, T, studydir = dots_datadir, dataset = "c")
 make_expdata(cfr_dots, F, studydir = dots_datadir, dataset = "c")
 make_fixations(cfr_dots, F, studydir = dots_datadir, dataset = "c")
-load(file.path(dots_datadir, "j/cfr_dots.RData"))
-make_expdata(cfr_dots, F, studydir = dots_datadir, dataset = "j")
-make_fixations(cfr_dots, F, studydir = dots_datadir, dataset = "j")
+
+#load(file.path(dots_datadir, "j/cfr_dots.RData"))
+#make_expdata(cfr_dots, F, studydir = dots_datadir, dataset = "j")
+#make_fixations(cfr_dots, F, studydir = dots_datadir, dataset = "j")
 
 
 ##########################################################################################
 # Numeric
 ##########################################################################################
 
-load(file.path(numeric_datadir, "e/cfr_numeric.RData"))
-make_expdata(cfr_numeric, F, studydir = numeric_datadir, dataset = "e")
-make_fixations(cfr_numeric, F, studydir = numeric_datadir, dataset = "e")
+  #load(file.path(numeric_datadir, "e/cfr_numeric.RData"))
+#make_expdata(cfr_numeric, T, studydir = numeric_datadir, dataset = "e")
+#make_fixations(cfr_numeric, T, studydir = numeric_datadir, dataset = "e")
+#make_expdata(cfr_numeric, F, studydir = numeric_datadir, dataset = "e")
+#make_fixations(cfr_numeric, F, studydir = numeric_datadir, dataset = "e")
+
 load(file.path(numeric_datadir, "c/cfr_numeric.RData"))
+make_expdata(cfr_numeric, T, studydir = numeric_datadir, dataset = "c")
+make_fixations(cfr_numeric, T, studydir = numeric_datadir, dataset = "c")
 make_expdata(cfr_numeric, F, studydir = numeric_datadir, dataset = "c")
 make_fixations(cfr_numeric, F, studydir = numeric_datadir, dataset = "c")
-load(file.path(numeric_datadir, "j/cfr_numeric.RData"))
-make_expdata(cfr_numeric, F, studydir = numeric_datadir, dataset = "j")
-make_fixations(cfr_numeric, F, studydir = numeric_datadir, dataset = "j")
+
+#load(file.path(numeric_datadir, "j/cfr_numeric.RData"))
+#make_expdata(cfr_numeric, F, studydir = numeric_datadir, dataset = "j")
+#make_fixations(cfr_numeric, F, studydir = numeric_datadir, dataset = "j")

@@ -24,7 +24,7 @@ fixCross.rt.plt <- function(data, xlim) {
     ) +
     geom_line(size=linesize) +
     xlim(c(xlim[1],xlim[2])) +
-    ylim(c(1,NA)) +
+    ylim(c(1,4)) +
     labs(y="Response Time (s)", x="Norm. Best - Worst E[V]") +
     theme_bw() +
     theme(

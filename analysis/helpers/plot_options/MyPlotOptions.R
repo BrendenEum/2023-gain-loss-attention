@@ -31,6 +31,7 @@ myPlot = list(
 )
 
 linewidth = 1.5
+linesize = linewidth
 markersize = .01
 errsize = 1.5
 linealpha = 0.9

@@ -12,7 +12,11 @@ source("../plot_options/SE.R")
 .figdir = file.path("../../outputs/figures")
 .tempdir = file.path("../../outputs/temp/ref_dept")
 
-load("../../../data/processed_data/datasets/ecfr.RData")
+# -------------------------------------------------------------------------------------------
+# Change to correct dataset ! ! !
+load("../../../data/processed_data/datasets/ccfr.RData")
+raw_cfr = ccfr
+# -------------------------------------------------------------------------------------------
 
 results = list()
 
@@ -21,7 +25,7 @@ results = list()
 # Status Quo
 ####################################
 RDRule = "StatusQuo"
-cfr = ecfr %>%
+cfr = raw_cfr %>%
   mutate(
     LRef = 0,
     RRef = 0
@@ -37,7 +41,7 @@ RDValuesDF = RDValues
 # MaxMin
 ####################################
 RDRule = "MaxMin"
-cfr = ecfr %>% # in losses
+cfr = raw_cfr %>% # in losses
   mutate(
     LRef = pmax(LAmt, RAmt),
     RRef = pmax(LAmt, RAmt)
@@ -53,8 +57,11 @@ RDValuesDF = rbind(RDValuesDF, RDValues)
 ####################################
 # Save
 ####################################
-save(results, file=file.path(.tempdir, "ref_dept_results.RData"))
-save(RDValuesDF, file=file.path(.tempdir, "ref_dept_values.RData"))
+# -------------------------------------------------------------------------------------------
+# Change to correct dataset ! ! !
+save(results, file=file.path(.tempdir, "ref_dept_results_C.RData"))
+save(RDValuesDF, file=file.path(.tempdir, "ref_dept_values_C.RData"))
+# -------------------------------------------------------------------------------------------
 
 
 # ####################################

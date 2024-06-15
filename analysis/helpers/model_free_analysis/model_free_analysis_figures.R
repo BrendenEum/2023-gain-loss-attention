@@ -17,8 +17,7 @@ source(file.path(optdir, "GainLossColorPalette.R"))
 source(file.path(optdir, "MyPlotOptions.R"))
 
 # Loop through each dataset
-dataset="ecfr.RData"
-for (dataset in c("ecfr.RData")) { #, "ccfr.RData", "jcfr.RData")) {
+for (dataset in c("ecfr.RData", "ccfr.RData", "jcfr.RData")) {
   
   load(file.path(datadir, dataset))
   if (dataset=="ecfr.RData") {cfr = ecfr; ext="_E.pdf"; color_back = color_e}

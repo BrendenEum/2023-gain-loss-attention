@@ -23,8 +23,9 @@ psycho.numfixfirstfix.plt <- function(data) {
   plt <- ggplot(data=data[data$firstFix==T,], aes(x=maxFixNum, fill=condition)) +
     myPlot +
     geom_histogram(binwidth=1, color="black", show.legend=F) +
-    scale_y_continuous(breaks=c(0,300,600)) +
-    scale_x_continuous(breaks=c(1, 3, 5, 7, 9, 11)) +
+    coord_cartesian(ylim=c(0,1600), expand=F) +
+    scale_y_continuous(breaks=c(0,700,1400)) +
+    scale_x_continuous(breaks=c(1, 3, 5, 7, 9, 11, 13)) +
     labs(y="Count", x="Number of Fixations") +
     facet_grid(rows=vars(condition), cols=vars(location))
 

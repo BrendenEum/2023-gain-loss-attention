@@ -21,11 +21,11 @@ psycho.choice.plt <- function(data, xlim=c(-1,1)) {
     geom_vline(xintercept=0, color="grey", alpha=0.75) +
     geom_linerange(
       aes(ymin=y-se, ymax=y+se, group=studyN), 
-      size=errsize, 
+      linewidth=errsize, 
       position=position_jitter(width=.01, seed=4), 
       show.legend=F
     ) +
-    geom_line(aes(linetype=studyN), size=linesize) +
+    geom_line(aes(linetype=studyN), linewidth=linesize) +
     xlim(c(xlim[1],xlim[2])) +
     ylim(c(0,1)) +
     labs(y="Pr(Choose Left)", x="Norm. Left - Right E[V]", color="Condition", linetype="Study") +

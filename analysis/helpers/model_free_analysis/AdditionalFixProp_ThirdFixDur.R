@@ -19,13 +19,12 @@ addfixprop.third.plt <- function(data, xlim) {
     geom_hline(yintercept=0.5, color="grey", alpha=0.75) +
     geom_linerange(
       aes(ymin=y-se, ymax=y+se, group=studyN), 
-      size=errsize, 
+      linewidth=errsize, 
       position=position_jitter(width=.01, seed=4), 
       show.legend=F
     ) +
-    geom_line(aes(linetype=studyN), size=linesize) +
-    xlim(c(xlim[1],xlim[2])) +
-    ylim(c(.3,.8)) +
+    geom_line(aes(linetype=studyN), linewidth=linesize) +
+    coord_cartesian(xlim=c(xlim[1],xlim[2]), ylim=c(.3, .7), expand=F) +
     labs(y="Third Fix. Duration (s)", x="Norm. Best - Worst E[V]", color="Condition", linetype="Study")
 
 
