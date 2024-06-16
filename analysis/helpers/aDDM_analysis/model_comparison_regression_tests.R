@@ -29,9 +29,9 @@ brm <- function(...)
 
 # Data
 # -------------------------------------------------------------------------------------------
-ds = "_C"
-load(file.path(.datadir, "ccfr.RData"))
-cfr = ccfr
+ds = "_J"
+load(file.path(.datadir, "jcfr.RData"))
+cfr = jcfr
 # -------------------------------------------------------------------------------------------
 cfr = cfr[cfr$firstFix==T,]
 cfr$oV = cfr$vL + cfr$vR
@@ -69,6 +69,10 @@ study1L_rt_oV = brm(
   file = file.path(.tempdir, paste0("study1L_rt_oV", ds))
 )
 summary(study1L_rt_oV)
+formatted_estimates <- sprintf("%.6f", study1L_rt_oV$fixed[, "Estimate"])
+formatted_errors <- sprintf("%.6f", study1L_rt_oV$fixed[, "Est.Error"])
+formatted_output <- data.frame(Estimate = formatted_estimates, Est.Error = formatted_errors)
+print(formatted_output)
 
 
 ##########

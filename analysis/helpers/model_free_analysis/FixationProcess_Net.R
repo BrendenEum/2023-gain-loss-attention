@@ -25,7 +25,7 @@ fixprop.net.plt <- function(data, xlim) {
       show.legend=F
     ) +
     geom_line(aes(linetype=studyN), linewidth=linesize) +
-    coord_cartesian(xlim = c(xlim[1],xlim[2]), ylim = c(-.6,.6), expand=F) +
+    coord_cartesian(xlim = c(xlim[1],xlim[2]), ylim = c(-.61,.61), expand=F) +
     labs(y="Net Fix. Duration (L-R, s)", x="Norm. Left - Right E[V]")
 
 
