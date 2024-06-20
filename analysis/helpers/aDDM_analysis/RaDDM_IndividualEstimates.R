@@ -15,20 +15,23 @@ library(readr)
 library(latex2exp)
 
 #------------- Things you should edit at the start -------------
-.dataset = "e"
-.colors = list(Gain="Green4", Loss="Red3")
+.dataset = "j"
 .nTrials = "146_trials"
+.fn = "RaDDM_IndividualEstimates_J.pdf"
+.fn_csv = "RaDDM_IndividualEstimates_J.csv"
+
+.cfrdir = file.path("../../../data/processed_data/datasets")
+load(file.path(.cfrdir, paste0(.dataset, "cfr.RData")))
+cfr = jcfr
 #---------------------------------------------------------------
 
 .codedir = getwd()
 .datadir = file.path(paste0("../aDDM_fitting/results_", .nTrials))
-.cfrdir = file.path("../../../data/processed_data/datasets")
-load(file.path(.cfrdir, paste0(.dataset, "cfr.RData")))
-cfr = ecfr
 .figdir = file.path("../../outputs/figures")
 .optdir = file.path("../plot_options/")
 source(file.path(.optdir, "GainLossColorPalette.R"))
 source(file.path(.optdir, "MyPlotOptions.R"))
+.colors = list(Gain="Green4", Loss="Red3")
 
 .study1G_folder = file.path(.datadir, "study1G")
 .study2G_folder = file.path(.datadir, "study2G")
@@ -107,7 +110,7 @@ if (sum(.duplicate_rows) != 0) {
 .duplicate_rows = duplicated(data[,c("study","subject","condition")])
 data = data[!.duplicate_rows,]
 save_est = data[,c("study", "subject", "condition", "d", "sigma", "theta", "ref")] %>% na.omit()
-write.csv(save_est, file="RaDDM_IndividualEstimates.csv")
+write.csv(save_est, file=.fn_csv)
 
 # Long to wide format (1 obs should have gain and loss estiamtes)
 pdata_raw = pivot_wider(
@@ -131,7 +134,6 @@ dot_alpha = .6
 ggplot <- function(...) ggplot2::ggplot(...) + 
   theme_bw() +
   scale_color_manual(values = c("1" = 'dodgerblue3', "2" = 'deeppink4')) +
-  scale_size_continuous(breaks = c(2, 4, 6), labels = c("1-2", "3-4", "5+")) +
   theme(
     legend.position = "none",
     legend.background=element_blank(),
@@ -148,7 +150,7 @@ ggplot <- function(...) ggplot2::ggplot(...) +
     legend.text = element_text(size = 9),
     strip.text = element_blank()
   ) +
-  guides(color=guide_legend(override.aes=list(fill=NA)))
+  scale_size_continuous(limits=c(1,24))
 
 
 ##############################################################################
@@ -164,7 +166,7 @@ plt1.compare.d.e <- ggplot(data=pdata) +
   coord_cartesian(xlim = c(0, .012), ylim = c(-.001, .012), expand=T) +
   scale_y_continuous(breaks = c(0, .006, .012), labels=c("0", ".006", ".012")) +
   scale_x_continuous(breaks = c(0, .006, .012), labels=c("0", ".006", ".012")) +
-  facet_grid(rows = vars(study))
+  facet_grid(rows = vars(study)) 
 
 plt1.compare.s.e <- ggplot(data=pdata) +
   geom_abline(intercept=0, slope=1, color=exact) +
@@ -178,7 +180,7 @@ plt1.compare.s.e <- ggplot(data=pdata) +
 plt1.compare.t.e <- ggplot(data=pdata) +
   geom_abline(intercept=0, slope=1, color=exact) +
   geom_count(aes(x=theta_Gain, y=theta_Loss, color = study), alpha=dot_alpha) +
-  labs(x = TeX(r"(Gain $\theta$)"), y = TeX(r"(Loss $\theta$)"), color = "Study", size = "Number of Subjects") +
+  labs(x = TeX(r"(Gain $\theta$)"), y = TeX(r"(Loss $\theta$)"), size = "Number of Subjects") +
   coord_cartesian(xlim=c(0, 1.05), ylim=c(0, 1.05), expand=T) +
   scale_y_continuous(breaks = c(0, .5, 1), labels=c("0", ".5", "1")) +
   scale_x_continuous(breaks = c(0, .5, 1), labels=c("0", ".5", "1")) +
@@ -188,7 +190,8 @@ plt1.compare.t.e <- ggplot(data=pdata) +
     legend.justification = c(0,1)
     #legend.background = element_rect(fill = "white", color = NA)
   ) +
-  facet_grid(rows = vars(study))
+  facet_grid(rows = vars(study)) +
+  guides(color="none") 
 
 minValue_Gain = 0
 pdata$minValue_Loss = ifelse(pdata$study==1, -5.5, -12)
@@ -221,4 +224,4 @@ plt.compare.param.e <- grid.arrange(
 
 plot(plt.compare.param.e)
 
-ggsave(file.path(.figdir, "RaDDM_IndividualEstimates.pdf"), plt.compare.param.e, height=4.25, width=11.5, units="in")
+ggsave(file.path(.figdir, .fn), plt.compare.param.e, height=4.25, width=11.5, units="in")

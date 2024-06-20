@@ -12,9 +12,9 @@ library(gridtext)
 library(glue)
 
 #------------- Things you should edit at the start -------------
-.dataset = "e"
+.dataset = "j"
 .colors = list(Gain="Green4", Loss="Red3")
-.simdir = file.path("../../outputs/temp/out_of_sample_simulations/2024.06.05.18.45/RaDDM")
+.simdir = file.path("../../outputs/temp/out_of_sample_simulations/2024.06.20.15.28/RaDDM")
 .nSims = 10
 #---------------------------------------------------------------
 
@@ -32,7 +32,7 @@ source(file.path(.optdir, "MyPlotOptions.R"))
 ## Real Data
 
 load(file.path(.cfrdir, paste0(.dataset, "cfr.RData")))
-.cfr = ecfr
+.cfr = jcfr
 cfr_out = .cfr[.cfr$trial%%10==0,]
 cfr_out$simulated = 0
 study1_subjects = unique(.cfr$subject[.cfr$studyN==1])
@@ -125,6 +125,38 @@ pdata_raw = bind_rows(cfr_out, simData)
 pdata_raw$simulated = factor(pdata_raw$simulated, levels=c(0,1), labels=c("Observed","Simulated"))
 pdata_raw$studyN = factor(pdata_raw$studyN, levels=c(1,2), labels=c("Study 1","Study 2"))
 pdata_raw$condition = factor(pdata_raw$condition, levels=c("Gain","Loss"), labels=c("Gain","Loss")) #reorder
+
+
+soi = c(1, 2, 3, 4, 201, 202, 204, 205)
+pdata_raw = pdata_raw[pdata_raw$subject %in% soi, ]
+
+
+##############################################################################
+# Figuring out why attentional discounting has such a small effect in gains.
+# d/sig is the same in both conditions, so why does theta have so little impact on gains in sim. behav?
+# It's because the distribution of values look very different in both conditions.
+##############################################################################
+
+pd = data.frame(
+  value = c(simData$vL, simData$vR),
+  side = c(rep("Left", nrow(simData)), rep("Right", nrow(simData))),
+  subject = c(simData$subject, simData$subject),
+  condition = c(simData$condition, simData$condition),
+  studyN = c(simData$studyN, simData$studyN)
+) %>%
+  group_by(studyN, subject, condition) %>%
+  mutate(RNvalue = value / max(abs(value)))
+
+ggplot(data = pd) +
+  
+  geom_histogram(aes(x = value, fill = condition), binwidth = 1, position = "identity", alpha = .5) +
+  
+  scale_fill_manual(values = c("Loss" = "red3", "Gain" = "green4")) +
+  facet_grid(rows = vars(side), cols = vars(studyN)) +
+  theme_bw()
+
+
+
 
 ##############################################################################
 # Psychometric Curve
@@ -227,11 +259,11 @@ pdata_raw$net_fix <- cut(pdata_raw$net_fix, breaks=breaks, labels=labels) %>%
   as.character() %>%
   as.numeric()
 
-pdata = pdata_raw[pdata_raw$firstFix == T,] %>%
+pdata = pdata_raw[pdata_raw$lastFix == T,] %>%
   group_by(simulated, studyN, subject, condition, net_fix) %>%
   summarize(
-    meanChoice = mean(nchoice.corr, na.rm=T)
-  ) %>% ungroup() %>%
+    meanChoice = mean(nchoice.corr)
+  ) %>% ungroup() %>% na.omit() %>%
   group_by(simulated, studyN, condition, net_fix) %>%
   summarize(
     y = mean(meanChoice),
@@ -285,7 +317,7 @@ pdata = pdata_raw[pdata_raw$lastFix == T,] %>%
   ) %>%
   group_by(simulated, studyN, subject, condition, nlastOtherVDiff) %>%
   summarize(
-    meanChoice = mean(lastSeenChosen, na.rm=T)
+    meanChoice = mean(lastSeenChosen)
   ) %>% ungroup() %>%
   group_by(simulated, studyN, condition, nlastOtherVDiff) %>%
   summarize(

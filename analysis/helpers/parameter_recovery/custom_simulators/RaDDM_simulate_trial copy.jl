@@ -43,8 +43,6 @@ function RaDDM_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationData
                         timeBins=nothing, cutOff::Number=100000)
     
     fixUnfixValueDiffs = Dict(1 => valueLeft - valueRight, 2 => valueRight - valueLeft)
-    vL = (LProb * (LAmt - model.ref)) + ((1 - LProb) * (0 - model.ref))
-    vR = (RProb * (RAmt - model.ref)) + ((1 - RProb) * (0 - model.ref))
     
     fixItem = Number[]
     fixTime = Number[]
@@ -81,7 +79,7 @@ function RaDDM_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationData
             trialTime += t * timeStep
             RT = trialTime
             uninterruptedLastFixTime = latency
-            trial = ADDM.Trial(choice = choice, RT = RT, valueLeft = vL, valueRight = vR)
+            trial = ADDM.Trial(choice = choice, RT = RT, valueLeft = valueLeft, valueRight = valueRight)
             trial.fixItem = fixItem 
             trial.fixTime = fixTime 
             trial.fixRDV = fixRDV
@@ -236,7 +234,7 @@ function RaDDM_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationData
 
     end
 
-    trial = ADDM.Trial(choice = choice, RT = RT, valueLeft = vL, valueRight = vR)
+    trial = ADDM.Trial(choice = choice, RT = RT, valueLeft = valueLeft, valueRight = valueRight)
     trial.fixItem = fixItem 
     trial.fixTime = fixTime 
     trial.fixRDV = fixRDV

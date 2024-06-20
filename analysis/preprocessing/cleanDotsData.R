@@ -257,34 +257,35 @@ make.cfr <- function(choices, fixations) {
 }
 
 
-#####################
-# Exploratory
-#####################
-
-choices_and_fixations = read_choices_and_fixations_data(rawdatadir, exploratory_subs)
-choices = clean.choices(choices_and_fixations$choices)
-fixations = clean.fixations(choices_and_fixations$fixations)
-cfr_dots = make.cfr(choices, fixations)
-cfr_even = cfr_dots[cfr_dots$trial%%2==0,]
-cfr_odd = cfr_dots[cfr_dots$trial%%2!=0,]
-save(cfr_dots, file = file.path(edatadir, "cfr_dots.RData"))
-#save(cfr_even, file = file.path(edatadir, "cfr_even.RData"))
-#save(cfr_odd, file = file.path(edatadir, "cfr_odd.RData"))
-
-
-#####################
-# Confirmatory
-#####################
-
-choices_and_fixations = read_choices_and_fixations_data(rawdatadir, confirmatory_subs)
-choices = clean.choices(choices_and_fixations$choices)
-fixations = clean.fixations(choices_and_fixations$fixations)
-cfr_dots = make.cfr(choices, fixations)
-cfr_even = cfr_dots[cfr_dots$trial%%2==0,]
-cfr_odd = cfr_dots[cfr_dots$trial%%2!=0,]
-save(cfr_dots, file = file.path(cdatadir, "cfr_dots.RData"))
-#save(cfr_even, file = file.path(cdatadir, "cfr_even.RData"))
-#save(cfr_odd, file = file.path(cdatadir, "cfr_odd.RData"))
+# #####################
+# # Exploratory
+# #####################
+# 
+# choices_and_fixations = read_choices_and_fixations_data(rawdatadir, exploratory_subs)
+# choices = clean.choices(choices_and_fixations$choices)
+# fixations = clean.fixations(choices_and_fixations$fixations)
+# cfr_dots = make.cfr(choices, fixations)
+# cfr_even = cfr_dots[cfr_dots$trial%%2==0,]
+# cfr_odd = cfr_dots[cfr_dots$trial%%2!=0,]
+# save(cfr_dots, file = file.path(edatadir, "cfr_dots.RData"))
+# #save(cfr_even, file = file.path(edatadir, "cfr_even.RData"))
+# #save(cfr_odd, file = file.path(edatadir, "cfr_odd.RData"))
+# 
+# 
+# #####################
+# # Confirmatory
+# #####################
+# 
+# choices_and_fixations = read_choices_and_fixations_data(rawdatadir, confirmatory_subs)
+# choices = clean.choices(choices_and_fixations$choices)
+# fixations = clean.fixations(choices_and_fixations$fixations)
+# cfr_dots = make.cfr(choices, fixations)
+# cfr_dots$subject = cfr_dots$subject + 36
+# cfr_even = cfr_dots[cfr_dots$trial%%2==0,]
+# cfr_odd = cfr_dots[cfr_dots$trial%%2!=0,]
+# save(cfr_dots, file = file.path(cdatadir, "cfr_dots.RData"))
+# #save(cfr_even, file = file.path(cdatadir, "cfr_even.RData"))
+# #save(cfr_odd, file = file.path(cdatadir, "cfr_odd.RData"))
 
 #####################
 # Joint
@@ -299,3 +300,13 @@ cfr_odd = cfr_dots[cfr_dots$trial%%2!=0,]
 save(cfr_dots, file = file.path(jdatadir, "cfr_dots.RData"))
 #save(cfr_even, file = file.path(jdatadir, "cfr_even.RData"))
 #save(cfr_odd, file = file.path(jdatadir, "cfr_odd.RData"))
+
+
+#####################
+# Exploratory and Confirmatory
+#####################
+cfr_dots_joint = cfr_dots
+cfr_dots = cfr_dots_joint[cfr_dots_joint$subject <= 36,]
+save(cfr_dots, file = file.path(edatadir, "cfr_dots.RData"))
+cfr_dots = cfr_dots_joint[cfr_dots_joint$subject > 36,]
+save(cfr_dots, file = file.path(cdatadir, "cfr_dots.RData"))

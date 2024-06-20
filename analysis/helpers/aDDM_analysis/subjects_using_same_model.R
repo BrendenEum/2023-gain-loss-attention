@@ -14,7 +14,7 @@ library(readr)
 library(latex2exp)
 
 #------------- Things you should edit at the start -------------
-dataset = "e"
+dataset = "j"
 colors = list(Gain="Green4", Loss="Red3")
 nTrials = "146_trials"
 #---------------------------------------------------------------
@@ -23,6 +23,7 @@ codedir = getwd()
 datadir = file.path(paste0("../aDDM_fitting/results_", nTrials))
 cfrdir = file.path("../../../data/processed_data/datasets")
 load(file.path(cfrdir, paste0(dataset, "cfr.RData")))
+cfr = jcfr
 figdir = file.path("../../outputs/figures")
 optdir = file.path("../plot_options/")
 source(file.path(optdir, "GainLossColorPalette.R"))
@@ -33,8 +34,8 @@ study1L_folder = file.path(datadir, "study1L/model_comparison/")
 study2G_folder = file.path(datadir, "study2G/model_comparison/")
 study2L_folder = file.path(datadir, "study2L/model_comparison/")
 
-study1_subjects = unique(ecfr$subject[ecfr$studyN==1])
-study2_subjects = unique(ecfr$subject[ecfr$studyN==2])
+study1_subjects = unique(cfr$subject[cfr$studyN==1])
+study2_subjects = unique(cfr$subject[cfr$studyN==2])
 
 
 ##############
@@ -103,7 +104,7 @@ plt = ggplot(pdata, aes(y = freq, axis1 = likelihood_gain, axis2 = likelihood_lo
   myPlot + 
   
   geom_alluvium(aes(fill=likelihood_gain)) +
-  geom_stratum(width = 1/6, alpha = .8) +
+  geom_stratum(width = 1/6, alpha = .74) +
   geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
   
   scale_x_discrete(limits = c("Gain", "Loss"), expand = c(.05, .05)) +

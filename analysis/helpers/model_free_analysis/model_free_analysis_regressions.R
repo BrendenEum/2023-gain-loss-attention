@@ -8,6 +8,7 @@ set.seed(seed)
 library(tidyverse)
 library(brms)
 library(effsize)
+library(beepr)
 codedir = getwd()
 datadir = file.path("../../../data/processed_data/datasets")
 tempdir = file.path("../../outputs/temp")
@@ -16,7 +17,7 @@ tabdir = file.path("../../outputs/tables")
 
 # Regression Options
 
-refit = "on_change" # Run regressions? {always, on_change, never}
+refit = "always" # Run regressions? {always, on_change, never}
 show.reg.progress = 1 # 1: Show updates. 0: Nah.
 iter = 18000 # warmup + posterior samples
 brm <- function(...)
@@ -87,6 +88,7 @@ for (dataset in c("ccfr.RData", "jcfr.RData")) { # already ran ecfr before. add 
     cfr[cfr$study=="dots",], 
     study="dots",
     dataset=dataset)
+  beep()
   reg.numeric.prfirst = fixprop.prfirst.reg(
     cfr[cfr$study=="numeric",], 
     study="numeric",

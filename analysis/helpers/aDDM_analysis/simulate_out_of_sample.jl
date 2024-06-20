@@ -12,7 +12,7 @@ using DataFrames
 using Random, Distributions, StatsBase
 using Base.Threads
 using Dates
-seed = 1337;
+seed = 4;
 simCount = 10; # how many simulations to run per data generating process?
 
 timeStep = 10.0; # ms
@@ -57,7 +57,7 @@ flush(stdout)
 Random.seed!(seed)
 
 # SIM: Parameters     
-estimates = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/aDDM_analysis/RaDDM_IndividualEstimates.csv", DataFrame)
+estimates = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/aDDM_analysis/RaDDM_IndividualEstimates_J.csv", DataFrame)
 subset_estimates = filter(row ->(row.study == studyN && row.condition == condition), estimates)
 model_list = [];
 for row in eachrow(subset_estimates)
@@ -74,8 +74,8 @@ for row in eachrow(subset_estimates)
     push!(model_list, model);
 end
  # SIM: Data
-expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/expdata"*condition*"_test.csv", DataFrame);
-fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/fixations"*condition*"_test.csv", DataFrame);
+expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/j/expdata"*condition*"_test.csv", DataFrame);
+fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/j/fixations"*condition*"_test.csv", DataFrame);
 
 # DO SIM
 for subject in subset_estimates.subject
@@ -163,8 +163,8 @@ for row in eachrow(subset_estimates)
     push!(model_list, model);
 end
  # SIM: Data
- expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/expdata"*condition*"_test.csv", DataFrame);
- fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/fixations"*condition*"_test.csv", DataFrame);
+ expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/j/expdata"*condition*"_test.csv", DataFrame);
+ fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/j/fixations"*condition*"_test.csv", DataFrame);
 
 # DO SIM
 for subject in subset_estimates.subject
@@ -250,7 +250,7 @@ flush(stdout)
 Random.seed!(seed)
 
 # SIM: Parameters      # ! ! !
-estimates = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/aDDM_analysis/RaDDM_IndividualEstimates.csv", DataFrame)
+estimates = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/aDDM_analysis/RaDDM_IndividualEstimates_J.csv", DataFrame)
 subset_estimates = filter(row ->(row.study == studyN && row.condition == condition), estimates)
 model_list = [];
 subject_list = [];
@@ -268,8 +268,8 @@ for row in eachrow(subset_estimates)
     push!(subject_list, row.subject);
 end
  # SIM: Data
-expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/expdata"*condition*"_test.csv", DataFrame);
-fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/fixations"*condition*"_test.csv", DataFrame);
+expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/j/expdata"*condition*"_test.csv", DataFrame);
+fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/j/fixations"*condition*"_test.csv", DataFrame);
 
 # DO SIM
 for subject in 1:length(subject_list)
@@ -358,8 +358,8 @@ for row in eachrow(subset_estimates)
     push!(subject_list, row.subject);
 end
  # SIM: Data
- expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/expdata"*condition*"_test.csv", DataFrame);
- fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/fixations"*condition*"_test.csv", DataFrame);
+ expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/j/expdata"*condition*"_test.csv", DataFrame);
+ fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/j/fixations"*condition*"_test.csv", DataFrame);
 
 # DO SIM
 for subject in 1:length(subject_list)

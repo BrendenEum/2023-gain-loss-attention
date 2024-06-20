@@ -11,29 +11,35 @@ library(ggpubr)
 library(ggsci)
 library(readr)
 library(latex2exp)
+library(ggnewscale)
+
+
 
 #------------- Things you should edit at the start -------------
-dataset = "e"
-colors = list(Gain="Green4", Loss="Red3")
+dataset = "j"
 nTrials = "146_trials"
+fn = "aDDM_modelComparison_J.pdf"
+
+cfrdir = file.path("../../../data/processed_data/datasets")
+load(file.path(cfrdir, paste0(dataset, "cfr.RData")))
+cfr = jcfr
 #---------------------------------------------------------------
 
 codedir = getwd()
 datadir = file.path(paste0("../aDDM_fitting/results_", nTrials))
-cfrdir = file.path("../../../data/processed_data/datasets")
-load(file.path(cfrdir, paste0(dataset, "cfr.RData")))
 figdir = file.path("../../outputs/figures")
 optdir = file.path("../plot_options/")
 source(file.path(optdir, "GainLossColorPalette.R"))
 source(file.path(optdir, "MyPlotOptions.R"))
+colors = list(Gain="Green4", Loss="Red3")
 
 study1G_folder = file.path(datadir, "study1G/model_comparison/")
 study1L_folder = file.path(datadir, "study1L/model_comparison/")
 study2G_folder = file.path(datadir, "study2G/model_comparison/")
 study2L_folder = file.path(datadir, "study2L/model_comparison/")
 
-study1_subjects = unique(ecfr$subject[ecfr$studyN==1])
-study2_subjects = unique(ecfr$subject[ecfr$studyN==2])
+study1_subjects = unique(cfr$subject[cfr$studyN==1])
+study2_subjects = unique(cfr$subject[cfr$studyN==2])
 
 
 ##############
@@ -73,7 +79,10 @@ study2L = getData(study2L_folder, 2, "Loss", study2_subjects)
 
 # Combine
 pdata = do.call(rbind, list(study1G, study1L, study2G, study2L))
-
+#pdata$dataset = ""
+#pdata$dataset[(pdata$subject<=36) | (pdata$subject>200 & pdata$subject<300)] = "e"
+#pdata$dataset[(pdata$subject>36 & pdata$subject<200) | (pdata$subject>300)] = "c"
+#pdata$dataset = factor(pdata$dataset, levels = c("e","c"), labels = c("Exploratory","Confirmatory"))
 
 ##############
 # Plot
@@ -82,17 +91,17 @@ pdata = do.call(rbind, list(study1G, study1L, study2G, study2L))
 plt = ggplot(pdata, aes(x=likelihood_fn, y=posterior_sum)) +
   myPlot + 
   
-  geom_hline(yintercept=.25, color="lightgrey") +
+  geom_hline(yintercept=.5, color="lightgrey") +
   geom_line(aes(group=subject), color="grey", alpha=.4) +
-  geom_boxplot(aes(fill=condition), width=.4) +
-  geom_dotplot(binaxis="y", stackdir="center", dotsize=1, fill="white") +
+  geom_boxplot(aes(fill=condition), width=.4, show.legend = T) +
+  geom_dotplot(binaxis="y", stackdir="center", dotsize = .85, fill = 'white') +
   
   labs(
     y = "Posterior Model Probability",
     x = "Model",
     fill = "Condition"
   ) +
-  scale_y_continuous(breaks=c(0, .25, 1)) +
+  scale_y_continuous(breaks=c(0, .5, 1)) +
   facet_grid(rows=vars(condition), cols=vars(study)) +
   theme(
     strip.text.x = element_text(size = 20),
@@ -100,6 +109,8 @@ plt = ggplot(pdata, aes(x=likelihood_fn, y=posterior_sum)) +
     strip.text.y = element_blank(),
     panel.spacing = unit(1, "lines"),
     legend.position = c(.375,.88)
-  )
+  ) 
+
 plot(plt)
-ggsave(file.path(figdir, "aDDM_modelComparison.pdf"), plot=plt, width = 15.4, height = 5)
+ggsave(file.path(figdir, fn), plot=plt, width = 16.5, height = 5.5)
+  
