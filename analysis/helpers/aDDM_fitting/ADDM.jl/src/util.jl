@@ -70,8 +70,8 @@ function load_data_from_csv(expdataFileName, fixationsFileName = nothing; stimsO
     end
     
     # Add optional data here (reference-dependent values and amts and probabilities)
-    if (!("vL_StatusQuo" in names(df)) || !("vR_StatusQuo" in names(df)) || !("vL_MaxMin" in names(df)) || !("vR_MaxMin" in names(df)) || !("LAmt" in names(df)) || !("LProb" in names(df)) || !("RAmt" in names(df)) || !("RProb" in names(df)))
-      throw(error("Missing field in experimental data file. Fields required: v*_StatusQuo, v*_MaxMin, *Amt, *Prob."))
+    if (!("vL_StatusQuo" in names(df)) || !("vR_StatusQuo" in names(df)) || !("vL_MaxMin" in names(df)) || !("vR_MaxMin" in names(df)) || !("LAmt" in names(df)) || !("LProb" in names(df)) || !("RAmt" in names(df)) || !("RProb" in names(df)) || !("minOutcome" in names(df)) || !("maxOutcome" in names(df))) 
+      throw(error("Missing field in experimental data file. Fields required: v*_StatusQuo, v*_MaxMin, *Amt, *Prob., minOutcome, maxOutcome"))
     end
 
     for subjectId in subjectIds
@@ -89,6 +89,8 @@ function load_data_from_csv(expdataFileName, fixationsFileName = nothing; stimsO
         data[subjectId][t].LProb = trial_df.LProb[1]
         data[subjectId][t].RAmt = trial_df.RAmt[1]
         data[subjectId][t].RProb = trial_df.RProb[1]
+        data[subjectId][t].minOutcome = trial_df.minOutcome[1]
+        data[subjectId][t].maxOutcome = trial_df.maxOutcome[1]
       end
     end
 
@@ -177,7 +179,9 @@ function process_stimuli(data, nTrials)
     LProb = reduce(vcat, [[i.LProb for i in data[j]] for j in keys(data)])[1:nTrials], 
     LAmt = reduce(vcat, [[i.LAmt for i in data[j]] for j in keys(data)])[1:nTrials], 
     RProb = reduce(vcat, [[i.RProb for i in data[j]] for j in keys(data)])[1:nTrials], 
-    RAmt = reduce(vcat, [[i.RAmt for i in data[j]] for j in keys(data)])[1:nTrials]
+    RAmt = reduce(vcat, [[i.RAmt for i in data[j]] for j in keys(data)])[1:nTrials],
+    minOutcome = reduce(vcat, [[i.minOutcome for i in data[j]] for j in keys(data)])[1:nTrials],
+    maxOutcome = reduce(vcat, [[i.maxOutcome for i in data[j]] for j in keys(data)])[1:nTrials]
   );
   
   return Stims
@@ -186,7 +190,7 @@ end
 """
 Convert simulated data to behavioral and fixation dataframes
 """
-function process_simulations(SimulatedData::Vector{ADDM.Trial}, Details::Bool = false)
+function process_simulations(SimulatedData::Vector{ADDM.Trial}, Details::Bool = true)
   
   SimDataBehDf = DataFrame()
   SimDataFixDf = DataFrame()
@@ -199,8 +203,7 @@ function process_simulations(SimulatedData::Vector{ADDM.Trial}, Details::Bool = 
       # "parcode","trial","rt","choice","LProb","LAmt","RProb","RAmt"
       if Details
         cur_beh_df = DataFrame(
-          :parcode => 1, :trial => i, :choice => cur_trial.choice, :rt => cur_trial.RT, 
-          :LProb => cur_trial.LProb, :LAmt => cur_trial.LAmt, :RProb => cur_trial.RProb, :RAmt => cur_trial.RAmt
+          :studyN => studyN, :parcode => subject_list[subject], :trial => i, :condition => condition, :sim => sim, :choice => cur_trial.choice, :rt => cur_trial.RT, :item_left => cur_trial.valueLeft, :item_right => cur_trial.valueRight, :LProb => cur_trial.LProb, :LAmt => cur_trial.LAmt, :RProb => cur_trial.RProb, :RAmt => cur_trial.RAmt
         )
       else
         cur_beh_df = DataFrame(

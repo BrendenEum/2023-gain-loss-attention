@@ -343,6 +343,8 @@ function simulate_data(model::aDDM, stimuli, simulator_fn, simulator_args = (tim
   LAmts = stimuli.LAmt
   RProbs = stimuli.RProb
   RAmts = stimuli.RAmt
+  minOutcomes = stimuli.minOutcome
+  maxOutcomes = stimuli.maxOutcome
 
   # Feed the model and the stimuli to the simulator function
   n = length(valueLefts) # length of stimuli
@@ -360,6 +362,7 @@ function simulate_data(model::aDDM, stimuli, simulator_fn, simulator_args = (tim
         ;model = model, 
         valueLeft = valueLefts[i], valueRight = valueRights[i], 
         LProb = LProbs[i], LAmt = LAmts[i], RProb = RProbs[i], RAmt = RAmts[i],
+        minOutcome = minOutcomes[i], maxOutcome = maxOutcomes[i],
         simulator_args...)
   end
 

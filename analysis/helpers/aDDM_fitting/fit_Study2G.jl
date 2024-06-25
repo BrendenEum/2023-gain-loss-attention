@@ -102,7 +102,7 @@ Threads.@threads for k in study_participants
         cur_row.posterior = [v];
         posteriors_df = vcat(posteriors_df, cur_row, cols=:union);
     end;
-    sort!(posteriors_df, :posterior, order = Base.Order.Reverse);
+    sort!(posteriors_df, :posterior, rev = true);
 
     # Model comparison
     gdf = groupby(posteriors_df, :likelihood_fn);

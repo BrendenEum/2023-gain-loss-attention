@@ -14,16 +14,16 @@ library(readr)
 library(latex2exp)
 
 #------------- Things you should edit at the start -------------
-dataset = "j"
+dataset = "e"
 colors = list(Gain="Green4", Loss="Red3")
 nTrials = "146_trials"
 #---------------------------------------------------------------
 
 codedir = getwd()
-datadir = file.path(paste0("../aDDM_fitting/results_", nTrials))
+datadir = file.path(paste0("../aDDM_fitting/results")) #_", nTrials))
 cfrdir = file.path("../../../data/processed_data/datasets")
 load(file.path(cfrdir, paste0(dataset, "cfr.RData")))
-cfr = jcfr
+cfr = ecfr
 figdir = file.path("../../outputs/figures")
 optdir = file.path("../plot_options/")
 source(file.path(optdir, "GainLossColorPalette.R"))

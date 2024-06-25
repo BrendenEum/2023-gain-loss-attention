@@ -16,17 +16,17 @@ library(ggnewscale)
 
 
 #------------- Things you should edit at the start -------------
-dataset = "j"
+dataset = "e"
 nTrials = "146_trials"
-fn = "aDDM_modelComparison_J.pdf"
+fn = "aDDM_modelComparison_E.pdf"
 
 cfrdir = file.path("../../../data/processed_data/datasets")
 load(file.path(cfrdir, paste0(dataset, "cfr.RData")))
-cfr = jcfr
+cfr = ecfr
 #---------------------------------------------------------------
 
 codedir = getwd()
-datadir = file.path(paste0("../aDDM_fitting/results_", nTrials))
+datadir = file.path(paste0("../aDDM_fitting/results"))#_", nTrials))
 figdir = file.path("../../outputs/figures")
 optdir = file.path("../plot_options/")
 source(file.path(optdir, "GainLossColorPalette.R"))

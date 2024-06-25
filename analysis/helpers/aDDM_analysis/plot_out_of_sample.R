@@ -12,9 +12,9 @@ library(gridtext)
 library(glue)
 
 #------------- Things you should edit at the start -------------
-.dataset = "j"
+.dataset = "e"
 .colors = list(Gain="Green4", Loss="Red3")
-.simdir = file.path("../../outputs/temp/out_of_sample_simulations/2024.06.20.15.28/RaDDM")
+.simdir = file.path("../../outputs/temp/out_of_sample_simulations/2024.06.24.18.44/RaDDM")
 .nSims = 10
 #---------------------------------------------------------------
 
@@ -32,7 +32,7 @@ source(file.path(.optdir, "MyPlotOptions.R"))
 ## Real Data
 
 load(file.path(.cfrdir, paste0(.dataset, "cfr.RData")))
-.cfr = jcfr
+.cfr = ecfr
 cfr_out = .cfr[.cfr$trial%%10==0,]
 cfr_out$simulated = 0
 study1_subjects = unique(.cfr$subject[.cfr$studyN==1])
@@ -85,8 +85,8 @@ simData = simData[simData$fix_item!=0,] %>% # exclude simulated latency & saccad
     sim = sim,
     choice = ifelse(choice==-1, 1, 0),
     rt = rt/1000,
-    vL = item_left,
-    vR = item_right,
+    vL = LProb*LAmt,
+    vR = RProb*RAmt,
     vDiff = vL - vR,
     nvDiff = ifelse( # see clean*.R in preprocessing
       studyN==1,
@@ -127,10 +127,6 @@ pdata_raw$studyN = factor(pdata_raw$studyN, levels=c(1,2), labels=c("Study 1","S
 pdata_raw$condition = factor(pdata_raw$condition, levels=c("Gain","Loss"), labels=c("Gain","Loss")) #reorder
 
 
-soi = c(1, 2, 3, 4, 201, 202, 204, 205)
-pdata_raw = pdata_raw[pdata_raw$subject %in% soi, ]
-
-
 ##############################################################################
 # Figuring out why attentional discounting has such a small effect in gains.
 # d/sig is the same in both conditions, so why does theta have so little impact on gains in sim. behav?
@@ -138,7 +134,7 @@ pdata_raw = pdata_raw[pdata_raw$subject %in% soi, ]
 ##############################################################################
 
 pd = data.frame(
-  value = c(simData$vL, simData$vR),
+  value = c(simData$item_left, simData$item_right),
   side = c(rep("Left", nrow(simData)), rep("Right", nrow(simData))),
   subject = c(simData$subject, simData$subject),
   condition = c(simData$condition, simData$condition),
@@ -149,10 +145,25 @@ pd = data.frame(
 
 ggplot(data = pd) +
   
-  geom_histogram(aes(x = value, fill = condition), binwidth = 1, position = "identity", alpha = .5) +
+  geom_histogram(aes(x = value, fill = condition), position = "identity", alpha = .5) +
   
   scale_fill_manual(values = c("Loss" = "red3", "Gain" = "green4")) +
   facet_grid(rows = vars(side), cols = vars(studyN)) +
+  theme_bw()
+
+
+
+pd = simData %>% 
+  mutate(
+    value = c(item_left - item_right)
+  )
+
+ggplot(data = pd) +
+  
+  geom_histogram(aes(x = value, fill = condition), position = "identity", alpha = .5) +
+  
+  scale_fill_manual(values = c("Loss" = "red3", "Gain" = "green4")) +
+  facet_grid(cols = vars(studyN)) +
   theme_bw()
 
 

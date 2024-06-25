@@ -57,7 +57,7 @@ flush(stdout)
 Random.seed!(seed)
 
 # SIM: Parameters     
-estimates = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/aDDM_analysis/RaDDM_IndividualEstimates_J.csv", DataFrame)
+estimates = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/aDDM_analysis/RaDDM_IndividualEstimates_E.csv", DataFrame)
 subset_estimates = filter(row ->(row.study == studyN && row.condition == condition), estimates)
 model_list = [];
 for row in eachrow(subset_estimates)
@@ -74,8 +74,8 @@ for row in eachrow(subset_estimates)
     push!(model_list, model);
 end
  # SIM: Data
-expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/j/expdata"*condition*"_test.csv", DataFrame);
-fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/j/fixations"*condition*"_test.csv", DataFrame);
+expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/expdata"*condition*"_test.csv", DataFrame);
+fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/fixations"*condition*"_test.csv", DataFrame);
 
 # DO SIM
 for subject in subset_estimates.subject
@@ -101,7 +101,9 @@ for subject in subset_estimates.subject
         LProb = reduce(vcat, [[i.LProb for i in data[j]] for j in keys(data)])[1:nTrials],
         LAmt = reduce(vcat, [[i.LAmt for i in data[j]] for j in keys(data)])[1:nTrials],
         RProb = reduce(vcat, [[i.RProb for i in data[j]] for j in keys(data)])[1:nTrials],
-        RAmt = reduce(vcat, [[i.RAmt for i in data[j]] for j in keys(data)])[1:nTrials]
+        RAmt = reduce(vcat, [[i.RAmt for i in data[j]] for j in keys(data)])[1:nTrials],
+        minOutcome = reduce(vcat, [[i.minOutcome for i in data[j]] for j in keys(data)])[1:nTrials],
+        maxOutcome = reduce(vcat, [[i.maxOutcome for i in data[j]] for j in keys(data)])[1:nTrials]
     );
     Fixations = ADDM.process_fixations(data, fixDistType="simple", numFixDists = 2);
 
@@ -124,7 +126,7 @@ for subject in subset_estimates.subject
             cur_fix_df[!, :condition] .= condition
             SimDataFixDf = vcat(SimDataFixDf, cur_fix_df, cols=:union)
             # "parcode","trial","rt","choice","item_left","item_right"
-            cur_beh_df = DataFrame(:studyN => studyN, :parcode => subject, :trial => i, :condition => condition, :sim => sim, :choice => cur_trial.choice, :rt => cur_trial.RT, :item_left => cur_trial.valueLeft, :item_right => cur_trial.valueRight)
+            cur_beh_df = DataFrame(:studyN => studyN, :parcode => subject, :trial => i, :condition => condition, :sim => sim, :choice => cur_trial.choice, :rt => cur_trial.RT, :item_left => cur_trial.valueLeft, :item_right => cur_trial.valueRight, :LProb => cur_trial.LProb, :LAmt => cur_trial.LAmt, :RProb => cur_trial.RProb, :RAmt => cur_trial.RAmt)
             SimDataBehDf = vcat(SimDataBehDf, cur_beh_df, cols=:union)
         end
         #CSV.write(outdir * "sim_data_beh.csv", SimDataBehDf)
@@ -163,8 +165,8 @@ for row in eachrow(subset_estimates)
     push!(model_list, model);
 end
  # SIM: Data
- expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/j/expdata"*condition*"_test.csv", DataFrame);
- fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/j/fixations"*condition*"_test.csv", DataFrame);
+ expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/expdata"*condition*"_test.csv", DataFrame);
+ fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/fixations"*condition*"_test.csv", DataFrame);
 
 # DO SIM
 for subject in subset_estimates.subject
@@ -190,7 +192,9 @@ for subject in subset_estimates.subject
         LProb = reduce(vcat, [[i.LProb for i in data[j]] for j in keys(data)])[1:nTrials],
         LAmt = reduce(vcat, [[i.LAmt for i in data[j]] for j in keys(data)])[1:nTrials],
         RProb = reduce(vcat, [[i.RProb for i in data[j]] for j in keys(data)])[1:nTrials],
-        RAmt = reduce(vcat, [[i.RAmt for i in data[j]] for j in keys(data)])[1:nTrials]
+        RAmt = reduce(vcat, [[i.RAmt for i in data[j]] for j in keys(data)])[1:nTrials],
+        minOutcome = reduce(vcat, [[i.minOutcome for i in data[j]] for j in keys(data)])[1:nTrials],
+        maxOutcome = reduce(vcat, [[i.maxOutcome for i in data[j]] for j in keys(data)])[1:nTrials]
     );
     Fixations = ADDM.process_fixations(data, fixDistType="simple", numFixDists = 2);
 
@@ -213,7 +217,7 @@ for subject in subset_estimates.subject
             cur_fix_df[!, :sim] .= sim
             SimDataFixDf = vcat(SimDataFixDf, cur_fix_df, cols=:union)
             # "parcode","trial","rt","choice","item_left","item_right"
-            cur_beh_df = DataFrame(:studyN => studyN, :parcode => subject, :trial => i, :condition => condition, :sim => sim, :choice => cur_trial.choice, :rt => cur_trial.RT, :item_left => cur_trial.valueLeft, :item_right => cur_trial.valueRight)
+            cur_beh_df = DataFrame(:studyN => studyN, :parcode => subject, :trial => i, :condition => condition, :sim => sim, :choice => cur_trial.choice, :rt => cur_trial.RT, :item_left => cur_trial.valueLeft, :item_right => cur_trial.valueRight, :LProb => cur_trial.LProb, :LAmt => cur_trial.LAmt, :RProb => cur_trial.RProb, :RAmt => cur_trial.RAmt)
             SimDataBehDf = vcat(SimDataBehDf, cur_beh_df, cols=:union)
         end
         #CSV.write(outdir * "sim_data_beh.csv", SimDataBehDf)
@@ -250,7 +254,7 @@ flush(stdout)
 Random.seed!(seed)
 
 # SIM: Parameters      # ! ! !
-estimates = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/aDDM_analysis/RaDDM_IndividualEstimates_J.csv", DataFrame)
+estimates = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/aDDM_analysis/RaDDM_IndividualEstimates_E.csv", DataFrame)
 subset_estimates = filter(row ->(row.study == studyN && row.condition == condition), estimates)
 model_list = [];
 subject_list = [];
@@ -295,7 +299,9 @@ for subject in 1:length(subject_list)
         LProb = reduce(vcat, [[i.LProb for i in data[j]] for j in keys(data)])[1:nTrials],
         LAmt = reduce(vcat, [[i.LAmt for i in data[j]] for j in keys(data)])[1:nTrials],
         RProb = reduce(vcat, [[i.RProb for i in data[j]] for j in keys(data)])[1:nTrials],
-        RAmt = reduce(vcat, [[i.RAmt for i in data[j]] for j in keys(data)])[1:nTrials]
+        RAmt = reduce(vcat, [[i.RAmt for i in data[j]] for j in keys(data)])[1:nTrials],
+        minOutcome = reduce(vcat, [[i.minOutcome for i in data[j]] for j in keys(data)])[1:nTrials],
+        maxOutcome = reduce(vcat, [[i.maxOutcome for i in data[j]] for j in keys(data)])[1:nTrials]
     );
     Fixations = ADDM.process_fixations(data, fixDistType="simple", numFixDists = 2);
 
@@ -318,7 +324,7 @@ for subject in 1:length(subject_list)
             cur_fix_df[!, :sim] .= sim
             SimDataFixDf = vcat(SimDataFixDf, cur_fix_df, cols=:union)
             # "parcode","trial","rt","choice","item_left","item_right"
-            cur_beh_df = DataFrame(:studyN => studyN, :parcode => subject_list[subject], :trial => i, :condition => condition, :sim => sim, :choice => cur_trial.choice, :rt => cur_trial.RT, :item_left => cur_trial.valueLeft, :item_right => cur_trial.valueRight)
+            cur_beh_df = DataFrame(:studyN => studyN, :parcode => subject_list[subject], :trial => i, :condition => condition, :sim => sim, :choice => cur_trial.choice, :rt => cur_trial.RT, :item_left => cur_trial.valueLeft, :item_right => cur_trial.valueRight, :LProb => cur_trial.LProb, :LAmt => cur_trial.LAmt, :RProb => cur_trial.RProb, :RAmt => cur_trial.RAmt)
             SimDataBehDf = vcat(SimDataBehDf, cur_beh_df, cols=:union)
         end
         #CSV.write(outdir * "sim_data_beh.csv", SimDataBehDf)
@@ -358,8 +364,8 @@ for row in eachrow(subset_estimates)
     push!(subject_list, row.subject);
 end
  # SIM: Data
- expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/j/expdata"*condition*"_test.csv", DataFrame);
- fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/j/fixations"*condition*"_test.csv", DataFrame);
+ expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/expdata"*condition*"_test.csv", DataFrame);
+ fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/fixations"*condition*"_test.csv", DataFrame);
 
 # DO SIM
 for subject in 1:length(subject_list)
@@ -385,7 +391,9 @@ for subject in 1:length(subject_list)
         LProb = reduce(vcat, [[i.LProb for i in data[j]] for j in keys(data)])[1:nTrials],
         LAmt = reduce(vcat, [[i.LAmt for i in data[j]] for j in keys(data)])[1:nTrials],
         RProb = reduce(vcat, [[i.RProb for i in data[j]] for j in keys(data)])[1:nTrials],
-        RAmt = reduce(vcat, [[i.RAmt for i in data[j]] for j in keys(data)])[1:nTrials]
+        RAmt = reduce(vcat, [[i.RAmt for i in data[j]] for j in keys(data)])[1:nTrials],
+        minOutcome = reduce(vcat, [[i.minOutcome for i in data[j]] for j in keys(data)])[1:nTrials],
+        maxOutcome = reduce(vcat, [[i.maxOutcome for i in data[j]] for j in keys(data)])[1:nTrials]
     );
     Fixations = ADDM.process_fixations(data, fixDistType="simple", numFixDists = 2);
 
@@ -408,7 +416,7 @@ for subject in 1:length(subject_list)
             cur_fix_df[!, :sim] .= sim
             SimDataFixDf = vcat(SimDataFixDf, cur_fix_df, cols=:union)
             # "parcode","trial","rt","choice","item_left","item_right"
-            cur_beh_df = DataFrame(:studyN => studyN, :parcode => subject_list[subject], :trial => i, :condition => condition, :sim => sim, :choice => cur_trial.choice, :rt => cur_trial.RT, :item_left => cur_trial.valueLeft, :item_right => cur_trial.valueRight)
+            cur_beh_df = DataFrame(:studyN => studyN, :parcode => subject_list[subject], :trial => i, :condition => condition, :sim => sim, :choice => cur_trial.choice, :rt => cur_trial.RT, :item_left => cur_trial.valueLeft, :item_right => cur_trial.valueRight, :LProb => cur_trial.LProb, :LAmt => cur_trial.LAmt, :RProb => cur_trial.RProb, :RAmt => cur_trial.RAmt)
             SimDataBehDf = vcat(SimDataBehDf, cur_beh_df, cols=:union)
         end
         #CSV.write(outdir * "sim_data_beh.csv", SimDataBehDf)

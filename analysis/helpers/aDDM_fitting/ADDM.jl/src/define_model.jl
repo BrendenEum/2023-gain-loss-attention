@@ -71,6 +71,8 @@ mutable struct Trial
     vR_MaxMin::Number
     vL_MinOutcome::Number
     vR_MinOutcome::Number
+    minOutcome::Number
+    maxOutcome::Number
 
     # Incomplete initialization allows for defining optional components later
     # To create a Trial one must only provide the choice, RT and values

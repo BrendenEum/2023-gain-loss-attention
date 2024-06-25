@@ -39,12 +39,19 @@ Generate a DDM trial given the item values.
 function RaDDM_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationData, 
                         valueLeft::Number, valueRight::Number, 
                         LProb::Number, LAmt::Number, RAmt::Number, RProb::Number,
+                        minOutcome::Number, maxOutcome::Number,
                         timeStep::Number=10.0, numFixDists::Int64=3, fixationDist=nothing, 
                         timeBins=nothing, cutOff::Number=100000)
     
     fixUnfixValueDiffs = Dict(1 => valueLeft - valueRight, 2 => valueRight - valueLeft)
-    vL = (LProb * (LAmt - model.ref)) + ((1 - LProb) * (0 - model.ref))
-    vR = (RProb * (RAmt - model.ref)) + ((1 - RProb) * (0 - model.ref))
+
+    ZeroAmt_RD = ((0 - minOutcome) / (maxOutcome - minOutcome)) - model.ref
+
+    LAmt_RD = ((LAmt - minOutcome) / (maxOutcome - minOutcome)) - model.ref
+    vL = (LProb * LAmt_RD) + ((1-LProb) * ZeroAmt_RD)
+
+    RAmt_RD = ((RAmt - minOutcome) / (maxOutcome - minOutcome)) - model.ref
+    vR = (RProb * RAmt_RD) + ((1-RProb) * ZeroAmt_RD)
     
     fixItem = Number[]
     fixTime = Number[]
@@ -188,8 +195,6 @@ function RaDDM_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationData
             # stochastically. The mean of the distribution (the change
             # most likely to occur) is calculated from the model
             # parameters and from the values of the two items.
-            vL = (LProb * (LAmt - model.ref)) + ((1 - LProb) * (0 - model.ref))
-            vR = (RProb * (RAmt - model.ref)) + ((1 - RProb) * (0 - model.ref))
             if currFixLocation == 0
                 μ = 0
             elseif currFixLocation == 1

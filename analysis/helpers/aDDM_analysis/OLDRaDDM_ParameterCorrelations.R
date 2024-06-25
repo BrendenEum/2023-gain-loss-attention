@@ -5,9 +5,15 @@
 rm(list=ls())
 set.seed(4)
 library(tidyverse)
-library(GGally)
+library(reshape2)
+library(plotrix)
 library(gridExtra)
-library(cowplot)
+library(grid)
+library(gridtext)
+library(ggpubr)
+library(ggsci)
+library(readr)
+library(latex2exp)
 
 #------------- Things you should edit at the start -------------
 .dataset = "j"
@@ -110,31 +116,50 @@ data$condition2 = data$condition
 
 
 ##############################################################################
-# Plot individually
+# Transform data into correlation matrix data for plotting
 ##############################################################################
 
-## Study 1 Gains
+calculate_cor_matrix <- function(sub_data) {
+  melted_cor_matrix = melt(cor(sub_data[, c("d", "sigma", "theta", "ref")]))
+  melted_cor_matrix$study = unique(sub_data$study2)
+  melted_cor_matrix$condition = unique(sub_data$condition2)
+  return(melted_cor_matrix)
+}
 
-pdata = data[data$study==1 & data$condition=="Gain", c("d", "sigma", "theta", "ref")]
-A = ggpairs(pdata)
-ggsave(file.path(.figdir, "1G_RaDDM_ParameterCorrelations.pdf"), A, width = figw, height = figh)
+pdata <- data %>%
+  group_by(study, condition) %>%
+  group_map(~ calculate_cor_matrix(.x)) %>%
+  bind_rows()
 
-## Study 1 Losses
+pdata$study = factor(pdata$study, levels = c(1,2), labels = c("Study 1", "Study 2"))
 
-pdata = data[data$study==1 & data$condition=="Loss", c("d", "sigma", "theta", "ref")]
-B = ggpairs(pdata)
-ggsave(file.path(.figdir, "1L_RaDDM_ParameterCorrelations.pdf"), B, width = figw, height = figh)
+pdata_lowertri <- pdata %>%
+  filter(as.numeric(Var1) <= as.numeric(Var2))
 
-## Study 2 Gains
+pdata_lowertri$Var1 = factor(pdata_lowertri$Var1, levels = c("d", "sigma", "theta", "ref"))
+pdata_lowertri$Var2 = factor(pdata_lowertri$Var2, levels = c("ref", "theta", "sigma", "d"))
 
-pdata = data[data$study==2 & data$condition=="Gain", c("d", "sigma", "theta", "ref")]
-C = ggpairs(pdata)
-ggsave(file.path(.figdir, "2G_RaDDM_ParameterCorrelations.pdf"), C, width = figw, height = figh)
 
-## Study 2 Losses
+##############################################################################
+# Plot
+##############################################################################
 
-pdata = data[data$study==2 & data$condition=="Loss", c("d", "sigma", "theta", "ref")]
-D = ggpairs(pdata)
-ggsave(file.path(.figdir, "2L_RaDDM_ParameterCorrelations.pdf"), D, width = figw, height = figh)
+p.par_cor = ggplot(data = pdata_lowertri, aes(x = Var1, y = Var2, fill = value)) +
   
+  geom_tile() +
+  scale_fill_gradient2(
+    low = "blue", high = "red", mid = "white",
+    midpoint = 0, limit = c(-1, 1), space = "Lab"
+  ) +
+  
+  #scale_y_reverse() +
+  theme_classic() +
+  labs(
+    y = "",
+    x = "",
+    fill = "Correlation"
+  ) +
+  
+  facet_grid(rows = vars(condition), cols = vars(study))
 
+ggsave(file.path(.figdir, "RaDDM_ParameterCorrelations.pdf"), p.par_cor, width = figw, height = figh)

@@ -15,18 +15,18 @@ library(readr)
 library(latex2exp)
 
 #------------- Things you should edit at the start -------------
-.dataset = "j"
+.dataset = "e"
 .nTrials = "146_trials"
-.fn = "RaDDM_IndividualEstimates_J.pdf"
-.fn_csv = "RaDDM_IndividualEstimates_J.csv"
+.fn = "RaDDM_IndividualEstimates_E.pdf"
+.fn_csv = "RaDDM_IndividualEstimates_E.csv"
 
 .cfrdir = file.path("../../../data/processed_data/datasets")
 load(file.path(.cfrdir, paste0(.dataset, "cfr.RData")))
-cfr = jcfr
+cfr = ecfr
 #---------------------------------------------------------------
 
 .codedir = getwd()
-.datadir = file.path(paste0("../aDDM_fitting/results_", .nTrials))
+.datadir = file.path(paste0("../aDDM_fitting/results"))#, .nTrials))
 .figdir = file.path("../../outputs/figures")
 .optdir = file.path("../plot_options/")
 source(file.path(.optdir, "GainLossColorPalette.R"))
@@ -149,8 +149,7 @@ ggplot <- function(...) ggplot2::ggplot(...) +
     legend.title = element_text(size = 9),
     legend.text = element_text(size = 9),
     strip.text = element_blank()
-  ) +
-  scale_size_continuous(limits=c(1,24))
+  ) 
 
 
 ##############################################################################
@@ -163,9 +162,9 @@ plt1.compare.d.e <- ggplot(data=pdata) +
   geom_abline(intercept=0, slope=1, color=exact) +
   geom_count(aes(x=d_Gain, y=d_Loss, color = study), alpha=dot_alpha) +
   labs(x = TeX(r"(Gain $d$)"), y = TeX(r"(Loss $d$)")) +
-  coord_cartesian(xlim = c(0, .012), ylim = c(-.001, .012), expand=T) +
-  scale_y_continuous(breaks = c(0, .006, .012), labels=c("0", ".006", ".012")) +
-  scale_x_continuous(breaks = c(0, .006, .012), labels=c("0", ".006", ".012")) +
+  coord_cartesian(xlim = c(0, .07), ylim = c(0, .07), expand=T) +
+  scale_y_continuous(breaks = c(0, .010, .020), labels=c("0", ".01", ".02")) +
+  scale_x_continuous(breaks = c(0, .010, .020), labels=c("0", ".01", ".02")) +
   facet_grid(rows = vars(study)) 
 
 plt1.compare.s.e <- ggplot(data=pdata) +
@@ -193,15 +192,16 @@ plt1.compare.t.e <- ggplot(data=pdata) +
   facet_grid(rows = vars(study)) +
   guides(color="none") 
 
-minValue_Gain = 0
-pdata$minValue_Loss = ifelse(pdata$study==1, -5.5, -12)
-xbreaks = c(-20, 0 , 20)
-ybreaks = c(-20, 0 , 20)
-xlims = c(-25, 25)
-ylims = c(-25, 25)
+#minValue_Gain = 0
+#pdata$minValue_Loss = ifelse(pdata$study==1, -5.5, -12)
+xbreaks = c(-1, 0 , 1)
+ybreaks = c(-1, 0 , 1)
+xlims = c(-1, 1)
+ylims = c(-1, 1)
 plt1.compare.r.e <- ggplot(data=pdata) +
-  geom_vline(xintercept = minValue_Gain, color = exact) +
-  geom_hline(aes(yintercept = minValue_Loss), color = exact) +
+  geom_abline(intercept=0, slope=1, color=exact) +
+  #geom_vline(xintercept = minValue_Gain, color = exact) +
+  #geom_hline(aes(yintercept = minValue_Loss), color = exact) +
   geom_count(aes(x=ref_Gain, y=ref_Loss, color = study), alpha=dot_alpha) +
   labs(x = TeX(r"(Gain $r$)"), y = TeX(r"(Loss $r$)")) +
   coord_cartesian(xlim = xlims, ylim = ylims, expand=T) +
