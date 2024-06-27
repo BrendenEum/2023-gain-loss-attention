@@ -36,7 +36,7 @@ Generate a DDM trial given the item values.
 # Returns
 - An Trial object resulting from the simulation.
 """
-function MaxMin_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationData, 
+function TrOPPaDDM_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationData, 
                         valueLeft::Number, valueRight::Number, 
                         LProb::Number, LAmt::Number, RAmt::Number, RProb::Number,
                         minOutcome::Number, maxOutcome::Number,
@@ -44,6 +44,14 @@ function MaxMin_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationDat
                         timeBins=nothing, cutOff::Number=100000)
     
     fixUnfixValueDiffs = Dict(1 => valueLeft - valueRight, 2 => valueRight - valueLeft)
+
+    if min(valueLeft,valueRight) < 0
+        vL = -valueLeft
+        vR = -valueRight
+    else
+        vL = valueLeft
+        vR = valueRight
+    end
     
     fixItem = Number[]
     fixTime = Number[]
@@ -74,6 +82,9 @@ function MaxMin_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationDat
         # No barrier decay before decision-related accummulation
         if abs(RDV) >= model.barrier
             choice = RDV >= 0 ? -1 : 1
+            if min(valueLeft,valueRight) < 0
+                choice = RDV >= 0 ? 1 : -1
+            end
             push!(fixRDV, RDV)
             push!(fixItem, 0)
             push!(fixTime, t * timeStep)
@@ -159,6 +170,9 @@ function MaxMin_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationDat
                 # No barrier decay before decision-related accummulation
                 if abs(RDV) >= model.barrier
                     choice = RDV >= 0 ? -1 : 1
+                    if min(valueLeft,valueRight) < 0
+                        choice = RDV >= 0 ? 1 : -1
+                    end
                     push!(fixRDV, RDV)
                     push!(fixItem, currFixLocation)
                     push!(fixTime, t * timeStep)
@@ -187,12 +201,13 @@ function MaxMin_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationDat
             # stochastically. The mean of the distribution (the change
             # most likely to occur) is calculated from the model
             # parameters and from the values of the two items.
+
             if currFixLocation == 0
                 μ = 0
             elseif currFixLocation == 1
-                μ = model.d * ((model.θ * valueLeft) - valueRight)
+                μ = model.d * (vL - (model.θ * vR))
             elseif currFixLocation == 2
-                μ = model.d * (valueLeft - (model.θ * valueRight))
+                μ = model.d * ((model.θ * vL) - vR)
             end
 
             # Sample the change in RDV from the distribution.
@@ -208,6 +223,9 @@ function MaxMin_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationDat
             # Decision related accummulation here so barrier might have decayed
             if abs(RDV) >= barrierUp[cumTimeStep]
                 choice = RDV >= 0 ? -1 : 1
+                if min(valueLeft,valueRight) < 0
+                    choice = RDV >= 0 ? 1 : -1
+                end
                 push!(fixRDV, RDV)
                 push!(fixItem, currFixLocation)
                 push!(fixTime, t * timeStep)

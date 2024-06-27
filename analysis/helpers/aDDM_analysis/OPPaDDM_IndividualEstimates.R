@@ -17,8 +17,8 @@ library(latex2exp)
 #------------- Things you should edit at the start -------------
 .dataset = "e"
 .nTrials = "146_trials"
-.fn = "RaDDM_IndividualEstimates_E.pdf"
-.fn_csv = "RaDDM_IndividualEstimates_E.csv"
+.fn = "OPPaDDM_IndividualEstimates_E.pdf"
+.fn_csv = "OPPaDDM_IndividualEstimates_E.csv"
 
 .cfrdir = file.path("../../../data/processed_data/datasets")
 load(file.path(.cfrdir, paste0(.dataset, "cfr.RData")))
@@ -65,8 +65,8 @@ getEst = function(gain_folder, loss_folder, subjectList) {
   
   posteriors$likelihood_fn = factor(
     posteriors$likelihood_fn,
-    levels=c("AddDDM_likelihood","RaDDM_likelihood"),
-    labels=c("AddDDM","RaDDM")
+    levels=c("OPPaDDM_likelihood","RaDDM_likelihood"),
+    labels=c("OPPaDDM","RaDDM")
   )
   
   return(posteriors)
@@ -90,7 +90,7 @@ Study2$study = 2
 .data$study = factor(.data$study, levels=c(1,2), labels=c("1","2"))
 
 # Limit to just RaDDM
-.data = .data[.data$likelihood_fn=="RaDDM",]
+.data = .data[.data$likelihood_fn=="OPPaDDM",]
 
 # Get best fitting parameters for each subject
 .data = .data %>%
@@ -162,9 +162,9 @@ plt1.compare.d.e <- ggplot(data=pdata) +
   geom_abline(intercept=0, slope=1, color=exact) +
   geom_count(aes(x=d_Gain, y=d_Loss, color = study), alpha=dot_alpha) +
   labs(x = TeX(r"(Gain $d$)"), y = TeX(r"(Loss $d$)")) +
-  coord_cartesian(xlim = c(0, .041), ylim = c(0, .041), expand=T) +
-  #scale_y_continuous(breaks = c(0, .005, .010), labels=c("0", ".005", ".010")) +
-  #scale_x_continuous(breaks = c(0, .005, .010), labels=c("0", ".005", ".010")) +
+  coord_cartesian(xlim = c(0, .010), ylim = c(0, .010), expand=T) +
+  scale_y_continuous(breaks = c(0, .005, .009), labels=c("0", ".005", ".009")) +
+  scale_x_continuous(breaks = c(0, .005, .009), labels=c("0", ".005", ".009")) +
   facet_grid(rows = vars(study)) 
 
 plt1.compare.s.e <- ggplot(data=pdata) +

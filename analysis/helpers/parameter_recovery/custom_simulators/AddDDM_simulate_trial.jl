@@ -39,6 +39,7 @@ Generate a DDM trial given the item values.
 function AddDDM_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationData, 
                         valueLeft::Number, valueRight::Number, 
                         LProb::Number, LAmt::Number, RAmt::Number, RProb::Number,
+                        minOutcome::Number, maxOutcome::Number,
                         timeStep::Number=10.0, numFixDists::Int64=3, fixationDist=nothing, 
                         timeBins=nothing, cutOff::Number=100000)
     

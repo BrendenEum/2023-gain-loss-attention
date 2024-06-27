@@ -17,8 +17,8 @@ library(latex2exp)
 #------------- Things you should edit at the start -------------
 .dataset = "e"
 .nTrials = "146_trials"
-.fn = "aDDM_IndividualEstimates_E.pdf"
-.fn_csv = "aDDM_IndividualEstimates_E.csv"
+.fn = "AddDDM_IndividualEstimates_E.pdf"
+.fn_csv = "AddDDM_IndividualEstimates_E.csv"
 
 .cfrdir = file.path("../../../data/processed_data/datasets")
 load(file.path(.cfrdir, paste0(.dataset, "cfr.RData")))
@@ -65,8 +65,8 @@ getEst = function(gain_folder, loss_folder, subjectList) {
   
   posteriors$likelihood_fn = factor(
     posteriors$likelihood_fn,
-    levels=c("aDDM_likelihood","AddDDM_likelihood","RaDDM_likelihood"),
-    labels=c("aDDM","AddDDM","RaDDM")
+    levels=c("AddDDM_likelihood","RaDDM_likelihood"),
+    labels=c("AddDDM","RaDDM")
   )
   
   return(posteriors)
@@ -89,8 +89,8 @@ Study2$study = 2
 # Factor
 .data$study = factor(.data$study, levels=c(1,2), labels=c("1","2"))
 
-# Limit to just aDDM
-.data = .data[.data$likelihood_fn=="aDDM",]
+# Limit to just RaDDM
+.data = .data[.data$likelihood_fn=="AddDDM",]
 
 # Get best fitting parameters for each subject
 .data = .data %>%
@@ -109,7 +109,7 @@ if (sum(.duplicate_rows) != 0) {
 # If you got the duplicate observation warning, first check if any estimated thetas are 1. This can result in multiple reference points since our approximate estimation doesn't have the resolution to tease these apart (SUPER subtle differences). If so, you'll usually want to keep the highest reference point since thats usually the closest to the minimum value in a context.
 .duplicate_rows = duplicated(data[,c("study","subject","condition")])
 data = data[!.duplicate_rows,]
-save_est = data[,c("study", "subject", "condition", "d", "sigma", "theta")] %>% na.omit()
+save_est = data[,c("study", "subject", "condition", "d", "sigma", "eta")] %>% na.omit()
 write.csv(save_est, file=.fn_csv)
 
 # Long to wide format (1 obs should have gain and loss estiamtes)
@@ -117,7 +117,7 @@ pdata_raw = pivot_wider(
   data, 
   id_cols = c("study","subject"), 
   names_from = "condition", 
-  values_from = c("d","sigma","theta")
+  values_from = c("d","sigma","eta")
 )
 pdata_raw = pdata_raw[!(is.na(pdata_raw$study)),]
 
@@ -162,35 +162,52 @@ plt1.compare.d.e <- ggplot(data=pdata) +
   geom_abline(intercept=0, slope=1, color=exact) +
   geom_count(aes(x=d_Gain, y=d_Loss, color = study), alpha=dot_alpha) +
   labs(x = TeX(r"(Gain $d$)"), y = TeX(r"(Loss $d$)")) +
-  coord_fixed() +
-  #coord_cartesian(xlim = c(0, .07), ylim = c(0, .07), expand=T) +
-  #scale_y_continuous(breaks = c(0, .010, .020), labels=c("0", ".01", ".02")) +
-  #scale_x_continuous(breaks = c(0, .010, .020), labels=c("0", ".01", ".02")) +
+  coord_cartesian(xlim = c(0, .011), ylim = c(0, .011), expand=T) +
+  scale_y_continuous(breaks = c(0, .005, .010), labels=c("0", ".005", ".010")) +
+  scale_x_continuous(breaks = c(0, .005, .010), labels=c("0", ".005", ".010")) +
   facet_grid(rows = vars(study)) 
 
 plt1.compare.s.e <- ggplot(data=pdata) +
   geom_abline(intercept=0, slope=1, color=exact) +
   geom_count(aes(x=sigma_Gain, y=sigma_Loss, color = study), alpha=dot_alpha) +
   labs(x = TeX(r"(Gain $\sigma$)"), y = TeX(r"(Loss $\sigma$)")) +
-  coord_fixed() +
-  #coord_cartesian(xlim=c(0,.1), ylim=c(0,.1), expand=T) +
-  #scale_y_continuous(breaks = c(0, 0.05, 0.1), labels=c("0", ".05", ".1")) +
-  #scale_x_continuous(breaks = c(0, 0.05, 0.1), labels=c("0", ".05", ".1")) +
+  coord_cartesian(xlim=c(0,.1), ylim=c(0,.1), expand=T) +
+  scale_y_continuous(breaks = c(0, 0.05, 0.1), labels=c("0", ".05", ".1")) +
+  scale_x_continuous(breaks = c(0, 0.05, 0.1), labels=c("0", ".05", ".1")) +
   facet_grid(rows = vars(study))
 
 plt1.compare.t.e <- ggplot(data=pdata) +
   geom_abline(intercept=0, slope=1, color=exact) +
-  geom_count(aes(x=theta_Gain, y=theta_Loss, color = study), alpha=dot_alpha) +
-  labs(x = TeX(r"(Gain $\theta$)"), y = TeX(r"(Loss $\theta$)"), size = "Number of Subjects") +
-  coord_cartesian(xlim=c(0, 1.05), ylim=c(0, 1.05), expand=T) +
-  scale_y_continuous(breaks = c(0, .5, 1), labels=c("0", ".5", "1")) +
-  scale_x_continuous(breaks = c(0, .5, 1), labels=c("0", ".5", "1")) +
+  geom_count(aes(x=eta_Gain, y=eta_Loss, color = study), alpha=dot_alpha) +
+  labs(x = TeX(r"(Gain $\eta$)"), y = TeX(r"(Loss $\eta$)"), size = "Number of Subjects") +
+  coord_cartesian(xlim=c(0, 0.010), ylim=c(0, 0.010), expand=T) +
+  scale_y_continuous(breaks = c(0, .005, .010), labels=c("0", ".005", ".010")) +
+  scale_x_continuous(breaks = c(0, .005, .010), labels=c("0", ".005", ".010")) +
   theme(
     legend.position = c(0, 1.01),
+    #legend.direction = "horizontal",
     legend.justification = c(0,1)
+    #legend.background = element_rect(fill = "white", color = NA)
   ) +
   facet_grid(rows = vars(study)) +
   guides(color="none") 
+
+# #minValue_Gain = 0
+# #pdata$minValue_Loss = ifelse(pdata$study==1, -5.5, -12)
+# xbreaks = c(-1, 0 , 1)
+# ybreaks = c(-1, 0 , 1)
+# xlims = c(-1, 1)
+# ylims = c(-1, 1)
+# plt1.compare.r.e <- ggplot(data=pdata) +
+#   geom_abline(intercept=0, slope=1, color=exact) +
+#   #geom_vline(xintercept = minValue_Gain, color = exact) +
+#   #geom_hline(aes(yintercept = minValue_Loss), color = exact) +
+#   geom_count(aes(x=ref_Gain, y=ref_Loss, color = study), alpha=dot_alpha) +
+#   labs(x = TeX(r"(Gain $r$)"), y = TeX(r"(Loss $r$)")) +
+#   coord_cartesian(xlim = xlims, ylim = ylims, expand=T) +
+#   scale_x_continuous(breaks = xbreaks) +
+#   scale_y_continuous(breaks = ybreaks) +
+#   facet_grid(rows = vars(study))
 
 ##############################################################################
 # Combine plots

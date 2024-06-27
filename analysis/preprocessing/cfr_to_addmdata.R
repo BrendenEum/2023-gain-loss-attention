@@ -9,22 +9,6 @@ datadir = file.path("../../data/processed_data")
 dots_datadir = file.path(datadir, "dots")
 numeric_datadir = file.path(datadir, "numeric")
 
-# Get reference dependent vL and vR
-# -------------------------------------------------------------------------------------------
-# Change to correct dataset ! ! !
-load(file.path(.tempdir, "ref_dept/ref_dept_values_E.RData"))
-RDValuesDF_E = RDValuesDF
-load(file.path(.tempdir, "ref_dept/ref_dept_values_C.RData"))
-RDValuesDF_C = RDValuesDF
-RDValuesDF_C$subject[RDValuesDF_C$studyN==1] = RDValuesDF_C$subject[RDValuesDF_C$studyN==1] + 36
-RDValuesDF = bind_rows(RDValuesDF_E, RDValuesDF_C)
-# -------------------------------------------------------------------------------------------
-RD_StatusQuo = RDValuesDF[RDValuesDF$Model=="StatusQuo", c("subject", "trial", "condition", "L_RDVal", "R_RDVal")] %>%
-  rename(vL_StatusQuo = L_RDVal, vR_StatusQuo = R_RDVal)
-RD_MaxMin = RDValuesDF[RDValuesDF$Model=="MaxMin", c("subject", "trial", "condition", "L_RDVal", "R_RDVal")] %>%
-  rename(vL_MaxMin = L_RDVal, vR_MaxMin = R_RDVal)
-RDValues = merge(RD_StatusQuo, RD_MaxMin, by=c("subject", "trial", "condition"))
-
 
 ##########################################################################################
 # FUNCTION: expdata [parcode, trial, rt, choice, item_left, item_right, minValue, maxValue]
@@ -32,14 +16,13 @@ RDValues = merge(RD_StatusQuo, RD_MaxMin, by=c("subject", "trial", "condition"))
 # min/maxValue: the min/max value seen in this condition so far.
 ##########################################################################################
 
-make_expdata = function(data, training, studydir="error", dataset="error", minOutcome = c(0,0), maxOutcome = c(1,1)) {
+make_expdata = function(data, studydir="error", dataset="error", minOutcome = c(0,0), maxOutcome = c(1,1)) {
   data = data[data$firstFix==T,]         # ONLY NEED ONE OBS PER TRIAL.
-  if (training) {data = data[data$trial%%10!=0,]} else {data = data[data$trial%%10==0,]}
-  data = merge(data, RDValues, by = c("subject", "trial", "condition"), all.x=T) # Get ref dept values
   data.gain = data[data$condition=="Gain",]
   data.loss = data[data$condition=="Loss",]
   if (data.gain$trial[1]!=1) {data.gain$trial=data.gain$trial-min(data.gain$trial)+1} 
-  if (data.loss$trial[1]!=1) {data.loss$trial=data.loss$trial-min(data.loss$trial)+1} 
+  if (data.loss$trial[1]!=1) {data.loss$trial=data.loss$trial-min(data.loss$trial)+1}
+  
   expdataGain = data.frame(
     parcode = data.gain$subject,
     trial = data.gain$trial,
@@ -47,14 +30,13 @@ make_expdata = function(data, training, studydir="error", dataset="error", minOu
     choice = (data.gain$choice*2-1)*-1, #L:-1, R:1... Tavares toolbox.
     item_left = data.gain$vL,
     item_right = data.gain$vR,
-    vL_StatusQuo = data.gain$vL_StatusQuo, vR_StatusQuo = data.gain$vR_StatusQuo,
-    vL_MaxMin = data.gain$vL_MaxMin, vR_MaxMin = data.gain$vR_MaxMin,
     LAmt = data.gain$LAmt,
     LProb = data.gain$LProb,
     RAmt = data.gain$RAmt,
     RProb = data.gain$RProb,
     minOutcome = minOutcome[1],
     maxOutcome = maxOutcome[1])
+  
   expdataLoss = data.frame(
     parcode = data.loss$subject,
     trial = data.loss$trial,
@@ -62,8 +44,6 @@ make_expdata = function(data, training, studydir="error", dataset="error", minOu
     choice = (data.loss$choice*2-1)*-1,
     item_left = data.loss$vL,
     item_right = data.loss$vR,
-    vL_StatusQuo = data.loss$vL_StatusQuo, vR_StatusQuo = data.loss$vR_StatusQuo,
-    vL_MaxMin = data.loss$vL_MaxMin, vR_MaxMin = data.loss$vR_MaxMin,
     LAmt = data.loss$LAmt,
     LProb = data.loss$LProb,
     RAmt = data.loss$RAmt,
@@ -74,20 +54,22 @@ make_expdata = function(data, training, studydir="error", dataset="error", minOu
   expdataGain = expdataGain %>% arrange(parcode, trial)
   expdataLoss = expdataLoss %>% arrange(parcode, trial)
   
-  if (training) {
-    fnGain = "/expdataGain_train.csv"
-    fnLoss = "/expdataLoss_train.csv"
-  } else {
-    fnGain = "/expdataGain_test.csv"
-    fnLoss = "/expdataLoss_test.csv"
-  }
   write.csv(
-    expdataGain,
-    file=file.path(studydir, paste0(dataset, fnGain)), 
+    expdataGain[expdataGain$trial%%10!=0,],
+    file=file.path(studydir, paste0(dataset, "/expdataGain_train.csv")), 
     row.names=F)
   write.csv(
-    expdataLoss,
-    file=file.path(studydir, paste0(dataset, fnLoss)), 
+    expdataLoss[expdataLoss$trial%%10!=0,],
+    file=file.path(studydir, paste0(dataset, "/expdataLoss_train.csv")), 
+    row.names=F)
+  
+  write.csv(
+    expdataGain[expdataGain$trial%%10==0,],
+    file=file.path(studydir, paste0(dataset, "/expdataGain_test.csv")), 
+    row.names=F)
+  write.csv(
+    expdataLoss[expdataLoss$trial%%10==0,],
+    file=file.path(studydir, paste0(dataset, "/expdataLoss_test.csv")), 
     row.names=F)}
 
 
@@ -95,10 +77,9 @@ make_expdata = function(data, training, studydir="error", dataset="error", minOu
 # FUNCTION: fixations [parcode, trial, fix_item, fix_time]
 ##########################################################################################
 
-make_fixations = function(data, training, studydir="error", dataset="error") {
+make_fixations = function(data, studydir="error", dataset="error") {
   
   #cleaning
-  if (training) {data = data[data$trial%%10!=0,]} else {data = data[data$trial%%10==0,]}
   data$rt = data$rt*1000
   data$fix_start = floor(data$fix_start*1000)
   data$fix_start[data$fix_start==1] = 0 # ET takes a ms to start rec, looks like 1 ms latency.
@@ -160,21 +141,28 @@ make_fixations = function(data, training, studydir="error", dataset="error") {
   
   # Run the function for the gain and loss trials separately and save.
   fixationsGain = expand_then_collapse_fixations(data.gain)
-  if (training) {
-    fnGain = "/fixationsGain_train.csv"
-    fnLoss = "/fixationsLoss_train.csv"
-  } else {
-    fnGain = "/fixationsGain_test.csv"
-    fnLoss = "/fixationsLoss_test.csv"
-  }
-  write.csv(
-    fixationsGain,
-    file=file.path(studydir, paste0(dataset, fnGain)), 
-    row.names=F)
   fixationsLoss = expand_then_collapse_fixations(data.loss)
+  
+  
+  fixationsGain = fixationsGain %>% arrange(parcode, trial)
+  fixationsLoss = fixationsLoss %>% arrange(parcode, trial)
+  
   write.csv(
-    fixationsLoss,
-    file=file.path(studydir, paste0(dataset, fnLoss)), 
+    fixationsGain[fixationsGain$trial%%10!=0,],
+    file=file.path(studydir, paste0(dataset, "/fixationsGain_train.csv")), 
+    row.names=F)
+  write.csv(
+    fixationsLoss[fixationsLoss$trial%%10!=0,],
+    file=file.path(studydir, paste0(dataset, "/fixationsLoss_train.csv")), 
+    row.names=F)
+  
+  write.csv(
+    fixationsGain[fixationsGain$trial%%10==0,],
+    file=file.path(studydir, paste0(dataset, "/fixationsGain_test.csv")), 
+    row.names=F)
+  write.csv(
+    fixationsLoss[fixationsLoss$trial%%10==0,],
+    file=file.path(studydir, paste0(dataset, "/fixationsLoss_test.csv")), 
     row.names=F)}
 
 
@@ -182,49 +170,27 @@ make_fixations = function(data, training, studydir="error", dataset="error") {
 # Dots
 ##########################################################################################
 
-load(file.path(dots_datadir, "e/cfr_dots.RData"))
-make_expdata(cfr_dots, training = T, studydir = dots_datadir, dataset = "e",
-             minOutcome = c(0, -5.5), maxOutcome = c(5.5, 0)) # c(gain, loss)
-make_expdata(cfr_dots, training = F, studydir = dots_datadir, dataset = "e",
-             minOutcome = c(0, -5.5), maxOutcome = c(5.5, 0))
-#make_fixations(cfr_dots, training = T, studydir = dots_datadir, dataset = "e")
-#make_fixations(cfr_dots, training = F, studydir = dots_datadir, dataset = "e")
+#load(file.path(dots_datadir, "e/cfr_dots.RData"))
+#make_expdata(cfr_dots, studydir = dots_datadir, dataset = "e",
+#             minOutcome = c(0, -5.5), maxOutcome = c(5.5, 0)) # c(gain, loss)
+#make_fixations(cfr_dots, studydir = dots_datadir, dataset = "e")
 
 load(file.path(dots_datadir, "c/cfr_dots.RData"))
-make_expdata(cfr_dots, training = T, studydir = dots_datadir, dataset = "c",
+make_expdata(cfr_dots, studydir = dots_datadir, dataset = "c",
              minOutcome = c(0, -5.5), maxOutcome = c(5.5, 0)) # c(gain, loss)
-make_expdata(cfr_dots, training = F, studydir = dots_datadir, dataset = "c",
-             minOutcome = c(0, -5.5), maxOutcome = c(5.5, 0))
-#make_fixations(cfr_dots, training = T, studydir = dots_datadir, dataset = "c")
-#make_fixations(cfr_dots, training = F, studydir = dots_datadir, dataset = "c")
-
-load(file.path(dots_datadir, "j/cfr_dots.RData"))
-make_expdata(cfr_dots, training = F, studydir = dots_datadir, dataset = "j",
-             minOutcome = c(0, -5.5), maxOutcome = c(5.5, 0))
-#make_fixations(cfr_dots, training = F, studydir = dots_datadir, dataset = "j")
+make_fixations(cfr_dots, studydir = dots_datadir, dataset = "c")
 
 
 ##########################################################################################
 # Numeric
 ##########################################################################################
 
-load(file.path(numeric_datadir, "e/cfr_numeric.RData"))
-make_expdata(cfr_numeric, training = T, studydir = numeric_datadir, dataset = "e",
-             minOutcome = c(0, -12), maxOutcome = c(12, 0))
-make_expdata(cfr_numeric, training = F, studydir = numeric_datadir, dataset = "e",
-             minOutcome = c(0, -12), maxOutcome = c(12, 0))
-#make_fixations(cfr_numeric, training = T, studydir = numeric_datadir, dataset = "e")
-#make_fixations(cfr_numeric, training = F, studydir = numeric_datadir, dataset = "e")
+#load(file.path(numeric_datadir, "e/cfr_numeric.RData"))
+#make_expdata(cfr_numeric, studydir = numeric_datadir, dataset = "e",
+#             minOutcome = c(0, -12), maxOutcome = c(12, 0))
+#make_fixations(cfr_numeric, studydir = numeric_datadir, dataset = "e")
 
 load(file.path(numeric_datadir, "c/cfr_numeric.RData"))
-make_expdata(cfr_numeric, training = T, studydir = numeric_datadir, dataset = "c",
+make_expdata(cfr_numeric, studydir = numeric_datadir, dataset = "c",
              minOutcome = c(0, -12), maxOutcome = c(12, 0))
-make_expdata(cfr_numeric, training = F, studydir = numeric_datadir, dataset = "c",
-             minOutcome = c(0, -12), maxOutcome = c(12, 0))
-#make_fixations(cfr_numeric, training = T, studydir = numeric_datadir, dataset = "c")
-#make_fixations(cfr_numeric, training = F, studydir = numeric_datadir, dataset = "c")
-
-load(file.path(numeric_datadir, "j/cfr_numeric.RData"))
-make_expdata(cfr_numeric, training = F, studydir = numeric_datadir, dataset = "j",
-             minOutcome = c(0, -12), maxOutcome = c(12, 0))
-#make_fixations(cfr_numeric, training = F, studydir = numeric_datadir, dataset = "j")
+make_fixations(cfr_numeric, studydir = numeric_datadir, dataset = "c")

@@ -36,7 +36,7 @@ Generate a DDM trial given the item values.
 # Returns
 - An Trial object resulting from the simulation.
 """
-function MaxMin_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationData, 
+function aDDM_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationData, 
                         valueLeft::Number, valueRight::Number, 
                         LProb::Number, LAmt::Number, RAmt::Number, RProb::Number,
                         minOutcome::Number, maxOutcome::Number,
@@ -190,9 +190,9 @@ function MaxMin_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationDat
             if currFixLocation == 0
                 μ = 0
             elseif currFixLocation == 1
-                μ = model.d * ((model.θ * valueLeft) - valueRight)
-            elseif currFixLocation == 2
                 μ = model.d * (valueLeft - (model.θ * valueRight))
+            elseif currFixLocation == 2
+                μ = model.d * ((model.θ * valueLeft) - valueRight)
             end
 
             # Sample the change in RDV from the distribution.

@@ -69,7 +69,7 @@ for row in eachrow(subset_estimates)
         nonDecisionTime = 100,
         decay = 0
     )
-    model.ref = row.ref;
+    #model.ref = row.ref;
     model.subject = row.subject;
     push!(model_list, model);
 end
@@ -160,7 +160,7 @@ for row in eachrow(subset_estimates)
         nonDecisionTime = 100,
         decay = 0
     )
-    model.ref = row.ref;
+    #model.ref = row.ref;
     model.subject = row.subject;
     push!(model_list, model);
 end
@@ -267,13 +267,13 @@ for row in eachrow(subset_estimates)
         nonDecisionTime = 100,
         decay = 0
     )
-    model.ref = row.ref;
+    #model.ref = row.ref;
     push!(model_list, model);
     push!(subject_list, row.subject);
 end
  # SIM: Data
-expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/j/expdata"*condition*"_test.csv", DataFrame);
-fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/j/fixations"*condition*"_test.csv", DataFrame);
+expdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/expdata"*condition*"_test.csv", DataFrame);
+fixdata_raw = CSV.read("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/"*studyName*"/e/fixations"*condition*"_test.csv", DataFrame);
 
 # DO SIM
 for subject in 1:length(subject_list)
@@ -359,7 +359,7 @@ for row in eachrow(subset_estimates)
         nonDecisionTime = 100,
         decay = 0
     )
-    model.ref = row.ref;
+    #model.ref = row.ref;
     push!(model_list, model);
     push!(subject_list, row.subject);
 end

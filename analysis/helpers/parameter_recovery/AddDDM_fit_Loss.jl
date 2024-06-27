@@ -20,7 +20,7 @@ end
 outdir = predir * most_recent_run * "/";
 
 # Participants
-study_participants = collect(1:20);
+study_participants = collect(1:27);
 #---------------------------------------------------------------------------------------
 
 # Data should be carried over from running RaDDM_simulate_*.jl

@@ -63,8 +63,8 @@ getData = function(folder, studyN, condition, subjectList) {
   
   posteriors_df$likelihood_fn = factor(
     posteriors_df$likelihood_fn,
-    levels=c("AddDDM_likelihood","RaDDM_likelihood","MaxMin_likelihood", "StatusQuo_likelihood"),
-    labels=c("AddDDM","RaDDM","MMaDDM", "SQaDDM")
+    levels=c("AddDDM_likelihood","RaDDM_likelihood"),
+    labels=c("AddDDM","RaDDM")
   )
 
   posteriors_df$study = factor(posteriors_df$studyN, levels=c(1,2), labels=c("Study 1","Study 2"))

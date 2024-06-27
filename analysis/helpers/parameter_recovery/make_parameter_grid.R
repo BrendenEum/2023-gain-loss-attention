@@ -1,10 +1,9 @@
 #####################################################################
 # COMMON GRIDS
-d_grid_normal = seq(.001, .010, .001)
-sigma_grid = seq(.03, .09, .01)
+d_grid_normal = seq(.001, .009, .001)
+sigma_grid = seq(.01, .09, .01)
 theta_grid = seq(0, 1, .1)
 eta_grid = seq(.000, .010, .001)
-ref_grid = seq(-20, 12, 4) # minOutcome by block ranges from (-12,0). Let's add buffer around that.
 #####################################################################
 
 ####################################
@@ -43,8 +42,7 @@ write.csv(AddDDM_grid, file=fn, row.names=F)
 RaDDM_grid = list(
     d = d_grid_normal,
     sigma = sigma_grid,
-    theta = theta_grid,
-    ref = ref_grid
+    theta = theta_grid
 )
 RaDDM_grid = expand.grid(RaDDM_grid)
 fn = paste0("parameter_grids/RaDDM_grid.csv")

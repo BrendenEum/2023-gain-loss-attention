@@ -4,9 +4,8 @@
 
 # Libraries, seeds, and directories
 using ADDM, CSV, DataFrames, DataFramesMeta, Distributed, Distributions, LinearAlgebra, Base.Threads, Dates
-using IterTools: product
+using IterTools:product
 seed = 1337;
-fitdir = "../aDDM_fitting/"
 
 # ------------------------------------------------------------------------------------
 # Things to change!
@@ -19,13 +18,13 @@ include("custom_simulators/AddDDM_simulate_trial.jl")
 simulator_fn = AddDDM_simulate_trial;
 
 # Stimuli for loss simulations
-expdata = fitdir * "data/study2L_expdata.csv";
-fixdata = fitdir * "data/study2L_fixations.csv";
- 
+expdata = "../../../data/processed_data/numeric/e/expdataLoss_train.csv";
+fixdata = "../../../data/processed_data/numeric/e/fixationsLoss_train.csv";
+
 # Parameter values for parameter recovery exercise 
-d_grid = [.003, .007];
-σ_grid = [.03, .07];
-η_grid = [.001, .003, .005, .007, .009];
+d_grid = [.002, .005, .008];
+σ_grid = [.02, .05, .08];
+η_grid = [.001, .005, .009];
 # ------------------------------------------------------------------------------------
 
 # Prep output foler
@@ -39,7 +38,7 @@ mkpath(outdir);
 
 # Process experiment and fixation data
 data = ADDM.load_data_from_csv(expdata, fixdata; stimsOnly=true);
-Stims = ADDM.process_stimuli(data, 81);
+Stims = ADDM.process_stimuli(data, 146);
 Fixations = ADDM.process_fixations(data, fixDistType="simple");
 
 # Param grid to simulate with
@@ -52,30 +51,36 @@ CSV.write(outdir * "sim_grid.csv", sim_grid_df);
 # Simulate Data
 ##########################################
 
-# Placeholder
-SimulatedDataList = [];
-SimDataBehList = [];
-SimDataFixList = [];
-
 # Loop through parameter combinations
-for i in 1:nrow(sim_grid_df)
+for subject in 1:nrow(sim_grid_df)
 
     # Get the row
-    row = sim_grid_df[i,:]
+    row = sim_grid_df[subject,:]
 
     # Define the model object
     MyModel = ADDM.define_model(d = row.d, σ = row.sigma, θ = 1.0, η = row.eta, bias = 0.0, nonDecisionTime = 100, decay = 0.0);
 
     # Simulate data using the model object (with default settings: 10ms timeSteps, 100000 timeStep cutoff)
     MyArgs = (timeStep = 10.0, cutOff = 20000, fixationData = Fixations);
-    SimulatedData = ADDM.simulate_data(MyModel, Stims, simulator_fn, MyArgs);
-    push!(SimulatedDataList, SimulatedData)
+    SimData = ADDM.simulate_data(MyModel, Stims, simulator_fn, MyArgs);
 
-    # Save SimData
-    SimDataDf = ADDM.process_simulations(SimulatedData); # [1]=Behavioral, [2]=Fixations
-    push!(SimDataBehList, SimDataDf[1]);
-    CSV.write(outdir * "sim_data_beh_$(i).csv", SimDataDf[1])
-    push!(SimDataFixList, SimDataDf[2]);
-    CSV.write(outdir * "sim_data_fix_$(i).csv", SimDataDf[2])
+    # Make SimData
+    SimDataBehDf = DataFrame()
+    SimDataFixDf = DataFrame()
+    for (i, cur_trial) in enumerate(SimData)
+        cur_fix_df = DataFrame(:fix_item => cur_trial.fixItem, :fix_time => cur_trial.fixTime)
+        cur_fix_df[!, :parcode] .= subject
+        cur_fix_df[!, :trial] .= i  
+        cur_fix_df[!, :condition] .= "Loss"
+        SimDataFixDf = vcat(SimDataFixDf, cur_fix_df, cols=:union)
+        cur_beh_df = DataFrame(:parcode => subject, :trial => i, :condition => "Loss", :choice => cur_trial.choice, :rt => cur_trial.RT, :item_left => cur_trial.valueLeft, :item_right => cur_trial.valueRight, :LProb => cur_trial.LProb, :LAmt => cur_trial.LAmt, :RProb => cur_trial.RProb, :RAmt => cur_trial.RAmt)
+        SimDataBehDf = vcat(SimDataBehDf, cur_beh_df, cols=:union)
+    end
+    
+    # Save data
+    fn = "sim_data_beh_" * string(subject) * "_" * ".csv"
+    CSV.write(outdir * fn, SimDataBehDf)
+    fn = "sim_data_fix_" * string(subject) * "_" * ".csv"
+    CSV.write(outdir * fn, SimDataFixDf)
     
 end

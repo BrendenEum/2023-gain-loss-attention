@@ -59,8 +59,8 @@ getData = function(folder, studyN, condition, subjectList) {
   
   posteriors_df$likelihood_fn = factor(
     posteriors_df$likelihood_fn,
-    levels=c("AddDDM_likelihood","RaDDM_likelihood","MaxMin_likelihood", "StatusQuo_likelihood"),
-    labels=c("AddDDM","RaDDM","MMaDDM", "SQaDDM")
+    levels=c("AddDDM_likelihood","RaDDM_likelihood"),
+    labels=c("AddDDM","RaDDM")
   )
 
   posteriors_df$study = factor(posteriors_df$studyN, levels=c(1,2), labels=c("Study 1","Study 2"))
@@ -103,7 +103,7 @@ pdata = bestFits %>%
 plt = ggplot(pdata, aes(y = freq, axis1 = likelihood_gain, axis2 = likelihood_loss)) +
   myPlot + 
   
-  geom_alluvium(aes(fill=likelihood_gain)) +
+  geom_alluvium(aes(fill=likelihood_loss)) +
   geom_stratum(width = 1/6, alpha = .74) +
   geom_text(stat = "stratum", aes(label = after_stat(stratum))) +
   

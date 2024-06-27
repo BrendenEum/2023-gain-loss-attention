@@ -29,8 +29,8 @@ AddDDM_Loss_dir = file.path("results_AddDDM_Loss/", pr_trials)
 RaDDM_Gain_dir = file.path("results_RaDDM_Gain/", pr_trials)
 RaDDM_Loss_dir = file.path("results_RaDDM_Loss/", pr_trials)
 
-Add_subjects = c(1:24)
-Ref_subjects = c(1:36)
+Add_subjects = c(1:36)
+Ref_subjects = c(1:27)
 
 ######################################################
 # Model recovery
@@ -52,8 +52,8 @@ getModelPosteriors = function(folder, condition, subjectList) {
   
   posteriors_df$likelihood_fn = factor(
     posteriors_df$likelihood_fn,
-    levels=c("AddDDM_likelihood","RaDDM_likelihood","MaxMin_likelihood", "StatusQuo_likelihood"),
-    labels=c("AddDDM","RaDDM","MMaDDM", "SQaDDM")
+    levels=c("AddDDM_likelihood","RaDDM_likelihood"),
+    labels=c("AddDDM","RaDDM")
   )
   
   return(posteriors_df)

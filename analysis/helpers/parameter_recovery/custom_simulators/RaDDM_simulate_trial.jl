@@ -45,12 +45,12 @@ function RaDDM_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationData
     
     fixUnfixValueDiffs = Dict(1 => valueLeft - valueRight, 2 => valueRight - valueLeft)
 
-    ZeroAmt_RD = ((0 - minOutcome) / (maxOutcome - minOutcome)) - model.ref
+    ZeroAmt_RD = 0 - minOutcome
 
-    LAmt_RD = ((LAmt - minOutcome) / (maxOutcome - minOutcome)) - model.ref
+    LAmt_RD = LAmt - minOutcome
     vL = (LProb * LAmt_RD) + ((1-LProb) * ZeroAmt_RD)
 
-    RAmt_RD = ((RAmt - minOutcome) / (maxOutcome - minOutcome)) - model.ref
+    RAmt_RD = RAmt - minOutcome
     vR = (RProb * RAmt_RD) + ((1-RProb) * ZeroAmt_RD)
     
     fixItem = Number[]

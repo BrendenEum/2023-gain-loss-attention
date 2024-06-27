@@ -70,8 +70,8 @@ function load_data_from_csv(expdataFileName, fixationsFileName = nothing; stimsO
     end
     
     # Add optional data here (reference-dependent values and amts and probabilities)
-    if (!("vL_StatusQuo" in names(df)) || !("vR_StatusQuo" in names(df)) || !("vL_MaxMin" in names(df)) || !("vR_MaxMin" in names(df)) || !("LAmt" in names(df)) || !("LProb" in names(df)) || !("RAmt" in names(df)) || !("RProb" in names(df)) || !("minOutcome" in names(df)) || !("maxOutcome" in names(df))) 
-      throw(error("Missing field in experimental data file. Fields required: v*_StatusQuo, v*_MaxMin, *Amt, *Prob., minOutcome, maxOutcome"))
+    if (!("LAmt" in names(df)) || !("LProb" in names(df)) || !("RAmt" in names(df)) || !("RProb" in names(df)) || !("minOutcome" in names(df)) || !("maxOutcome" in names(df))) 
+      throw(error("Missing field in experimental data file. Fields required: *Amt, *Prob., minOutcome, maxOutcome"))
     end
 
     for subjectId in subjectIds
@@ -80,10 +80,6 @@ function load_data_from_csv(expdataFileName, fixationsFileName = nothing; stimsO
       for (t, trialId) in enumerate(trialIds)
         trial_df = parcode_df[parcode_df.trial .== trialId, :]
         dataTrial = Matrix(trial_df)
-        data[subjectId][t].vL_StatusQuo = trial_df.vL_StatusQuo[1]
-        data[subjectId][t].vR_StatusQuo = trial_df.vR_StatusQuo[1]
-        data[subjectId][t].vL_MaxMin = trial_df.vL_MaxMin[1]
-        data[subjectId][t].vR_MaxMin = trial_df.vR_MaxMin[1]
 
         data[subjectId][t].LAmt = trial_df.LAmt[1]
         data[subjectId][t].LProb = trial_df.LProb[1]
@@ -203,12 +199,11 @@ function process_simulations(SimulatedData::Vector{ADDM.Trial}, Details::Bool = 
       # "parcode","trial","rt","choice","LProb","LAmt","RProb","RAmt"
       if Details
         cur_beh_df = DataFrame(
-          :studyN => studyN, :parcode => subject_list[subject], :trial => i, :condition => condition, :sim => sim, :choice => cur_trial.choice, :rt => cur_trial.RT, :item_left => cur_trial.valueLeft, :item_right => cur_trial.valueRight, :LProb => cur_trial.LProb, :LAmt => cur_trial.LAmt, :RProb => cur_trial.RProb, :RAmt => cur_trial.RAmt
+          :studyN => studyN, :parcode => subject_list[subject], :trial => i, :condition => condition, :sim => sim, :choice => cur_trial.choice, :rt => cur_trial.RT, :item_left => cur_trial.valueLeft, :item_right => cur_trial.valueRight, :LProb => cur_trial.LProb, :LAmt => cur_trial.LAmt, :RProb => cur_trial.RProb, :RAmt => cur_trial.RAmt, :minOutcome => cur_trial.minOutcome, :maxOutcome => cur_trial.maxOutcome
         )
       else
         cur_beh_df = DataFrame(
-          :parcode => 1, :trial => i, :choice => cur_trial.choice, :rt => cur_trial.RT, 
-          :valueLeft => cur_trial.valueLeft, :valueRight => cur_trial.valueRight
+          :trial => i, :choice => cur_trial.choice, :rt => cur_trial.RT, :item_left => cur_trial.valueLeft, :item_right => cur_trial.valueRight, :LProb => cur_trial.LProb, :LAmt => cur_trial.LAmt, :RProb => cur_trial.RProb, :RAmt => cur_trial.RAmt, :minOutcome => cur_trial.minOutcome, :maxOutcome => cur_trial.maxOutcome
         )
       end
       
