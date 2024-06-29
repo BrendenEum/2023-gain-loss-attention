@@ -48,16 +48,20 @@ fixprop.prfirst.reg <- function(data, study="error", dataset="error") {
               firstBest = sum(firstBest))
   
   priors <- c(
-    set_prior("normal(0, 0.1)", class = "Intercept"),  # Prior for the intercept
-    set_prior("normal(0, 0.1)", class = "b", coef = "ndifficulty"),  # Prior for ndifficulty
-    set_prior("normal(0, 0.1)", class = "b", coef = "relevelconditionrefEQGainLoss")  # Prior for relevel(condition)
+    set_prior("normal(0, 0.2)", class = "Intercept"), 
+    set_prior("normal(0, 0.5)", class = "b", coef = "zndifficulty"),  
+    set_prior("normal(0, 0.2)", class = "b", coef = "relevelconditionrefEQGainLoss"), 
+    set_prior("normal(0, 0.2)", class = "b", coef = "zndifficulty:relevelconditionrefEQGainLoss")  
   )
+  
+  data$zndifficulty = scale(data$ndifficulty)
 
-  results <- brm(
-    firstBest | trials(n) ~ ndifficulty*relevel(condition,ref="Gain") + (1+ndifficulty*relevel(condition,ref="Gain") | subject),
+  results <- my_brm(
+    firstBest | trials(n) ~ zndifficulty*relevel(condition,ref="Gain") + (1+zndifficulty*relevel(condition,ref="Gain") | subject),
     data=data,
     family = binomial(link="logit"),
     prior = priors,
+    control = list(adapt_delta = 0.85),
     file = file.path(tempregdir, paste0(study, "_FixationProcess_FirstBest_", dataset)))
   
   return(results)

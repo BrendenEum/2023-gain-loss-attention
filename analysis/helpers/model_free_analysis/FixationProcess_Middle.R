@@ -38,11 +38,21 @@ fixprop.mid.plt <- function(data, xlim) {
 fixprop.mid.reg <- function(data, study="error", dataset="error") {
 
   data <- data[data$middleFix==T,]
+  
+  priors <- c(
+    set_prior("normal(0, 1.0)", class = "Intercept"), 
+    set_prior("normal(0, 0.5)", class = "b", coef = "zndifficulty"),  
+    set_prior("normal(0, 0.1)", class = "b", coef = "relevelconditionrefEQGainLoss"), 
+    set_prior("normal(0, 0.1)", class = "b", coef = "zndifficulty:relevelconditionrefEQGainLoss")  
+  )
+  
+  data$zndifficulty = scale(data$ndifficulty)
 
-  results <- brm(
-    fix_dur ~ ndifficulty*relevel(condition,ref="Gain") + (1+ndifficulty*relevel(condition,ref="Gain") | subject),
+  results <- my_brm(
+    fix_dur ~ zndifficulty*relevel(condition,ref="Gain") + (1+zndifficulty*relevel(condition,ref="Gain") | subject),
     data=data,
     family = gaussian(),
+    prior = priors,
     file = file.path(tempregdir, paste0(study, "_FixationProcess_Middle_", dataset)))
   
   return(results)

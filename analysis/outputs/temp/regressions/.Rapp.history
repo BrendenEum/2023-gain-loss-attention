@@ -1,5 +1,4 @@
 load("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/dots_BasicPsychometrics_Choice_E.rds")
-load("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/dots_BasicPsychometrics_Choice_E.rds")
 readRDS("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/dots_BasicPsychometrics_Choice_E.rds")
 readRDS("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/numeric_BasicPsychometrics_Choice_E.rds")
 readRDS("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/dots_BasicPsychometrics_RT_E.rds")
@@ -10,12 +9,10 @@ readRDS("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/r
 readRDS("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/dots_FixationProcess_Middle_E.rds")
 readRDS("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/numeric_FixationProcess_Middle_E.rds")
 /Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/dots_FixationProcess_First_E.rds
-/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/dots_FixationProcess_First_E.rds
 readRDS("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/dots_FixationProcess_First_E.rds")
 readRDS("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/numeric_FixationProcess_First_E.rds")
 readRDS("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/dots_FixationProcess_Net_E.rds")
 readRDS("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/numeric_FixationProcess_Net_E.rds")
-readRDS("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/dots_FixationProcess_FirstBest_E.rds")
 readRDS("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/dots_FixationProcess_FirstBest_E.rds")
 readRDS("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/numeric_FixationProcess_FirstBest_E.rds")
 readRDS("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/dots_ChoiceBiases_Net_E.rds")
@@ -50,3 +47,4 @@ readRDS("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/r
 readRDS("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/numeric_ChoiceBiases_Net_E.rds")
 readRDS("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/numeric_ChoiceBiases_Last_E.rds")
 readRDS("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/numeric_ChoiceBiases_First_E.rds")
+load("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/outputs/temp/regressions/dots_FixationProcess_Middle_E.rds")

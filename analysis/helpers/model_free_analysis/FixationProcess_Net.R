@@ -37,11 +37,21 @@ fixprop.net.plt <- function(data, xlim) {
 fixprop.net.reg <- function(data, study="error", dataset="error") {
 
   data <- data[data$firstFix==T,]
+  
+  priors <- c(
+    set_prior("normal(0, 0.5)", class = "Intercept"), 
+    set_prior("normal(0, 0.5)", class = "b", coef = "znvDiff"),  
+    set_prior("normal(0, 0.2)", class = "b", coef = "relevelconditionrefEQGainLoss"), 
+    set_prior("normal(0, 0.2)", class = "b", coef = "znvDiff:relevelconditionrefEQGainLoss")  
+  )
+  
+  data$znvDiff = scale(data$nvDiff)
 
-  results <- brm(
-    net_fix ~ nvDiff*relevel(condition,ref="Gain") + (1+nvDiff*relevel(condition,ref="Gain") | subject),
+  results <- my_brm(
+    net_fix ~ znvDiff*relevel(condition,ref="Gain") + (1+znvDiff*relevel(condition,ref="Gain") | subject),
     data=data,
     family = gaussian(),
+    prior = priors,
     file = file.path(tempregdir, paste0(study, "_FixationProcess_Net_", dataset)))
   
   return(results)

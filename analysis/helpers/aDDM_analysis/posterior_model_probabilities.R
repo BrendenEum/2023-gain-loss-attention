@@ -108,7 +108,7 @@ plt = ggplot(pdata, aes(x=likelihood_fn, y=posterior_sum)) +
     strip.background = element_blank(),
     strip.text.y = element_blank(),
     panel.spacing = unit(1, "lines"),
-    legend.position = c(.375,.88)
+    legend.position = c(.465,.89)
   ) 
 
 plot(plt)

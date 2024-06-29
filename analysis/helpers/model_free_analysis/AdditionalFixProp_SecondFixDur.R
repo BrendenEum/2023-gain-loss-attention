@@ -36,11 +36,21 @@ addfixprop.second.plt <- function(data, xlim) {
 addfixprop.second.reg <- function(data, study="error", dataset="error") {
 
   data <- data[data$fix_num==2,]
+  
+  priors <- c(
+    set_prior("normal(0, 1.0)", class = "Intercept"), 
+    set_prior("normal(0, 0.5)", class = "b", coef = "zndifficulty"),  
+    set_prior("normal(0, 0.2)", class = "b", coef = "relevelconditionrefEQGainLoss"), 
+    set_prior("normal(0, 0.1)", class = "b", coef = "zndifficulty:relevelconditionrefEQGainLoss")  
+  )
+  
+  data$zndifficulty = scale(data$ndifficulty)
 
-  results <- brm(
-    fix_dur ~ ndifficulty*relevel(condition,ref="Gain") + (1+ndifficulty*relevel(condition,ref="Gain") | subject),
+  results <- my_brm(
+    fix_dur ~ zndifficulty*relevel(condition,ref="Gain") + (1+zndifficulty*relevel(condition,ref="Gain") | subject),
     data=data,
     family = gaussian(),
+    prior = priors,
     file = file.path(tempregdir, paste0(study, "_AdditionalFixProp_SecondFixDur_", dataset)))
   
   return(results)

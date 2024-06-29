@@ -47,10 +47,24 @@ addfixprop.firstLeft.reg <- function(data, study="error", dataset="error") {
     summarize(n = sum(n),
               countLeft = sum(location_numeric))
   
-  results <- brm(
-    countLeft | trials(n) ~ nvDiff*relevel(condition,ref="Gain") + (1+nvDiff*relevel(condition,ref="Gain") | subject),
+  if (study=="dots") {prior_intercept = "normal(0, 1.2)"}
+  if (study=="numeric") {prior_intercept = "normal(0, 0.5)"}
+  
+  priors <- c(
+    set_prior(prior_intercept, class = "Intercept"), 
+    set_prior("normal(0, 0.1)", class = "b", coef = "znvDiff"),  
+    set_prior("normal(0, 0.1)", class = "b", coef = "relevelconditionrefEQGainLoss"), 
+    set_prior("normal(0, 0.1)", class = "b", coef = "znvDiff:relevelconditionrefEQGainLoss")  
+  )
+  
+  data$znvDiff = scale(data$nvDiff)
+  
+  results <- my_brm(
+    countLeft | trials(n) ~ znvDiff*relevel(condition,ref="Gain") + (1+znvDiff*relevel(condition,ref="Gain") | subject),
     data=data,
     family = binomial(link="logit"),
+    prior = priors,
+    control = list(adapt_delta = 0.99),
     file = file.path(tempregdir, paste0(study, "_AdditionalFixProp_PrFirstLeft", dataset)))
   
   return(results)

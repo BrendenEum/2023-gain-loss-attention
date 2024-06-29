@@ -55,11 +55,22 @@ bias.lastfix.reg <- function(data, study="error", dataset="error") {
     group_by(subject, condition, nlastOtherVDiff) %>%
     summarize(n = sum(n),
               choice = sum(choseLastFix))
+  
+  priors <- c(
+    set_prior("normal(0, 2.0)", class = "Intercept"), 
+    set_prior("normal(0, 8.0)", class = "b", coef = "znlastOtherVDiff"),  
+    set_prior("normal(0, 1.0)", class = "b", coef = "relevelconditionrefEQGainLoss"), 
+    set_prior("normal(0, 1.0)", class = "b", coef = "znlastOtherVDiff:relevelconditionrefEQGainLoss")  
+  )
+  
+  data$znlastOtherVDiff = scale(data$nlastOtherVDiff)
 
-  results <- brm(
-    choice | trials(n) ~ nlastOtherVDiff*relevel(condition,ref="Gain") + (1+nlastOtherVDiff*relevel(condition,ref="Gain") | subject),
+  results <- my_brm(
+    choice | trials(n) ~ znlastOtherVDiff*relevel(condition,ref="Gain") + (1+znlastOtherVDiff*relevel(condition,ref="Gain") | subject),
     data=data,
     family = binomial(link="logit"),
+    prior = priors,
+    control = list(adapt_delta = 0.99),
     file = file.path(tempregdir, paste0(study, "_ChoiceBiases_Last_", dataset)))
   
   return(results)

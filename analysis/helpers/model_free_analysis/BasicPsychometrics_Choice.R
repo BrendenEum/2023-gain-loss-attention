@@ -50,7 +50,7 @@ psycho.choice.reg <- function(data, study="error", dataset="error") {
       n = sum(n),
       choice = sum(choice))
 
-  results <- brm(
+  results <- my_brm(
     choice | trials(n) ~ nvDiff*relevel(condition,ref="Gain") + (1+nvDiff*relevel(condition,ref="Gain") | subject),
     data = data,
     family = binomial(link='logit'),

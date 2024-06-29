@@ -20,7 +20,7 @@ tabdir = file.path("../../outputs/tables")
 refit = "always" # Run regressions? {always, on_change, never}
 show.reg.progress = 1 # 1: Show updates. 0: Nah.
 iter = 18000 # warmup + posterior samples
-brm <- function(...)
+my_brm <- function(...)
   brms::brm(
     ...,
     iter = iter, #samples from the posterior
@@ -33,77 +33,76 @@ brm <- function(...)
     file_refit = refit) 
 
 # Loop through each dataset
-for (dataset in c("ccfr.RData", "jcfr.RData")) { # already ran ecfr before. add it if you want to run all datasets.
+for (dataset in c("jcfr.RData") ) { #c("ecfr.RData", "ccfr.RData", "jcfr.RData")
   
   load(file.path(datadir, dataset))
   if (dataset=="ecfr.RData") {cfr = ecfr; ext="_E.pdf"; dataset="E"}
-  else if (dataset=="ccfr.RData") {cfr = ccfr; ext="_C.pdf"; dataset="C"}
-  else {cfr=jcfr; ext="_J.pdf"; dataset="J"}
+  if (dataset=="ccfr.RData") {cfr = ccfr; ext="_C.pdf"; dataset="C"}
+  if (dataset=="jcfr.RData")  {cfr=jcfr; ext="_J.pdf"; dataset="J"}
   
   #####################
   # Basic Psychometrics
   #####################
-  
-  # Choice
-  source(file.path(codedir, "BasicPsychometrics_Choice.R"))
-  reg.dots.psycho = psycho.choice.reg(
-    cfr[cfr$study=="dots",], 
-    study="dots",
-    dataset=dataset)
-  reg.numeric.psycho = psycho.choice.reg(
-    cfr[cfr$study=="numeric",], 
-    study="numeric",
-    dataset=dataset)
-  
-  # RT
-  source(file.path(codedir, "BasicPsychometrics_RT.R"))
-  reg.dots.rt = psycho.rt.reg(
-    cfr[cfr$study=="dots",], 
-    study="dots",
-    dataset=dataset)
-  reg.numeric.rt = psycho.rt.reg(
-    cfr[cfr$study=="numeric",], 
-    study="numeric",
-    dataset=dataset)
-  
-  # Number of Fixations
-  source(file.path(codedir, "BasicPsychometrics_NumberFixations.R"))
-  reg.dots.numfix = psycho.numfix.reg(
-    cfr[cfr$study=="dots",], 
-    study="dots",
-    dataset=dataset)
-  reg.numeric.numfix = psycho.numfix.reg(
-    cfr[cfr$study=="numeric",], 
-    study="numeric",
-    dataset=dataset)
+
+  # # Choice
+  # source(file.path(codedir, "BasicPsychometrics_Choice.R"))
+  # reg.dots.psycho = psycho.choice.reg(
+  #   cfr[cfr$study=="dots",], 
+  #   study="dots",
+  #   dataset=dataset)
+  # reg.numeric.psycho = psycho.choice.reg(
+  #   cfr[cfr$study=="numeric",], 
+  #   study="numeric",
+  #   dataset=dataset)
+  # 
+  # # RT
+  # source(file.path(codedir, "BasicPsychometrics_RT.R"))
+  # reg.dots.rt = psycho.rt.reg(
+  #   cfr[cfr$study=="dots",], 
+  #   study="dots",
+  #   dataset=dataset)
+  # reg.numeric.rt = psycho.rt.reg(
+  #   cfr[cfr$study=="numeric",], 
+  #   study="numeric",
+  #   dataset=dataset)
+  # 
+  # # Number of Fixations
+  # source(file.path(codedir, "BasicPsychometrics_NumberFixations.R"))
+  # reg.dots.numfix = psycho.numfix.reg(
+  #   cfr[cfr$study=="dots",], 
+  #   study="dots",
+  #   dataset=dataset)
+  # reg.numeric.numfix = psycho.numfix.reg(
+  #   cfr[cfr$study=="numeric",], 
+  #   study="numeric",
+  #   dataset=dataset)
   
   
   #####################
   # Fixation Process
   #####################
   
-  # First Fixation to Best
-  source(file.path(codedir, "FixationProcess_FirstBest.R"))
-  reg.dots.prfirst = fixprop.prfirst.reg(
-    cfr[cfr$study=="dots",], 
-    study="dots",
-    dataset=dataset)
-  beep()
-  reg.numeric.prfirst = fixprop.prfirst.reg(
-    cfr[cfr$study=="numeric",], 
-    study="numeric",
-    dataset=dataset)
-  
-  # Fixation Duration by Type
-  source(file.path(codedir, "FixationProcess_DurationType.R"))
-  reg.dots.durationtype = fixprop.durationtype.ttest(
-    cfr[cfr$study=="dots",], 
-    study="dots",
-    dataset=dataset)
-  reg.numeric.durationtype = fixprop.durationtype.ttest(
-    cfr[cfr$study=="numeric",], 
-    study="numeric",
-    dataset=dataset)
+  # # First Fixation to Best
+  # source(file.path(codedir, "FixationProcess_FirstBest.R"))
+  # reg.dots.prfirst = fixprop.prfirst.reg(
+  #   cfr[cfr$study=="dots",], 
+  #   study="dots",
+  #   dataset=dataset)
+  # reg.numeric.prfirst = fixprop.prfirst.reg(
+  #   cfr[cfr$study=="numeric",], 
+  #   study="numeric",
+  #   dataset=dataset)
+  # 
+  # # Fixation Duration by Type
+  # source(file.path(codedir, "FixationProcess_DurationType.R"))
+  # reg.dots.durationtype = fixprop.durationtype.ttest(
+  #   cfr[cfr$study=="dots",], 
+  #   study="dots",
+  #   dataset=dataset)
+  # reg.numeric.durationtype = fixprop.durationtype.ttest(
+  #   cfr[cfr$study=="numeric",], 
+  #   study="numeric",
+  #   dataset=dataset)
   
   # Middle Fixation Duration by Difficulty
   source(file.path(codedir, "FixationProcess_Middle.R"))
@@ -115,6 +114,8 @@ for (dataset in c("ccfr.RData", "jcfr.RData")) { # already ran ecfr before. add 
     cfr[cfr$study=="numeric",], 
     study="numeric",
     dataset=dataset)
+  rm(reg.dots.mid)
+  rm(reg.numeric.mid)
   
   # First Fixation Duration by Difficulty
   source(file.path(codedir, "FixationProcess_First.R"))
@@ -126,6 +127,8 @@ for (dataset in c("ccfr.RData", "jcfr.RData")) { # already ran ecfr before. add 
     cfr[cfr$study=="numeric",], 
     study="numeric",
     dataset=dataset)
+  rm(reg.dots.first)
+  rm(reg.numeric.first)
 
   # Net Fixation Duration by Value Difference
   source(file.path(codedir, "FixationProcess_Net.R"))
@@ -137,6 +140,8 @@ for (dataset in c("ccfr.RData", "jcfr.RData")) { # already ran ecfr before. add 
     cfr[cfr$study=="numeric",], 
     study="numeric",
     dataset=dataset)
+  rm(reg.dots.net)
+  rm(reg.numeric.net)
   
   
   #####################
@@ -153,44 +158,47 @@ for (dataset in c("ccfr.RData", "jcfr.RData")) { # already ran ecfr before. add 
     cfr[cfr$study=="numeric",], 
     study="numeric",
     dataset=dataset)
+  rm(reg.dots.netfix)
+  rm(reg.numeric.netfix)
   
-  # Last Fixation Bias
-  source(file.path(codedir, "ChoiceBiases_Last.R"))
-  reg.dots.lastfix = bias.lastfix.reg(
-    cfr[cfr$study=="dots",], 
-    study="dots",
-    dataset=dataset)
-  reg.numeric.lastfix = bias.lastfix.reg(
-    cfr[cfr$study=="numeric",], 
-    study="numeric",
-    dataset=dataset)
+  # # Last Fixation Bias
+  # source(file.path(codedir, "ChoiceBiases_Last.R"))
+  # reg.dots.lastfix = bias.lastfix.reg(
+  #   cfr[cfr$study=="dots",], 
+  #   study="dots",
+  #   dataset=dataset)
+  # reg.numeric.lastfix = bias.lastfix.reg(
+  #   cfr[cfr$study=="numeric",], 
+  #   study="numeric",
+  #   dataset=dataset)
   
-  # First Fixation Bias
-  source(file.path(codedir, "ChoiceBiases_First.R"))
-  reg.dots.firstfix = bias.firstfix.reg(
-    cfr[cfr$study=="dots",], 
-    study="dots",
-    dataset=dataset)
-  reg.numeric.firstfix = bias.firstfix.reg(
-    cfr[cfr$study=="numeric",], 
-    study="numeric",
-    dataset=dataset)
+  # # First Fixation Bias
+  # source(file.path(codedir, "ChoiceBiases_First.R"))
+  # reg.dots.firstfix = bias.firstfix.reg(
+  #   cfr[cfr$study=="dots",], 
+  #   study="dots",
+  #   dataset=dataset)
+  # reg.numeric.firstfix = bias.firstfix.reg(
+  #   cfr[cfr$study=="numeric",], 
+  #   study="numeric",
+  #   dataset=dataset)
+  # beep()
   
   
   #####################
   # Additional Fixation Properties
   #####################
   
-  # Pr First Fix Left
-  source(file.path(codedir, "AdditionalFixProp_PrFirstLeft.R"))
-  reg.dots.firstLeft = addfixprop.firstLeft.reg(
-    cfr[cfr$study=="dots",], 
-    study="dots",
-    dataset=dataset)
-  reg.numeric.firstLeft = addfixprop.firstLeft.reg(
-    cfr[cfr$study=="numeric",], 
-    study="numeric",
-    dataset=dataset)
+  # # Pr First Fix Left
+  # source(file.path(codedir, "AdditionalFixProp_PrFirstLeft.R"))
+  # reg.dots.firstLeft = addfixprop.firstLeft.reg(
+  #   cfr[cfr$study=="dots",], 
+  #   study="dots",
+  #   dataset=dataset)
+  # reg.numeric.firstLeft = addfixprop.firstLeft.reg(
+  #   cfr[cfr$study=="numeric",], 
+  #   study="numeric",
+  #   dataset=dataset)
   
   # Second Fix Dur
   source(file.path(codedir, "AdditionalFixProp_SecondFixDur.R"))
@@ -202,6 +210,8 @@ for (dataset in c("ccfr.RData", "jcfr.RData")) { # already ran ecfr before. add 
     cfr[cfr$study=="numeric",], 
     study="numeric",
     dataset=dataset)
+  rm(reg.dots.secondFixDur)
+  rm(reg.numeric.secondFixDur)
   
   # Third Fix Dur
   source(file.path(codedir, "AdditionalFixProp_ThirdFixDur.R"))
@@ -213,5 +223,7 @@ for (dataset in c("ccfr.RData", "jcfr.RData")) { # already ran ecfr before. add 
     cfr[cfr$study=="numeric",], 
     study="numeric",
     dataset=dataset)
+  rm(reg.dots.thirdFixDur)
+  rm(reg.numeric.thirdFixDur)
   
 }

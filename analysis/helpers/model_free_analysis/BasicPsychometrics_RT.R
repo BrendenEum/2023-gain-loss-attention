@@ -37,7 +37,7 @@ psycho.rt.reg <- function(data, study="error", dataset="error") {
 
   data <- data[data$firstFix==T,]
 
-  results <- brm(
+  results <- my_brm(
     rt ~ ndifficulty*relevel(condition,ref="Gain") + (1+ndifficulty*relevel(condition,ref="Gain") | subject),
     data=data,
     family = gaussian(),

@@ -170,27 +170,27 @@ make_fixations = function(data, studydir="error", dataset="error") {
 # Dots
 ##########################################################################################
 
-#load(file.path(dots_datadir, "e/cfr_dots.RData"))
-#make_expdata(cfr_dots, studydir = dots_datadir, dataset = "e",
-#             minOutcome = c(0, -5.5), maxOutcome = c(5.5, 0)) # c(gain, loss)
+load(file.path(dots_datadir, "e/cfr_dots.RData"))
+make_expdata(cfr_dots, studydir = dots_datadir, dataset = "e",
+             minOutcome = c(0, -10), maxOutcome = c(10, 0)) # c(gain, loss)
 #make_fixations(cfr_dots, studydir = dots_datadir, dataset = "e")
 
 load(file.path(dots_datadir, "c/cfr_dots.RData"))
 make_expdata(cfr_dots, studydir = dots_datadir, dataset = "c",
-             minOutcome = c(0, -5.5), maxOutcome = c(5.5, 0)) # c(gain, loss)
-make_fixations(cfr_dots, studydir = dots_datadir, dataset = "c")
+             minOutcome = c(0, -10), maxOutcome = c(10, 0)) # c(gain, loss)
+#make_fixations(cfr_dots, studydir = dots_datadir, dataset = "c")
 
 
 ##########################################################################################
 # Numeric
 ##########################################################################################
 
-#load(file.path(numeric_datadir, "e/cfr_numeric.RData"))
-#make_expdata(cfr_numeric, studydir = numeric_datadir, dataset = "e",
-#             minOutcome = c(0, -12), maxOutcome = c(12, 0))
+load(file.path(numeric_datadir, "e/cfr_numeric.RData"))
+make_expdata(cfr_numeric, studydir = numeric_datadir, dataset = "e",
+             minOutcome = c(0, -12), maxOutcome = c(12, 0))
 #make_fixations(cfr_numeric, studydir = numeric_datadir, dataset = "e")
 
 load(file.path(numeric_datadir, "c/cfr_numeric.RData"))
 make_expdata(cfr_numeric, studydir = numeric_datadir, dataset = "c",
              minOutcome = c(0, -12), maxOutcome = c(12, 0))
-make_fixations(cfr_numeric, studydir = numeric_datadir, dataset = "c")
+#make_fixations(cfr_numeric, studydir = numeric_datadir, dataset = "c")

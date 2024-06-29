@@ -38,7 +38,7 @@ psycho.numfix.reg <- function(data, study="error", dataset="error") {
 
   data <- data[data$lastFix==T,]
 
-  results <- brm(
+  results <- my_brm(
     fix_num ~ ndifficulty*relevel(condition,ref="Gain") + (1+ndifficulty*relevel(condition,ref="Gain") | subject),
     data=data,
     family = gaussian(),

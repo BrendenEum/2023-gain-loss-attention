@@ -65,8 +65,8 @@ getEst = function(gain_folder, loss_folder, subjectList) {
   
   posteriors$likelihood_fn = factor(
     posteriors$likelihood_fn,
-    levels=c("aDDM_likelihood","AddDDM_likelihood","RaDDM_likelihood"),
-    labels=c("aDDM","AddDDM","RaDDM")
+    levels=c("AddDDM_likelihood","RaDDM_likelihood"),
+    labels=c("AddDDM","RaDDM")
   )
   
   return(posteriors)
@@ -89,7 +89,7 @@ Study2$study = 2
 # Factor
 .data$study = factor(.data$study, levels=c(1,2), labels=c("1","2"))
 
-# Limit to just aDDM
+# Limit to just RaDDM
 .data = .data[.data$likelihood_fn=="AddDDM",]
 
 # Get best fitting parameters for each subject
@@ -133,7 +133,7 @@ dot_alpha = .6
 
 ggplot <- function(...) ggplot2::ggplot(...) + 
   theme_bw() +
-  scale_color_manual(values = c("1" = 'dodgerblue3', "2" = 'deeppink4')) +
+  scale_color_manual(values = c("1" = 'dodgerblue3', "2" = 'orange4')) +
   theme(
     legend.position = "none",
     legend.background=element_blank(),
@@ -162,51 +162,68 @@ plt1.compare.d.e <- ggplot(data=pdata) +
   geom_abline(intercept=0, slope=1, color=exact) +
   geom_count(aes(x=d_Gain, y=d_Loss, color = study), alpha=dot_alpha) +
   labs(x = TeX(r"(Gain $d$)"), y = TeX(r"(Loss $d$)")) +
-  coord_fixed() +
-  #coord_cartesian(xlim = c(0, .07), ylim = c(0, .07), expand=T) +
-  #scale_y_continuous(breaks = c(0, .010, .020), labels=c("0", ".01", ".02")) +
-  #scale_x_continuous(breaks = c(0, .010, .020), labels=c("0", ".01", ".02")) +
+  coord_cartesian(xlim = c(-.001, .025), ylim = c(-.001, .025), expand=T) +
+  scale_y_continuous(breaks = c(0, .012, .024), labels=c("0", ".012", ".024")) +
+  scale_x_continuous(breaks = c(0, .012, .024), labels=c("0", ".012", ".024")) +
   facet_grid(rows = vars(study)) 
 
 plt1.compare.s.e <- ggplot(data=pdata) +
   geom_abline(intercept=0, slope=1, color=exact) +
   geom_count(aes(x=sigma_Gain, y=sigma_Loss, color = study), alpha=dot_alpha) +
   labs(x = TeX(r"(Gain $\sigma$)"), y = TeX(r"(Loss $\sigma$)")) +
-  coord_fixed() +
-  #coord_cartesian(xlim=c(0,.1), ylim=c(0,.1), expand=T) +
-  #scale_y_continuous(breaks = c(0, 0.05, 0.1), labels=c("0", ".05", ".1")) +
-  #scale_x_continuous(breaks = c(0, 0.05, 0.1), labels=c("0", ".05", ".1")) +
+  coord_cartesian(xlim=c(0,.1), ylim=c(0,.1), expand=T) +
+  scale_y_continuous(breaks = c(0, 0.05, 0.1), labels=c("0", ".05", ".1")) +
+  scale_x_continuous(breaks = c(0, 0.05, 0.1), labels=c("0", ".05", ".1")) +
   facet_grid(rows = vars(study))
 
 plt1.compare.t.e <- ggplot(data=pdata) +
   geom_abline(intercept=0, slope=1, color=exact) +
-  geom_count(aes(x=theta_Gain, y=theta_Loss, color = study), alpha=dot_alpha) +
-  labs(x = TeX(r"(Gain $\eta$)"), y = TeX(r"(Loss $\eta$)"), size = "Number of Subjects") +
-  coord_fixed() +
-  #coord_cartesian(xlim=c(0, 1.05), ylim=c(0, 1.05), expand=T) +
-  #scale_y_continuous(breaks = c(0, .5, 1), labels=c("0", ".5", "1")) +
-  #scale_x_continuous(breaks = c(0, .5, 1), labels=c("0", ".5", "1")) +
+  geom_count(aes(x=eta_Gain, y=eta_Loss, color = study), alpha=dot_alpha) +
+  labs(x = TeX(r"(Gain $\eta$)"), y = TeX(r"(Loss $\eta$)"), size = "Number of Subjects", color = "Study") +
+  coord_cartesian(xlim=c(0, .011), ylim=c(0, .011), expand=T) +
+  scale_y_continuous(breaks = c(0, .005, .01), labels=c("0", ".005", ".01")) +
+  scale_x_continuous(breaks = c(0, .005, .01), labels=c("0", ".005", ".01")) +
   theme(
     legend.position = c(0, 1.01),
+    #legend.direction = "horizontal",
     legend.justification = c(0,1)
+    #legend.background = element_rect(fill = "white", color = NA)
   ) +
-  facet_grid(rows = vars(study)) +
-  guides(color="none") 
+  facet_grid(rows = vars(study)) 
 
+# #minValue_Gain = 0
+# #pdata$minValue_Loss = ifelse(pdata$study==1, -5.5, -12)
+# xbreaks = c(-1, 0 , 1)
+# ybreaks = c(-1, 0 , 1)
+# xlims = c(-1, 1)
+# ylims = c(-1, 1)
+# plt1.compare.r.e <- ggplot(data=pdata) +
+#   geom_abline(intercept=0, slope=1, color=exact) +
+#   #geom_vline(xintercept = minValue_Gain, color = exact) +
+#   #geom_hline(aes(yintercept = minValue_Loss), color = exact) +
+#   geom_count(aes(x=ref_Gain, y=ref_Loss, color = study), alpha=dot_alpha) +
+#   labs(x = TeX(r"(Gain $r$)"), y = TeX(r"(Loss $r$)")) +
+#   coord_cartesian(xlim = xlims, ylim = ylims, expand=T) +
+#   scale_x_continuous(breaks = xbreaks) +
+#   scale_y_continuous(breaks = ybreaks) +
+#   facet_grid(rows = vars(study))
 
 ##############################################################################
 # Combine plots
 ##############################################################################
 
-plt.compare.param.e <- grid.arrange(
-  arrangeGrob(
-    plt1.compare.d.e, plt1.compare.s.e, plt1.compare.t.e,
-    left = textGrob( expression(bold("          Study 2           Study 1")), rot=90, gp=gpar(fontsize=17) ),
-    ncol = 3
-  ),
-  nrow = 1
-)
+# plt.compare.param.e <- grid.arrange(
+#   arrangeGrob(
+#     plt1.compare.d.e, plt1.compare.s.e, plt1.compare.t.e,
+#     left = textGrob( expression(bold("          Study 2           Study 1")), rot=90, gp=gpar(fontsize=17) ),
+#     ncol = 3
+#   ),
+#   nrow = 1
+# )
+# 
+# plot(plt.compare.param.e)
 
-plot(plt.compare.param.e)
+combo_plot = (plt1.compare.d.e + plt1.compare.s.e + plt1.compare.t.e) + 
+  plot_layout(guides = 'collect')
 
-ggsave(file.path(.figdir, .fn), plt.compare.param.e, height=4.25, width=8.5, units="in")
+ggsave(file.path(.figdir, .fn), combo_plot, height=3.5, width=8, units="in")

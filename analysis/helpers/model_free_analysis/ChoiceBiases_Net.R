@@ -48,14 +48,21 @@ bias.netfix.plt <- function(data, xlim) {
 bias.netfix.reg <- function(data, study="error", dataset="error") {
 
   data <- data[data$firstFix==T,]
+  
+  priors <- c(
+    set_prior("normal(0, 0.1)", class = "Intercept"), 
+    set_prior("normal(0, 1.0)", class = "b", coef = "znet_fix"),  
+    set_prior("normal(0, 0.1)", class = "b", coef = "relevelconditionrefEQGainLoss"), 
+    set_prior("normal(0, 0.1)", class = "b", coef = "znet_fix:relevelconditionrefEQGainLoss")  
+  )
+  
+  data$znet_fix = scale(data$net_fix)
 
-  results <- brm(
-    nchoice.corr ~ net_fix*relevel(condition,ref="Gain") + (1+net_fix*relevel(condition,ref="Gain") | subject),
+  results <- my_brm(
+    nchoice.corr ~ znet_fix*relevel(condition,ref="Gain") + (1+znet_fix*relevel(condition,ref="Gain") | subject),
     data=data,
     family = gaussian(),
-    prior = c(
-      prior(normal(0,.5), class=Intercept),
-      prior(normal(0,.5), class=b)),
+    prior = priors,
     file = file.path(tempregdir, paste0(study, "_ChoiceBiases_Net_", dataset)))
   
   return(results)

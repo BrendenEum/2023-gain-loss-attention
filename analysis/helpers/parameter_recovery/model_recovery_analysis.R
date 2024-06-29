@@ -16,7 +16,7 @@ options(dplyr.summarise.inform = FALSE)
 
 # ------------------------------------------------------------------------
 # Things to change
-pr_trials = "146_trials"
+pr_trials = "2024.06.27 - final"
 # ------------------------------------------------------------------------
 
 # Directories
@@ -29,7 +29,7 @@ AddDDM_Loss_dir = file.path("results_AddDDM_Loss/", pr_trials)
 RaDDM_Gain_dir = file.path("results_RaDDM_Gain/", pr_trials)
 RaDDM_Loss_dir = file.path("results_RaDDM_Loss/", pr_trials)
 
-Add_subjects = c(1:36)
+Add_subjects = c(1:27)
 Ref_subjects = c(1:27)
 
 ######################################################
@@ -75,8 +75,8 @@ pdata$generating = factor(pdata$generating)
 plt = ggplot(pdata, aes(x=likelihood_fn, y=posterior_sum)) +
   myPlot + 
   
-  geom_hline(yintercept=.33, color="lightgrey") +
-  geom_line(aes(group=subject), color="grey", alpha=.4) +
+  geom_hline(yintercept=.5, color="lightgrey") +
+  geom_line(aes(group=subject), color="grey", alpha=.6) +
   geom_boxplot(aes(fill=condition), width=.4) +
   geom_dotplot(binaxis="y", stackdir="center", dotsize=1, fill="white") +
   
@@ -85,7 +85,7 @@ plt = ggplot(pdata, aes(x=likelihood_fn, y=posterior_sum)) +
     x = "Model",
     fill = "Condition"
   ) +
-  scale_y_continuous(breaks=c(0, .33, 1)) +
+  scale_y_continuous(breaks=c(0, .5, 1)) +
   facet_grid(rows=vars(condition), cols=vars(generating)) +
   theme(
     strip.text.x = element_text(size = 20),
@@ -94,4 +94,4 @@ plt = ggplot(pdata, aes(x=likelihood_fn, y=posterior_sum)) +
     panel.spacing = unit(1, "lines"),
     legend.position = c(.55,.88)
   )
-ggsave(file.path(paste0("parameter_recovery_",pr_trials) , "ModelRecovery.pdf"), plot=plt, width = 15, height = 5)
+ggsave(file.path(figdir, "ParameterRecovery_ModelRecovery.pdf"), plot=plt, width = 15, height = 5)

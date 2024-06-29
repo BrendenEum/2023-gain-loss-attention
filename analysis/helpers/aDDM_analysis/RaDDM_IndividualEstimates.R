@@ -13,6 +13,7 @@ library(ggpubr)
 library(ggsci)
 library(readr)
 library(latex2exp)
+library(patchwork)
 
 #------------- Things you should edit at the start -------------
 .dataset = "e"
@@ -133,7 +134,7 @@ dot_alpha = .6
 
 ggplot <- function(...) ggplot2::ggplot(...) + 
   theme_bw() +
-  scale_color_manual(values = c("1" = 'dodgerblue3', "2" = 'deeppink4')) +
+  scale_color_manual(values = c("1" = 'dodgerblue3', "2" = 'orange4')) +
   theme(
     legend.position = "none",
     legend.background=element_blank(),
@@ -162,9 +163,9 @@ plt1.compare.d.e <- ggplot(data=pdata) +
   geom_abline(intercept=0, slope=1, color=exact) +
   geom_count(aes(x=d_Gain, y=d_Loss, color = study), alpha=dot_alpha) +
   labs(x = TeX(r"(Gain $d$)"), y = TeX(r"(Loss $d$)")) +
-  coord_cartesian(xlim = c(0, .041), ylim = c(0, .041), expand=T) +
-  #scale_y_continuous(breaks = c(0, .005, .010), labels=c("0", ".005", ".010")) +
-  #scale_x_continuous(breaks = c(0, .005, .010), labels=c("0", ".005", ".010")) +
+  coord_cartesian(xlim = c(-.001, .025), ylim = c(-.001, .025), expand=T) +
+  scale_y_continuous(breaks = c(0, .012, .024), labels=c("0", ".012", ".024")) +
+  scale_x_continuous(breaks = c(0, .012, .024), labels=c("0", ".012", ".024")) +
   facet_grid(rows = vars(study)) 
 
 plt1.compare.s.e <- ggplot(data=pdata) +
@@ -179,8 +180,8 @@ plt1.compare.s.e <- ggplot(data=pdata) +
 plt1.compare.t.e <- ggplot(data=pdata) +
   geom_abline(intercept=0, slope=1, color=exact) +
   geom_count(aes(x=theta_Gain, y=theta_Loss, color = study), alpha=dot_alpha) +
-  labs(x = TeX(r"(Gain $\theta$)"), y = TeX(r"(Loss $\theta$)"), size = "Number of Subjects") +
-  coord_cartesian(xlim=c(0, 1.05), ylim=c(0, 1.05), expand=T) +
+  labs(x = TeX(r"(Gain $\theta$)"), y = TeX(r"(Loss $\theta$)"), size = "Number of Subjects", color = "Study") +
+  coord_cartesian(xlim=c(-.05, 1.05), ylim=c(-.05, 1.05), expand=T) +
   scale_y_continuous(breaks = c(0, .5, 1), labels=c("0", ".5", "1")) +
   scale_x_continuous(breaks = c(0, .5, 1), labels=c("0", ".5", "1")) +
   theme(
@@ -189,8 +190,7 @@ plt1.compare.t.e <- ggplot(data=pdata) +
     legend.justification = c(0,1)
     #legend.background = element_rect(fill = "white", color = NA)
   ) +
-  facet_grid(rows = vars(study)) +
-  guides(color="none") 
+  facet_grid(rows = vars(study))
 
 # #minValue_Gain = 0
 # #pdata$minValue_Loss = ifelse(pdata$study==1, -5.5, -12)
@@ -213,15 +213,18 @@ plt1.compare.t.e <- ggplot(data=pdata) +
 # Combine plots
 ##############################################################################
 
-plt.compare.param.e <- grid.arrange(
-  arrangeGrob(
-    plt1.compare.d.e, plt1.compare.s.e, plt1.compare.t.e,
-    left = textGrob( expression(bold("          Study 2           Study 1")), rot=90, gp=gpar(fontsize=17) ),
-    ncol = 3
-  ),
-  nrow = 1
-)
+# plt.compare.param.e <- grid.arrange(
+#   arrangeGrob(
+#     plt1.compare.d.e, plt1.compare.s.e, plt1.compare.t.e,
+#     left = textGrob( expression(bold("          Study 2           Study 1")), rot=90, gp=gpar(fontsize=17) ),
+#     ncol = 3
+#   ),
+#   nrow = 1
+# )
+# 
+# plot(plt.compare.param.e)
 
-plot(plt.compare.param.e)
+combo_plot = (plt1.compare.d.e + plt1.compare.s.e + plt1.compare.t.e) + 
+  plot_layout(guides = 'collect')
 
-ggsave(file.path(.figdir, .fn), plt.compare.param.e, height=4.25, width=8.5, units="in")
+ggsave(file.path(.figdir, .fn), combo_plot, height=3.5, width=8, units="in")

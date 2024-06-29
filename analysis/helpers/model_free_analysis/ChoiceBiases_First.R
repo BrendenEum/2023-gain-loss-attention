@@ -79,13 +79,23 @@ bias.firstfix.reg <- function(data, study="error", dataset="error") {
     group_by(subject, condition, nfirstOtherVDiff) %>%
     summarize(n = sum(n),
               choice = sum(choseFirstFix))
+  
+  priors <- c(
+    set_prior("normal(0, 0.5)", class = "Intercept"), 
+    set_prior("normal(0, 8.0)", class = "b", coef = "znfirstOtherVDiff"),  
+    set_prior("normal(0, 0.5)", class = "b", coef = "relevelconditionrefEQGainLoss"), 
+    set_prior("normal(0, 1.0)", class = "b", coef = "znfirstOtherVDiff:relevelconditionrefEQGainLoss")  
+  )
+  
+  data$znfirstOtherVDiff = scale(data$nfirstOtherVDiff)
 
-  results <- brm(
+  results <- my_brm(
     choice | trials(n) ~ 
-      nfirstOtherVDiff*relevel(condition, ref="Gain") + 
-      (1+nfirstOtherVDiff*relevel(condition, ref="Gain") | subject),
+      znfirstOtherVDiff*relevel(condition, ref="Gain") + 
+      (1+znfirstOtherVDiff*relevel(condition, ref="Gain") | subject),
     data=data,
     family = binomial(link="logit"),
+    prior = priors,
     file = file.path(tempregdir, paste0(study, "_ChoiceBiases_First_", dataset)))
   
   return(results)

@@ -14,7 +14,7 @@ library(glue)
 #------------- Things you should edit at the start -------------
 .dataset = "e"
 .colors = list(Gain="Green4", Loss="Red3")
-.simdir = file.path("../../outputs/temp/out_of_sample_simulations/2024.06.25.16.38/RaDDM")
+.simdir = file.path("../../outputs/temp/out_of_sample_simulations/2024.06.27.17.7/RaDDM")
 .nSims = 10
 #---------------------------------------------------------------
 
@@ -375,5 +375,5 @@ plt.outsample <- grid.arrange(
 
 plot(plt.outsample)
 
-ggsave(file.path(.figdir, "OPPaDDM_OutOfSamplePredictions.pdf"), plt.outsample, height=10, width=13, units="in")
+ggsave(file.path(.figdir, "RaDDM_OutOfSamplePredictions.pdf"), plt.outsample, height=10, width=13, units="in")
 
