@@ -6,6 +6,7 @@
 *.psydat
 *.log
 *.rds
+*.zip
 Rplots.pdf
 _book
 _bookdown_files

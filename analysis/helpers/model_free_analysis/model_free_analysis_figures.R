@@ -83,7 +83,7 @@ for (dataset in c("ecfr.RData", "ccfr.RData", "jcfr.RData")) {
   
   # First Fixation Duration by Difficulty
   source(file.path(codedir, "FixationProcess_First.R"))
-  plt.first = fixprop.first.plt(cfr, xlim=c(-.03,1.03)) + 
+  plt.first = fixprop.first.plt(cfr, xlim=c(-1.03,1.03)) + 
     theme(plot.background = element_rect(fill = color_back, color = color_back))
   ggsave(
     file.path(figdir, paste0("FixationProcess_First", ext)), 
@@ -119,14 +119,14 @@ for (dataset in c("ecfr.RData", "ccfr.RData", "jcfr.RData")) {
     file.path(figdir, paste0("ChoiceBiases_Last", ext)), 
     plot=plt.lastfix, width=figw, height=figh, units="in")
   
-  # First Fixation Bias
-  source(file.path(codedir, "ChoiceBiases_First.R"))
-  firstfix_x_scale = c(-1.03,1.03)
-  plt.firstfix = bias.firstfix.plt(cfr, xlim=firstfix_x_scale) + 
-    theme(plot.background = element_rect(fill = color_back, color = color_back))
-  ggsave(
-    file.path(figdir, paste0("ChoiceBiases_First", ext)), 
-    plot=plt.firstfix, width=figw, height=figh, units="in")
+  # # First Fixation Bias
+  # source(file.path(codedir, "ChoiceBiases_First.R"))
+  # firstfix_x_scale = c(-1.03,1.03)
+  # plt.firstfix = bias.firstfix.plt(cfr, xlim=firstfix_x_scale) + 
+  #   theme(plot.background = element_rect(fill = color_back, color = color_back))
+  # ggsave(
+  #   file.path(figdir, paste0("ChoiceBiases_First", ext)), 
+  #   plot=plt.firstfix, width=figw, height=figh, units="in")
   
   
   #####################

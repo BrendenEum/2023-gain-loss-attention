@@ -1,22 +1,29 @@
+round_to_nearest_quarter <- function(x) {
+  round(x * 4) / 4
+}
+
 ## Plot function
 
 fixprop.first.plt <- function(data, xlim) {
+  
+  data$nfixValue = round_to_nearest_quarter(data$nfixValue)
 
   pdata <- data[data$firstFix==T,] %>%
-    group_by(studyN, subject, condition, ndifficulty) %>%
+    group_by(studyN, subject, condition, nfixValue) %>%
     summarize(
       mid.mean = mean(fix_dur)
     ) %>%
     ungroup() %>%
-    group_by(studyN, condition, ndifficulty) %>%
+    group_by(studyN, condition, nfixValue) %>%
     summarize(
       y = mean(mid.mean),
       se = std.error(mid.mean)
     )
 
-  plt <- ggplot(data=pdata, aes(x=ndifficulty, y=y, color=condition)) +
+  plt <- ggplot(data=pdata, aes(x=nfixValue, y=y, color=condition)) +
     myPlot +
     geom_hline(yintercept=0.5, color="grey", alpha=0.75) +
+    geom_vline(xintercept=0.0, color="grey", alpha=0.75) +
     geom_linerange(
       aes(ymin=y-se, ymax=y+se, group=studyN), 
       linewidth=errsize, 
@@ -26,7 +33,7 @@ fixprop.first.plt <- function(data, xlim) {
     geom_line(aes(linetype=studyN), linewidth=linesize) +
     xlim(c(xlim[1],xlim[2])) +
     ylim(c(.3,.8)) +
-    labs(y="First Fix. Duration (s)", x="Norm. Best - Worst E[V]", color="Condition", linetype="Study")
+    labs(y="First Fix. Duration (s)", x="Norm. First E[V]", color="Condition", linetype="Study")
 
 
   return(plt)

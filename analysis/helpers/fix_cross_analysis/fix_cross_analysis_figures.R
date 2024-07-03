@@ -57,7 +57,7 @@ ggsave(
 
 # First Fixation Duration by Difficulty
 source(file.path(codedir, "FixationProcess_First.R"))
-plt.numeric.first = fixCross.first.plt(cfr[cfr$study=="numeric",], xlim=c(-0.03,1.03))
+plt.numeric.first = fixCross.first.plt(cfr[cfr$study=="numeric",], xlim=c(-1.03,1.03))
 ggsave(
   file.path(figdir, paste0("fixCross_FixationProcess_First", ext)), 
   plot=plt.numeric.first, width=figw, height=figh, units="in")

@@ -1,46 +1,8 @@
-"""
-    aDDM_simulate_trial(model::aDDM, fixationData::FixationData, 
-                        valueLeft::Number, valueRight::Number; timeStep::Number=10.0, 
-                        numFixDists::Int64=3 , fixationDist=nothing, timeBins=nothing, 
-                        cutOff::Number=100000)
+using ADDM
 
-Generate a DDM trial given the item values.
-
-# Arguments
-- `model`: aDDM object.
-- `fixationData`: FixationData object. `Required even when using fixationDist`
-  because it specifies latencies and transitions as well.
-- `valueLeft`: value of the left item.
-- `valueRight`: value of the right item.
-- `timeStep`: Number, value in milliseconds to be used for binning
-    time axis.
-- `numFixDists`: Int64, number of fixation types to use in the fixation
-    distributions. For instance, if numFixDists equals 3, then 3
-    separate fixation types will be used, corresponding to the 1st,
-    2nd and other (3rd and up) fixations in each trial.
-- `fixationDist`: distribution of fixations which, when provided, will be
-    used instead of fixationData.fixations. This should be a dict of
-    dicts of dicts, corresponding to the probability distributions of
-    fixation durations. Indexed first by fixation type (1st, 2nd, etc),
-    then by the value difference between the fixated and unfixated 
-    items, then by time bin. Each entry is a number between 0 and 1 
-    corresponding to the probability assigned to the particular time
-    bin (i.e. given a particular fixation type and value difference,
-    probabilities for all bins should add up to 1). Can be obtained from
-    `fixationData` using `convert_to_fixationDist`. If using this instead
-    of `fixationData` to sample fixations make sure to specify latency and 
-    transition info in `fixationData`.
-- `timeBins`: array containing the time bins used in fixationDist. Can be
-    obtained from`fixationData` using `convert_to_fixationDist`
-
-# Returns
-- An Trial object resulting from the simulation.
-"""
-function RaDDM_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationData, 
+function my_trial_simulator(;model::ADDM.aDDM, fixationData::ADDM.FixationData, 
                         valueLeft::Number, valueRight::Number, 
-                        LProb::Number, LAmt::Number, RAmt::Number, RProb::Number,
-                        timeStep::Number=10.0, numFixDists::Int64=3, fixationDist=nothing, 
-                        timeBins=nothing, cutOff::Number=100000)
+                        timeStep::Number=10.0, numFixDists::Int64=3, cutOff::Number=100000)
     
     fixUnfixValueDiffs = Dict(1 => valueLeft - valueRight, 2 => valueRight - valueLeft)
     
@@ -54,10 +16,13 @@ function RaDDM_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationData
     tRDV = Number[RDV]
     RT = 0
     uninterruptedLastFixTime = 0
+    ndtTimeSteps = Int64(model.nonDecisionTime ÷ timeStep)
 
     # The values of the barriers can change over time.
-    barrierUp = model.barrier ./ (1 .+ model.decay .* (0:cutOff-1))
-    barrierDown = -model.barrier ./ (1 .+ model.decay .* (0:cutOff-1))
+    # In this case we include an exponential decay
+    # Due to the shape of the exponential decay function the starting point for the decay is exp(0) = 1
+    barrierUp = exp.(-model.λ .* (0:cutOff-1))
+    barrierDown = -exp.(-model.λ .* (0:cutOff-1))
     
     # Sample and iterate over the latency for this trial.
     latency = rand(fixationData.latencies)
@@ -85,10 +50,6 @@ function RaDDM_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationData
             trial.fixRDV = fixRDV
             trial.uninterruptedLastFixTime = uninterruptedLastFixTime
             trial.RDV = tRDV
-            trial.LProb = LProb
-            trial.LAmt = LAmt
-            trial.RProb = RProb
-            trial.RAmt = RAmt
             return trial
         end
     end
@@ -118,21 +79,10 @@ function RaDDM_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationData
             prevFixItem = currFixLocation
 
             # Sample the duration of this item fixation.
-            if fixationDist === nothing
-                if fixationData.fixDistType == "simple"
-                    currFixTime = rand(reduce(vcat, fixationData.fixations[fixNumber]))
-                elseif fixationData.fixDistType == "difficulty" # maybe add reduce() like in simple
-                    valueDiff = abs(valueLeft - valueRight)
-                    currFixTime = rand(fixationData.fixations[fixNumber][valueDiff][1])
-                elseif fixationData.fixDistType == "fixation"
-                    valueDiff = fixUnfixValueDiffs[currFixLocation]
-                    #[1] is here to make sure it's not sampling from 1-element Vector but from the array inside it
-                    currFixTime = rand(fixationData.fixations[fixNumber][valueDiff][1]) 
-                end
-            else 
-              valueDiff = fixUnfixValueDiffs[currFixLocation]
-              currFixTime = sample(timeBins, Weights(fixationDist[fixNumber][valueDiff]))
-            end
+            valueDiff = fixUnfixValueDiffs[currFixLocation]
+            #[1] is here to make sure it's not sampling from 1-element Vector but from the array inside it
+            currFixTime = rand(fixationData.fixations[fixNumber][valueDiff][1]) 
+            
 
             if fixNumber < numFixDists
                 fixNumber += 1
@@ -140,9 +90,10 @@ function RaDDM_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationData
 
         else
             # This is a transition.
-            currFixLocation = 0
-            #Sample the duration of this transition.
-            currFixTime = rand(fixationData.transitions)
+             currFixLocation = 0
+            # Sample the duration of this transition. The fixation data used below does not have transition information so ignoring this.
+            # currFixTime = rand(fixationData.transitions)
+            currFixTime = 0
         end
 
         # Iterate over the remaining non-decision time remaining after the latency
@@ -186,14 +137,12 @@ function RaDDM_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationData
             # stochastically. The mean of the distribution (the change
             # most likely to occur) is calculated from the model
             # parameters and from the values of the two items.
-            vL = (LProb * (LAmt - model.ref)) + ((1 - LProb) * (0 - model.ref))
-            vR = (RProb * (RAmt - model.ref)) + ((1 - RProb) * (0 - model.ref))
             if currFixLocation == 0
                 μ = 0
             elseif currFixLocation == 1
-                μ = model.d * (vL - (model.θ * vR))
+                μ = model.d * ( (valueLeft + model.η) - (model.θ * valueRight))
             elseif currFixLocation == 2
-                μ = model.d * ((model.θ * vL) - vR)
+                μ = model.d * ((model.θ * valueLeft) - (valueRight + model.η))
             end
 
             # Sample the change in RDV from the distribution.
@@ -240,9 +189,5 @@ function RaDDM_simulate_trial(;model::ADDM.aDDM, fixationData::ADDM.FixationData
     trial.fixRDV = fixRDV
     trial.uninterruptedLastFixTime = uninterruptedLastFixTime
     trial.RDV = tRDV
-    trial.LProb = LProb
-    trial.LAmt = LAmt
-    trial.RProb = RProb
-    trial.RAmt = RAmt
     return trial
 end

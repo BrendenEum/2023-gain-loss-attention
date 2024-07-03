@@ -394,6 +394,13 @@ make_cfr = function(data_directory, list_of_subjects) {
       mutate(firstSeenChosen.corr = firstSeenChosen - mean(firstSeenChosen)) %>%
       ungroup()
     
+    # Fixated value
+    
+    subject_cfr = subject_cfr %>%
+      mutate(
+        nfixValue = ifelse(location=="Left", vL, vR)/6
+      )
+    
     # Last other value difference
     
     firstLastOtherCfr <- subject_cfr %>%

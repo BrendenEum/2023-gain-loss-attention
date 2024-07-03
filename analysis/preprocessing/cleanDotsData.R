@@ -212,7 +212,8 @@ make.cfr <- function(choices, fixations) {
       subject = as.integer(factor(subject)),
       study = "dots",
       studyN = "1",
-      trial = ifelse(condition=="Loss", trial+200, trial) # just doing this out of convenience
+      trial = ifelse(condition=="Loss", trial+200, trial), # just doing this out of convenience
+      nfixValue = ifelse(location=="Left", vL, vR)/5.5
     ) %>%
     group_by(subject, condition, trial) %>%
     mutate(

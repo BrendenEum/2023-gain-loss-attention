@@ -21,6 +21,7 @@ simCount = 10; # how many simulations to run per data generating process?
 #############
 include("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/parameter_recovery/custom_simulators/aDDM_simulate_trial.jl")
 include("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/parameter_recovery/custom_simulators/RaDDM_simulate_trial.jl")
+include("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/parameter_recovery/custom_simulators/RaDDM_simulate_trial_AlignedValues.jl")
 include("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/parameter_recovery/custom_simulators/AddDDM_simulate_trial.jl")
 include("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/parameter_recovery/custom_simulators/OPPaDDM_simulate_trial.jl")
 include("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/parameter_recovery/custom_simulators/TrOPPaDDM_simulate_trial.jl")
@@ -166,24 +167,6 @@ simulate_data(estimates, condition, expdataLoss, fixdataLoss, nTrials, simCount,
 
 
 #############
-# Unbounded aDDM
-#############
-modelname = "UaDDM";
-println(modelname)
-
-estimates = CSV.read("SimIndividualEstimates_UaDDM.csv" ,DataFrame);
-simulator_fn = aDDM_simulate_trial
-
-# Gain
-condition = "Gain";
-simulate_data(estimates, condition, expdataGain, fixdataGain, nTrials, simCount, simulator_fn, modelname)
-
-# Loss
-condition = "Loss";
-simulate_data(estimates, condition, expdataLoss, fixdataLoss, nTrials, simCount, simulator_fn, modelname)
-
-
-#############
 # OPPaDDM
 #############
 modelname = "OPPaDDM";
@@ -251,5 +234,7 @@ condition = "Gain";
 simulate_data(estimates, condition, expdataGain, fixdataGain, nTrials, simCount, simulator_fn, modelname)
 
 # Loss
+simulator_fn = RaDDM_simulate_trial_AlignedValues
+
 condition = "Loss";
 simulate_data(estimates, condition, expdataLoss, fixdataLoss, nTrials, simCount, simulator_fn, modelname)
