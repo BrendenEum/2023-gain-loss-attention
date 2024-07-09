@@ -38,7 +38,6 @@ write.csv(AddDDM_grid, file=fn, row.names=F)
 # RaDDM
 ####################################
 
-# Study1G
 RaDDM_grid = list(
     d = d_grid_normal,
     sigma = sigma_grid,
@@ -47,3 +46,18 @@ RaDDM_grid = list(
 RaDDM_grid = expand.grid(RaDDM_grid)
 fn = paste0("parameter_grids/RaDDM_grid.csv")
 write.csv(RaDDM_grid, file=fn, row.names=F)
+
+
+####################################
+# HybridaDDM
+####################################
+
+HybridaDDM_grid = list(
+    d = d_grid_normal,
+    sigma = sigma_grid,
+    theta = theta_grid,
+    eta = eta_grid
+)
+HybridaDDM_grid = expand.grid(HybridaDDM_grid)
+fn = paste0("parameter_grids/HybridaDDM_grid.csv")
+write.csv(HybridaDDM_grid, file=fn, row.names=F)

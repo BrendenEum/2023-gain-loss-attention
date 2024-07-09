@@ -37,21 +37,13 @@ addfixprop.third.reg <- function(data, study="error", dataset="error") {
 
   data <- data[data$fix_num==3,]
   
-  priors <- c(
-    set_prior("normal(0, 1.0)", class = "Intercept"), 
-    set_prior("normal(0, 0.5)", class = "b", coef = "zndifficulty"),  
-    set_prior("normal(0, 0.1)", class = "b", coef = "relevelconditionrefEQGainLoss"), 
-    set_prior("normal(0, 0.1)", class = "b", coef = "zndifficulty:relevelconditionrefEQGainLoss")  
-  )
+  results = lmer(
+    fix_dur ~ ndifficulty*relevel(condition,ref="Gain") + (1+ndifficulty*relevel(condition,ref="Gain") | subject),
+    data = data,
+  ) %>% tidy(effects = "fixed", conf.int = T)
   
-  data$zndifficulty = scale(data$ndifficulty)
-
-  results <- my_brm(
-    fix_dur ~ zndifficulty*relevel(condition,ref="Gain") + (1+zndifficulty*relevel(condition,ref="Gain") | subject),
-    data=data,
-    family = gaussian(),
-    prior = priors,
-    file = file.path(tempregdir, paste0(study, "_AdditionalFixProp_ThirdFixDur_", dataset)))
+  fn = paste0("regression_output/", study, "_AdditionalFixProp_ThirdFixDur_", dataset, ".csv")
+  write.csv(results, fn, row.names = FALSE)
   
   return(results)
 

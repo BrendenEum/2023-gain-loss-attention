@@ -186,7 +186,7 @@ end
 """
 Convert simulated data to behavioral and fixation dataframes
 """
-function process_simulations(SimulatedData::Vector{ADDM.Trial}, Details::Bool = true)
+function process_simulations(SimulatedData::Vector{ADDM.Trial}, Details::Bool = false)
   
   SimDataBehDf = DataFrame()
   SimDataFixDf = DataFrame()
@@ -199,11 +199,13 @@ function process_simulations(SimulatedData::Vector{ADDM.Trial}, Details::Bool = 
       # "parcode","trial","rt","choice","LProb","LAmt","RProb","RAmt"
       if Details
         cur_beh_df = DataFrame(
-          :studyN => studyN, :parcode => subject_list[subject], :trial => i, :condition => condition, :sim => sim, :choice => cur_trial.choice, :rt => cur_trial.RT, :item_left => cur_trial.valueLeft, :item_right => cur_trial.valueRight, :LProb => cur_trial.LProb, :LAmt => cur_trial.LAmt, :RProb => cur_trial.RProb, :RAmt => cur_trial.RAmt, :minOutcome => cur_trial.minOutcome, :maxOutcome => cur_trial.maxOutcome
+          :parcode => 1, :trial => i, :choice => cur_trial.choice, :rt => cur_trial.RT, 
+          :LProb => cur_trial.LProb, :LAmt => cur_trial.LAmt, :RProb => cur_trial.RProb, :RAmt => cur_trial.RAmt
         )
       else
         cur_beh_df = DataFrame(
-          :trial => i, :choice => cur_trial.choice, :rt => cur_trial.RT, :item_left => cur_trial.valueLeft, :item_right => cur_trial.valueRight, :LProb => cur_trial.LProb, :LAmt => cur_trial.LAmt, :RProb => cur_trial.RProb, :RAmt => cur_trial.RAmt, :minOutcome => cur_trial.minOutcome, :maxOutcome => cur_trial.maxOutcome
+          :parcode => 1, :trial => i, :choice => cur_trial.choice, :rt => cur_trial.RT, 
+          :valueLeft => cur_trial.valueLeft, :valueRight => cur_trial.valueRight
         )
       end
       
@@ -211,34 +213,4 @@ function process_simulations(SimulatedData::Vector{ADDM.Trial}, Details::Bool = 
   end
   
   return [SimDataBehDf, SimDataFixDf]
-end
-
-"""
-Convert trial_likelihoods to something that can be stored sensibly in a csv.
-"""
-function process_trial_likelihoods(trial_likelihoods::Dict)
-  
-  trial_posteriors_df = DataFrame()
-
-  for (k,v) in trial_likelihoods
-    cur_df = DataFrame(Symbol(i) => j for (i, j) in pairs(v))
-
-    rename!(cur_df, :first => :trial_num, :second => :)
-
-    # Unpack parameter info
-    for (a, b) in pairs(k)
-      cur_df[!, a] .= b
-    end
-
-    # Change type of trial num col to sort by
-    cur_df[!, :trial_num] = [parse(Int, (String(i))) for i in cur_df[!,:trial_num]]
-
-    sort!(cur_df, :trial_num)
-
-    # trial_posteriors_df = vcat(trial_posteriors_df, cur_df, cols=:union)
-    append!(trial_posteriors_df, cur_df, cols=:union)
-  end
-
-  return trial_posteriors_df
-
 end

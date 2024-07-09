@@ -36,12 +36,14 @@ psycho.rt.plt <- function(data, xlim) {
 psycho.rt.reg <- function(data, study="error", dataset="error") {
 
   data <- data[data$firstFix==T,]
-
-  results <- my_brm(
+  
+  results = lmer(
     rt ~ ndifficulty*relevel(condition,ref="Gain") + (1+ndifficulty*relevel(condition,ref="Gain") | subject),
-    data=data,
-    family = gaussian(),
-    file = file.path(tempregdir, paste0(study, "_BasicPsychometrics_RT_", dataset)))
+    data = data,
+  ) %>% tidy(effects = "fixed", conf.int = T)
+  
+  fn = paste0("regression_output/", study, "_BasicPsychometrics_RT_", dataset, ".csv")
+  write.csv(results, fn, row.names = FALSE)
 
   return(results)
 

@@ -18,8 +18,8 @@ include("custom_simulators/AddDDM_simulate_trial.jl")
 simulator_fn = AddDDM_simulate_trial;
 
 # Stimuli for loss simulations
-expdata = "../../../data/processed_data/numeric/e/expdataLoss_train.csv";
-fixdata = "../../../data/processed_data/numeric/e/fixationsLoss_train.csv";
+expdata = "data_for_sims/expdataGain_train.csv";
+fixdata = "data_for_sims/fixationsGain_train.csv";
 
 # Parameter values for parameter recovery exercise 
 d_grid = [.002, .005, .008];
@@ -51,6 +51,8 @@ CSV.write(outdir * "sim_grid.csv", sim_grid_df);
 # Simulate Data
 ##########################################
 
+SimulatedDataList = [];
+
 # Loop through parameter combinations
 for subject in 1:nrow(sim_grid_df)
 
@@ -63,6 +65,7 @@ for subject in 1:nrow(sim_grid_df)
     # Simulate data using the model object (with default settings: 10ms timeSteps, 100000 timeStep cutoff)
     MyArgs = (timeStep = 10.0, cutOff = 20000, fixationData = Fixations);
     SimData = ADDM.simulate_data(MyModel, Stims, simulator_fn, MyArgs);
+    push!(SimulatedDataList, SimData);
 
     # Make SimData
     SimDataBehDf = DataFrame()
@@ -73,7 +76,12 @@ for subject in 1:nrow(sim_grid_df)
         cur_fix_df[!, :trial] .= i  
         cur_fix_df[!, :condition] .= "Loss"
         SimDataFixDf = vcat(SimDataFixDf, cur_fix_df, cols=:union)
-        cur_beh_df = DataFrame(:parcode => subject, :trial => i, :condition => "Loss", :choice => cur_trial.choice, :rt => cur_trial.RT, :item_left => cur_trial.valueLeft, :item_right => cur_trial.valueRight, :LProb => cur_trial.LProb, :LAmt => cur_trial.LAmt, :RProb => cur_trial.RProb, :RAmt => cur_trial.RAmt)
+        cur_beh_df = DataFrame(
+            :parcode => subject, :trial => i, :condition => "Gain", :choice => cur_trial.choice, :rt => cur_trial.RT, 
+            :item_left => cur_trial.valueLeft, :item_right => cur_trial.valueRight, 
+            :LProb => cur_trial.LProb, :LAmt => cur_trial.LAmt, :RProb => cur_trial.RProb, :RAmt => cur_trial.RAmt,
+            :minOutcome => cur_trial.minOutcome, :maxOutcome => cur_trial.maxOutcome
+        )
         SimDataBehDf = vcat(SimDataBehDf, cur_beh_df, cols=:union)
     end
     

@@ -65,14 +65,14 @@ function RaDDM_likelihood(;model::ADDM.aDDM, trial::ADDM.Trial, timeStep::Number
     # Dictionary of μ values from fItem.
     μDict = Dict{Number, Number}()
 
-    ZeroAmt_RN = (0 - model.ref) / max(abs(trial.maxOutcome - model.ref), abs(trial.minOutcome - model.ref))
+    ZeroAmt_RD = 0 - trial.minOutcome
 
-    LAmt_RN = (trial.LAmt - model.ref) / max(abs(trial.maxOutcome - model.ref), abs(trial.minOutcome - model.ref))
-    vL = (trial.LProb * LAmt_RN) + ((1-trial.LProb) * ZeroAmt_RN)
+    LAmt_RD = trial.LAmt - trial.minOutcome
+    vL = (trial.LProb * LAmt_RD) + ((1-trial.LProb) * ZeroAmt_RD)
 
-    RAmt_RN = (trial.RAmt - model.ref) / max(abs(trial.maxOutcome - model.ref), abs(trial.minOutcome - model.ref)) 
-    vR = (trial.RProb * RAmt_RN) + ((1-trial.RProb) * ZeroAmt_RN)
-    
+    RAmt_RD = trial.RAmt - trial.minOutcome
+    vR = (trial.RProb * RAmt_RD) + ((1-trial.RProb) * ZeroAmt_RD)
+
     for fItem in 0:2
         if fItem == 1
             μ = model.d*(vL - (model.θ * vR))

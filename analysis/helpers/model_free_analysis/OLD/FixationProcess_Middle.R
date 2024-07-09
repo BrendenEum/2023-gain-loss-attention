@@ -1,0 +1,70 @@
+## Plot function
+
+fixprop.mid.plt <- function(data, xlim) {
+
+  pdata <- data[data$middleFix==T,] %>%
+    group_by(studyN, subject, condition, ndifficulty) %>%
+    summarize(
+      mid.mean = mean(fix_dur)
+    ) %>%
+    ungroup() %>%
+    group_by(studyN, condition, ndifficulty) %>%
+    summarize(
+      y = mean(mid.mean),
+      se = std.error(mid.mean)
+    )
+
+  plt <- ggplot(data=pdata, aes(x=ndifficulty, y=y, color=condition)) +
+    myPlot +
+    geom_hline(yintercept=.7, color="grey", alpha=0.75) +
+    geom_linerange(
+      aes(ymin=y-se, ymax=y+se, group=studyN), 
+      linewidth=errsize, 
+      position=position_jitter(width=.01, seed=4), 
+      show.legend=F
+    ) +
+    geom_line(aes(linetype=studyN), linewidth=linesize) +
+    xlim(c(xlim[1],xlim[2])) +
+    ylim(c(.4,1)) +
+    labs(y="Middle Fix. Duration (s)", x="Norm. Best - Worst E[V]", color="Condition")
+
+
+  return(plt)
+
+}
+
+## Regression function
+
+fixprop.mid.reg <- function(data, study="error", dataset="error") {
+
+  data <- data[data$middleFix==T,]
+  
+  priors <- c(
+    set_prior("normal(0, 1.0)", class = "Intercept"), 
+    set_prior("normal(0, 0.5)", class = "b", coef = "zndifficulty"),  
+    set_prior("normal(0, 0.1)", class = "b", coef = "relevelconditionrefEQGainLoss"), 
+    set_prior("normal(0, 0.1)", class = "b", coef = "zndifficulty:relevelconditionrefEQGainLoss")  
+  )
+  
+  data$zndifficulty = scale(data$ndifficulty)
+
+  results <- my_brm(
+    fix_dur ~ zndifficulty*relevel(condition,ref="Gain") + (1+zndifficulty*relevel(condition,ref="Gain") | subject),
+    data=data,
+    family = gaussian(),
+    prior = priors,
+    file = file.path(tempregdir, paste0(study, "_FixationProcess_Middle_", dataset)))
+  
+  return(results)
+
+}
+
+######################
+## Exploratory
+######################
+
+#plt.mid.e <- fixprop.mid.plt(cfr)
+#reg.mid.e <- fixprop.mid.reg(cfr)
+
+#plt.mid.e
+#fixef(reg.mid.e)[,c('Estimate', 'Q2.5', 'Q97.5')]

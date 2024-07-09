@@ -40,32 +40,16 @@ addfixprop.firstLeft.plt <- function(data, xlim) {
 addfixprop.firstLeft.reg <- function(data, study="error", dataset="error") {
 
   data <- data[data$firstFix==T,]
-  data <- data %>% mutate(n=1)
-  data$location_numeric = 2-as.numeric(data$location)
-  data <-  data %>%
-    group_by(subject, condition, nvDiff) %>%
-    summarize(n = sum(n),
-              countLeft = sum(location_numeric))
+  location_left = ifelse(data$location=="Left", 1, 0)
   
-  if (study=="dots") {prior_intercept = "normal(0, 1.2)"}
-  if (study=="numeric") {prior_intercept = "normal(0, 0.5)"}
+  results = glmer(
+    location_left ~ nvDiff*relevel(condition,ref="Gain") + (1+nvDiff*relevel(condition,ref="Gain") | subject),
+    data = data,
+    family = binomial
+  ) %>% tidy(effects = "fixed", conf.int = T)
   
-  priors <- c(
-    set_prior(prior_intercept, class = "Intercept"), 
-    set_prior("normal(0, 0.1)", class = "b", coef = "znvDiff"),  
-    set_prior("normal(0, 0.1)", class = "b", coef = "relevelconditionrefEQGainLoss"), 
-    set_prior("normal(0, 0.1)", class = "b", coef = "znvDiff:relevelconditionrefEQGainLoss")  
-  )
-  
-  data$znvDiff = scale(data$nvDiff)
-  
-  results <- my_brm(
-    countLeft | trials(n) ~ znvDiff*relevel(condition,ref="Gain") + (1+znvDiff*relevel(condition,ref="Gain") | subject),
-    data=data,
-    family = binomial(link="logit"),
-    prior = priors,
-    control = list(adapt_delta = 0.99),
-    file = file.path(tempregdir, paste0(study, "_AdditionalFixProp_PrFirstLeft", dataset)))
+  fn = paste0("regression_output/", study, "_AdditionalFixProp_PrFirstLeft", dataset, ".csv")
+  write.csv(results, fn, row.names = FALSE)
   
   return(results)
 

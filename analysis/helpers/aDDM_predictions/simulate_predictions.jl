@@ -25,6 +25,7 @@ include("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/parame
 include("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/parameter_recovery/custom_simulators/AddDDM_simulate_trial.jl")
 include("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/parameter_recovery/custom_simulators/OPPaDDM_simulate_trial.jl")
 include("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/parameter_recovery/custom_simulators/TrOPPaDDM_simulate_trial.jl")
+include("/Users/brenden/Desktop/2023-gain-loss-attention/analysis/helpers/parameter_recovery/custom_simulators/HybridaDDM_simulate_trial.jl")
 
 
 #############
@@ -234,7 +235,23 @@ condition = "Gain";
 simulate_data(estimates, condition, expdataGain, fixdataGain, nTrials, simCount, simulator_fn, modelname)
 
 # Loss
-simulator_fn = RaDDM_simulate_trial_AlignedValues
+condition = "Loss";
+simulate_data(estimates, condition, expdataLoss, fixdataLoss, nTrials, simCount, simulator_fn, modelname)
 
+
+#############
+# HybridaDDM
+#############
+modelname = "HybridaDDM";
+println(modelname)
+
+estimates = CSV.read("SimIndividualEstimates_HybridaDDM.csv" ,DataFrame);
+simulator_fn = HybridaDDM_simulate_trial
+
+# Gain
+condition = "Gain";
+simulate_data(estimates, condition, expdataGain, fixdataGain, nTrials, simCount, simulator_fn, modelname)
+
+# Loss
 condition = "Loss";
 simulate_data(estimates, condition, expdataLoss, fixdataLoss, nTrials, simCount, simulator_fn, modelname)

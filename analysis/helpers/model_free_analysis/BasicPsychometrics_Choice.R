@@ -41,20 +41,16 @@ psycho.choice.plt <- function(data, xlim=c(-1,1)) {
 
 psycho.choice.reg <- function(data, study="error", dataset="error") {
 
-  # Convert to Binomial data
   data <- data[data$firstFix==T,]
-  data <- data %>% mutate(n=1)
-  data <-  data %>%
-    group_by(subject, condition, nvDiff) %>%
-    summarize(
-      n = sum(n),
-      choice = sum(choice))
-
-  results <- my_brm(
-    choice | trials(n) ~ nvDiff*relevel(condition,ref="Gain") + (1+nvDiff*relevel(condition,ref="Gain") | subject),
+  
+  results = glmer(
+    choice ~ nvDiff*relevel(condition,ref="Gain") + (1+nvDiff*relevel(condition,ref="Gain") | subject),
     data = data,
-    family = binomial(link='logit'),
-    file = file.path(tempregdir, paste0(study, "_BasicPsychometrics_Choice_", dataset)))
+    family = binomial
+  ) %>% tidy(effects = "fixed", conf.int = T)
+  
+  fn = paste0("regression_output/", study, "_BasicPsychometrics_Choice_", dataset, ".csv")
+  write.csv(results, fn, row.names = FALSE)
 
   return(results)
 

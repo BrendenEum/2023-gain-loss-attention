@@ -72,31 +72,19 @@ bias.firstfix.plt <- function(data, xlim) {
 bias.firstfix.reg <- function(data, study="error", dataset="error") {
 
   data <- data[data$firstFix==T,] 
-  data <- data %>% mutate(n=1)
   data$choseFirstFix = ifelse(
     (data$choice==1 & data$location=="Left") | (data$choice==0 & data$location=="Right"), 1, 0)
-  data <-  data %>%
-    group_by(subject, condition, nfirstOtherVDiff) %>%
-    summarize(n = sum(n),
-              choice = sum(choseFirstFix))
   
-  priors <- c(
-    set_prior("normal(0, 0.5)", class = "Intercept"), 
-    set_prior("normal(0, 8.0)", class = "b", coef = "znfirstOtherVDiff"),  
-    set_prior("normal(0, 0.5)", class = "b", coef = "relevelconditionrefEQGainLoss"), 
-    set_prior("normal(0, 1.0)", class = "b", coef = "znfirstOtherVDiff:relevelconditionrefEQGainLoss")  
-  )
+  results = glmer(
+    choseFirstFix ~ 
+      nfirstOtherVDiff*relevel(condition, ref="Gain") + 
+      (1+nfirstOtherVDiff*relevel(condition, ref="Gain") | subject),
+    data = data,
+    family = binomial
+  ) %>% tidy(effects = "fixed", conf.int = T)
   
-  data$znfirstOtherVDiff = scale(data$nfirstOtherVDiff)
-
-  results <- my_brm(
-    choice | trials(n) ~ 
-      znfirstOtherVDiff*relevel(condition, ref="Gain") + 
-      (1+znfirstOtherVDiff*relevel(condition, ref="Gain") | subject),
-    data=data,
-    family = binomial(link="logit"),
-    prior = priors,
-    file = file.path(tempregdir, paste0(study, "_ChoiceBiases_First_", dataset)))
+  fn = paste0("regression_output/", study, "_ChoiceBiases_First_", dataset, ".csv")
+  write.csv(results, fn, row.names = FALSE)
   
   return(results)
 

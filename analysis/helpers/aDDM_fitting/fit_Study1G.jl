@@ -8,27 +8,27 @@
 
 # Libraries
 using ADDM, CSV, DataFrames, DataFramesMeta, Distributed, Distributions, LinearAlgebra, Base.Threads
+include("send_text.jl")
 
 #---------------------------------------------------------------------------------------
 # THINGS TO CHANGE
 
 # Participants
-study_participants = DataFrame(CSV.File("Study1_participants.csv", delim=","))[:,1];
+study_participants = DataFrame(CSV.File("Study1_participants_c.csv", delim=","))[:,1];
 
 # Directories
 tempdir = "results/study1G/";
+dataset = "c"
 
 # Data
 full_data = ADDM.load_data_from_csv(
-    "/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/dots/e/expdataGain_train.csv", 
-    "/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/dots/e/fixationsGain_train.csv"
+    "processed_data/dots/" * dataset * "/expdataGain_train.csv", 
+    "processed_data/dots/" * dataset * "/fixationsGain_train.csv", 
 );
 #---------------------------------------------------------------------------------------
 
 # Likelihood functions
 include("custom_functions/AddDDM_likelihood.jl");
-include("custom_functions/StatusQuo_likelihood.jl");
-include("custom_functions/MaxMin_likelihood.jl");
 include("custom_functions/RaDDM_likelihood.jl");
 
 # Fitting options
@@ -45,23 +45,13 @@ tmp = DataFrame(CSV.File("parameter_grids/AddDDM_grid.csv", delim=","));
 tmp.likelihood_fn .= "AddDDM_likelihood";
 param_grid1 = NamedTuple.(eachrow(tmp));
 
-# RaDDM: Status Quo
+# RaDDM: MinOutcome
 tmp = DataFrame(CSV.File("parameter_grids/aDDM_grid.csv", delim=","));
-tmp.likelihood_fn .= "StatusQuo_likelihood";
+tmp.likelihood_fn .= "RaDDM_likelihood";
 param_grid2 = NamedTuple.(eachrow(tmp));
 
-# RaDDM: MaxMin
-tmp = DataFrame(CSV.File("parameter_grids/aDDM_grid.csv", delim=","));
-tmp.likelihood_fn .= "MaxMin_likelihood";
-param_grid3 = NamedTuple.(eachrow(tmp));
-
-# RaDDM: FreeRef
-tmp = DataFrame(CSV.File("parameter_grids/RaDDM_grid.csv", delim=","));
-tmp.likelihood_fn .= "RaDDM_likelihood";
-param_grid4 = NamedTuple.(eachrow(tmp));
-
 # Combine the grids
-param_grid = vcat(param_grid1, param_grid2, param_grid3, param_grid4);
+param_grid = vcat(param_grid1, param_grid2);
 
 ##############################################
 # Loop through all participants and save
@@ -82,6 +72,7 @@ Threads.@threads for k in study_participants
             my_fixed_params,
             likelihood_args = my_likelihood_args,
             return_grid_nlls = true, 
+            return_trial_likelihoods = true,
             return_trial_posteriors = true, 
             return_model_posteriors = true
         );
@@ -91,6 +82,7 @@ Threads.@threads for k in study_participants
 
     # Results
     mle = output[:mle];
+    likelihoods = output[:trial_likelihoods];
     nll_df = output[:grid_nlls];
     trial_posteriors = output[:trial_posteriors];
     model_posteriors = output[:model_posteriors];
@@ -110,9 +102,12 @@ Threads.@threads for k in study_participants
 
     # Save it all in temp folder
     CSV.write(tempdir * "mle/mle_$(k).csv", mle);
+    CSV.write(tempdir * "likelihoods/likelihoods_$(k).csv", likelihoods);
     CSV.write(tempdir * "nll_df/nll_df_$(k).csv", nll_df);
     CSV.write(tempdir * "model_posteriors/model_posteriors_$(k).csv", model_posteriors);
     CSV.write(tempdir * "model_posteriors/posteriors_df_$(k).csv", posteriors_df);
     CSV.write(tempdir * "model_comparison/combdf_$(k).csv", combdf);
 
 end
+
+send_imessage("+17149067269", "Fitting Study1G has finished.") 

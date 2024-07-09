@@ -49,24 +49,13 @@ bias.netfix.reg <- function(data, study="error", dataset="error") {
 
   data <- data[data$firstFix==T,]
   
-  # priors <- c(
-  #   set_prior("normal(0, 0.1)", class = "Intercept"), 
-  #   set_prior("normal(0, 0.4)", class = "b", coef = "znet_fix"),  
-  #   set_prior("normal(0, 0.1)", class = "b", coef = "relevelconditionrefEQGainLoss"), 
-  #   set_prior("normal(0, 0.1)", class = "b", coef = "znet_fix:relevelconditionrefEQGainLoss")  
-  # )
-  # 
-   data$znet_fix = scale(data$net_fix)
-  # 
-  # results <- my_brm(
-  #   nchoice.corr ~ znet_fix*relevel(condition,ref="Gain") + (1+znet_fix*relevel(condition,ref="Gain") | subject),
-  #   data=data,
-  #   family = gaussian(),
-  #   prior = priors,
-  #   control = list(adapt_delta = 0.95s),
-  #   file = file.path(tempregdir, paste0(study, "_ChoiceBiases_Net_", dataset)))
+  results = lmer(
+    nchoice.corr ~ net_fix*relevel(condition,ref="Gain") + (1+net_fix*relevel(condition,ref="Gain") | subject),
+    data = data,
+  ) %>% tidy(effects = "fixed", conf.int = T)
   
-  results = lmer(nchoice.corr ~ znet_fix * condition + (1 + znet_fix * condition | subject), data)
+  fn = paste0("regression_output/", study, "_ChoiceBiases_Net_", dataset, ".csv")
+  write.csv(results, fn, row.names = FALSE)
   
   return(results)
 

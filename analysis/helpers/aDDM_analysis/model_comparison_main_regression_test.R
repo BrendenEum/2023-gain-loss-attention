@@ -8,6 +8,7 @@ seed = 4
 library(tidyverse)
 library(brms)
 library(bayesplot)
+library(lme4)
 
 # Directories
 .datadir = file.path("/Users/brenden/Desktop/2023-gain-loss-attention/data/processed_data/datasets")
@@ -24,7 +25,7 @@ brm <- function(...)
     chains = cc,
     cores = cc,
     seed = seed,
-    refresh = F,
+    refresh = T,
     file_refit = "always")
 
 # Data
@@ -52,50 +53,60 @@ study2L = cfr[cfr$studyN==2 & cfr$condition=="Loss",]
 # Study 1
 ##########
 
-study1L$z_oV = scale(study1L$oV)
+study1L$nabsvDiff = abs(study1L$vDiff) / max(abs(study1L$vDiff))
+study1L$noV = (study1L$oV/abs(study1L$oV)) * abs(study1L$oV) / max(abs(study1L$oV))
 
-study1L_rt_oV = brm(
-  log(rt) ~ 1 + abs(vDiff) + z_oV + (1 + abs(vDiff) + z_oV | subject),
-  data = study1L,
-  family = gaussian(),
-  prior = c(
-    prior(normal(0,0.5), class=Intercept),
-    prior(normal(0,0.3), class="b", coef="absvDiff"),
-    prior(normal(0,0.1), class="b", coef="z_oV"),
-    prior(normal(0, 0.5), class = "sd", group = "subject", coef = "Intercept"),
-    prior(normal(0, 0.1), class = "sd", group = "subject", coef = "absvDiff"),
-    prior(normal(0, 0.05), class = "sd", group = "subject", coef = "z_oV")
-  ),
-  file = file.path(.tempdir, paste0("study1L_rt_oV", ds))
-)
-summary(study1L_rt_oV)
-formatted_estimates <- sprintf("%.6f", study1L_rt_oV$fixed[, "Estimate"])
-formatted_errors <- sprintf("%.6f", study1L_rt_oV$fixed[, "Est.Error"])
-formatted_output <- data.frame(Estimate = formatted_estimates, Est.Error = formatted_errors)
-print(formatted_output)
+model = lmer(log(rt) ~ 1 + nabsvDiff + noV + (1 + nabsvDiff + noV | subject), study1L)
+summary(model)
+confint(model, method="Wald")
+
+# study1L_rt_oV = brm(
+#   log(rt) ~ 1 + nabsvDiff + noV + (1 + nabsvDiff + noV | subject),
+#   data = study1L,
+#   family = gaussian(),
+#   prior = c(
+#     prior(normal(0,0.5), class=Intercept),
+#     prior(normal(0,0.5), class="b", coef="nabsvDiff"),
+#     prior(normal(0,0.5), class="b", coef="noV"),
+#     prior(normal(0, 0.5), class = "sd", group = "subject", coef = "Intercept"),
+#     prior(normal(0, 0.5), class = "sd", group = "subject", coef = "nabsvDiff"),
+#     prior(normal(0, 0.5), class = "sd", group = "subject", coef = "noV")
+#   ),
+#   file = file.path(.tempdir, paste0("study1L_rt_oV", ds))
+# )
+# summary(study1L_rt_oV)
+# formatted_estimates <- sprintf("%.6f", study1L_rt_oV$fixed[, "Estimate"])
+# formatted_errors <- sprintf("%.6f", study1L_rt_oV$fixed[, "Est.Error"])
+# formatted_output <- data.frame(Estimate = formatted_estimates, Est.Error = formatted_errors)
+# print(formatted_output)
 
 
 ##########
 # Study 2
 ##########
 
-study2L$z_oV = scale(study2L$oV)
+study2L$nabsvDiff = abs(study2L$vDiff) / max(abs(study2L$vDiff))
+study2L$noV = (study2L$oV/abs(study2L$oV)) * abs(study2L$oV) / max(abs(study2L$oV))
 
-study2L_rt_oV = brm(
-  log(rt) ~ 1 + abs(vDiff) + z_oV + (1 + abs(vDiff) + z_oV | subject),
-  data = study2L,
-  family = gaussian(),
-  prior = c(
-    prior(normal(0,0.5), class=Intercept),
-    prior(normal(0,0.3), class="b", coef="absvDiff"),
-    prior(normal(0,0.1), class="b", coef="z_oV"),
-    prior(normal(0, 0.5), class = "sd", group = "subject", coef = "Intercept"),
-    prior(normal(0, 0.1), class = "sd", group = "subject", coef = "absvDiff"),
-    prior(normal(0, 0.05), class = "sd", group = "subject", coef = "z_oV")
-  ),
-  file = file.path(.tempdir, paste0("study2L_rt_oV", ds))
-)
-summary(study2L_rt_oV)
+model = lmer(log(rt) ~ 1 + nabsvDiff + noV + (1 + nabsvDiff + noV | subject), study2L)
+summary(model)
+confint(model, method="Wald")
+
+# study2L_rt_oV = brm(
+#   log(rt) ~ 1 + nabsvDiff + noV + (1 + nabsvDiff + noV | subject),
+#   data = study2L,
+#   family = gaussian(),
+#   prior = c(
+#     prior(normal(0,1.0), class=Intercept),
+#     prior(normal(0,1.0), class="b", coef="absvDiff"),
+#     prior(normal(0,0.5), class="b", coef="z_oV")
+#     #prior(normal(0, 0.5), class = "sd", group = "subject", coef = "Intercept"),
+#     #prior(normal(0, 0.1), class = "sd", group = "subject", coef = "absvDiff"),
+#     #prior(normal(0, 0.05), class = "sd", group = "subject", coef = "z_oV")
+#   ),
+#   file = file.path(.tempdir, paste0("study2L_rt_oV", ds))
+# )
+# summary(study2L_rt_oV)
 
 
 if (ds == "_J") {
@@ -107,44 +118,53 @@ if (ds == "_J") {
   # Study 1
   ##########
   
-  study1G$z_oV = scale(study1G$oV)
+  study1G$nabsvDiff = abs(study1G$vDiff) / max(abs(study1G$vDiff))
+  study1G$noV = (study1G$oV/abs(study1G$oV)) * abs(study1G$oV) / max(abs(study1G$oV))
   
-  study1G_rt_oV = brm(
-    log(rt) ~ 1 + abs(vDiff) + z_oV + (1 + abs(vDiff) + z_oV | subject),
-    data = study1G,
-    family = gaussian(),
-    prior = c(
-      prior(normal(0,0.5), class=Intercept), 
-      prior(normal(0,0.3), class="b", coef="absvDiff"),
-      prior(normal(0,0.1), class="b", coef="z_oV"),
-      prior(normal(0, 0.5), class = "sd", group = "subject", coef = "Intercept"),
-      prior(normal(0, 0.1), class = "sd", group = "subject", coef = "absvDiff"),
-      prior(normal(0, 0.05), class = "sd", group = "subject", coef = "z_oV")
-    ),
-    file = file.path(.tempdir, paste0("study1G_rt_oV", ds))
-  )
-  summary(study1G_rt_oV)
+  model = lmer(log(rt) ~ 1 + nabsvDiff + noV + (1 + nabsvDiff + noV | subject), study1G)
+  summary(model)
+  confint(model, method="Wald")
+  
+  # study1G_rt_oV = brm(
+  #   log(rt) ~ 1 + nabsvDiff + noV + (1 + nabsvDiff + noV | subject),
+  #   data = study1G,
+  #   family = gaussian(),
+  #   prior = c(
+  #     prior(normal(0,1.0), class=Intercept),
+  #     prior(normal(0,1.0), class="b", coef="absvDiff"),
+  #     prior(normal(0,0.5), class="b", coef="z_oV")
+  #     #prior(normal(0, 0.5), class = "sd", group = "subject", coef = "Intercept"),
+  #     #prior(normal(0, 0.1), class = "sd", group = "subject", coef = "absvDiff"),
+  #     #prior(normal(0, 0.05), class = "sd", group = "subject", coef = "z_oV")
+  #   ),
+  #   file = file.path(.tempdir, paste0("study1G_rt_oV", ds))
+  # )
+  # summary(study1G_rt_oV)
   
   
   ##########
   # Study 2
   ##########
+  study2G$nabsvDiff = abs(study2G$vDiff) / max(abs(study2G$vDiff))
+  study2G$noV = (study2G$oV/abs(study2G$oV)) * abs(study2G$oV) / max(abs(study2G$oV))
   
-  study2G$z_oV = scale(study2G$oV)
+  model = lmer(log(rt) ~ 1 + nabsvDiff + noV + (1 + nabsvDiff + noV | subject), study2G)
+  summary(model)
+  confint(model, method="Wald")
   
-  study2G_rt_oV = brm(
-    log(rt) ~ 1 + abs(vDiff) + z_oV + (1 + abs(vDiff) + z_oV | subject),
-    data = study2G,
-    family = gaussian(),
-    prior = c(
-      prior(normal(0,0.5), class=Intercept), 
-      prior(normal(0,0.3), class="b", coef="absvDiff"),
-      prior(normal(0,0.1), class="b", coef="z_oV"),
-      prior(normal(0, 0.5), class = "sd", group = "subject", coef = "Intercept"),
-      prior(normal(0, 0.1), class = "sd", group = "subject", coef = "absvDiff"),
-      prior(normal(0, 0.05), class = "sd", group = "subject", coef = "z_oV")
-    ),
-    file = file.path(.tempdir, paste0("study2G_rt_oV", ds))
-  )
-  summary(study2G_rt_oV)
+  # study2G_rt_oV = brm(
+  #   log(rt) ~ 1 + nabsvDiff + noV + (1 + nabsvDiff + noV | subject),
+  #   data = study2G,
+  #   family = gaussian(),
+  #   prior = c(
+  #     prior(normal(0,1.0), class=Intercept),
+  #     prior(normal(0,1.0), class="b", coef="absvDiff"),
+  #     prior(normal(0,0.5), class="b", coef="z_oV")
+  #     #prior(normal(0, 0.5), class = "sd", group = "subject", coef = "Intercept"),
+  #     #prior(normal(0, 0.1), class = "sd", group = "subject", coef = "absvDiff"),
+  #     #prior(normal(0, 0.05), class = "sd", group = "subject", coef = "z_oV")
+  #   ),
+  #   file = file.path(.tempdir, paste0("study2G_rt_oV", ds))
+  # )
+  # summary(study2G_rt_oV)
 }

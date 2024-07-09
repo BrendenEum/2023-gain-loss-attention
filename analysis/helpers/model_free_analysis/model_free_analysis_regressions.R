@@ -9,28 +9,30 @@ library(tidyverse)
 library(brms)
 library(effsize)
 library(beepr)
+library(lme4)
+library(broom.mixed)
 codedir = getwd()
 datadir = file.path("../../../data/processed_data/datasets")
 tempdir = file.path("../../outputs/temp")
 tempregdir = file.path(tempdir, "regressions")
 tabdir = file.path("../../outputs/tables")
 
-# Regression Options
-
-refit = "always" # Run regressions? {always, on_change, never}
-show.reg.progress = 1 # 1: Show updates. 0: Nah.
-iter = 18000 # warmup + posterior samples
-my_brm <- function(...)
-  brms::brm(
-    ...,
-    iter = iter, #samples from the posterior
-    warmup = floor(iter/2), #part of a healthy workout
-    chains = 3, 
-    cores = 3, 
-    backend = 'rstan',
-    seed = seed,
-    refresh = show.reg.progress,
-    file_refit = refit) 
+# # Regression Options
+# 
+# refit = "always" # Run regressions? {always, on_change, never}
+# show.reg.progress = 1 # 1: Show updates. 0: Nah.
+# iter = 18000 # warmup + posterior samples
+# my_brm <- function(...)
+#   brms::brm(
+#     ...,
+#     iter = iter, #samples from the posterior
+#     warmup = floor(iter/2), #part of a healthy workout
+#     chains = 3, 
+#     cores = 3, 
+#     backend = 'rstan',
+#     seed = seed,
+#     refresh = show.reg.progress,
+#     file_refit = refit) 
 
 # Loop through each dataset
 for (dataset in c("ecfr.RData", "ccfr.RData", "jcfr.RData") ) { 
@@ -199,7 +201,7 @@ for (dataset in c("ecfr.RData", "ccfr.RData", "jcfr.RData") ) {
 
 
   ####################
-  Additional Fixation Properties
+  # Additional Fixation Properties
   ####################
 
   # Pr First Fix Left

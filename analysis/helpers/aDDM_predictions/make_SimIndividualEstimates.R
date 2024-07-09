@@ -166,3 +166,30 @@ RaDDM_Loss = expand.grid(RaDDM_Loss) %>% data.frame() %>% mutate(subject = row_n
 RaDDM_grid = bind_rows(RaDDM_Gain, RaDDM_Loss)
 fn = paste0("SimIndividualEstimates_RaDDM.csv")
 write.csv(RaDDM_grid, file=fn, row.names=F)
+
+
+####################################
+# Hybrid aDDM
+####################################
+
+HybridaDDM_Gain = list(
+  condition = "Gain",
+  d = d_grid_normal,
+  sigma = sigma_grid,
+  theta = c(.1, .5, .9),
+  eta = c(.001, .005, .009)
+)
+HybridaDDM_Gain = expand.grid(HybridaDDM_Gain) %>% data.frame() %>% mutate(subject = row_number())
+
+HybridaDDM_Loss = list(
+  condition = "Loss",
+  d = d_grid_normal,
+  sigma = sigma_grid,
+  theta = c(.1, .5, .9),
+  eta = c(.001, .005, .009)
+)
+HybridaDDM_Loss = expand.grid(HybridaDDM_Loss) %>% data.frame() %>% mutate(subject = row_number())
+
+AddDDM_grid = bind_rows(AddDDM_Gain, AddDDM_Loss)
+fn = paste0("SimIndividualEstimates_AddDDM.csv")
+write.csv(AddDDM_grid, file=fn, row.names=F)

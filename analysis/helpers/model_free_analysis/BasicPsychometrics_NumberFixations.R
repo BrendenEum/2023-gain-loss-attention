@@ -38,11 +38,13 @@ psycho.numfix.reg <- function(data, study="error", dataset="error") {
 
   data <- data[data$lastFix==T,]
 
-  results <- my_brm(
+  results = lmer(
     fix_num ~ ndifficulty*relevel(condition,ref="Gain") + (1+ndifficulty*relevel(condition,ref="Gain") | subject),
-    data=data,
-    family = gaussian(),
-    file = file.path(tempregdir, paste0(study, "_BasicPsychometrics_NumberFixations_", dataset)))
+    data = data,
+  ) %>% tidy(effects = "fixed", conf.int = T)
+  
+  fn = paste0("regression_output/", study, "_BasicPsychometrics_NumFix_", dataset, ".csv")
+  write.csv(results, fn, row.names = FALSE)
   
   return(results)
 
