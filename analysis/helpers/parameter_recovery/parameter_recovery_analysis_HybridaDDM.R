@@ -18,15 +18,17 @@ options(dplyr.summarise.inform = FALSE)
 # ------------------------------------------------------------------------
 # Things to change
 .nTrials = 146
-.most_recent_run = "2024.07.05.18.22"
+.most_recent_run_G = "2024.07.05.18.22" # Gain
+.most_recent_run_L = "2024.07.09.0.31" # Loss
 # ------------------------------------------------------------------------
 
 # Directories
-figdir = file.path("results_HybridaDDM_Gain/")
+figdir = file.path("../../outputs/figures/")
 optdir = file.path("../plot_options/")
 source(file.path(optdir, "GainLossColorPalette.R"))
 source(file.path(optdir, "MyPlotOptions.R"))
-HybridaDDM_Gain_dir = file.path("results_HybridaDDM_Gain", .most_recent_run)
+HybridaDDM_Gain_dir = file.path("results_HybridaDDM_Gain", .most_recent_run_G)
+HybridaDDM_Loss_dir = file.path("results_HybridaDDM_Loss", .most_recent_run_L)
 
 H_subjects = c(1:81)
 
@@ -53,19 +55,6 @@ getHybridaDDMParameterPosteriors = function(folder, condition, subjectList, .nTr
     
     posteriors = read.csv(file = file.path(folder, paste0("posteriors_df_", s, ".csv")))
     
-    # likelihoods$posterior = NA
-    # likelihoods$posterior[likelihoods$trial_num==1] = 
-    #   likelihoods$likelihood[likelihoods$trial_num==1] / sum(likelihoods$likelihood[likelihoods$trial_num==1])
-    # for (r in 2:.nTrials) {
-    #   # posterior from last trial becomes prior. multiply by likelihood.
-    #   likelihoods$posterior[likelihoods$trial_num==r] = 
-    #     likelihoods$posterior[likelihoods$trial_num==(r-1)] * likelihoods$likelihood[likelihoods$trial_num==r]
-    #   # renormalize.
-    #   likelihoods$posterior[likelihoods$trial_num==r] = 
-    #     likelihoods$posterior[likelihoods$trial_num==r] / sum(likelihoods$posterior[likelihoods$trial_num==r])
-    # }
-    # posteriors = likelihoods[likelihoods$trial_num==.nTrials,]
-    
     d_df = posteriors %>%
       group_by(d) %>%
       summarize(variable = "d", value = first(d), marg_posterior = sum(posterior), true = d_true)
@@ -90,10 +79,11 @@ getHybridaDDMParameterPosteriors = function(folder, condition, subjectList, .nTr
 }
 
 HybridG = getHybridaDDMParameterPosteriors(HybridaDDM_Gain_dir, "Gain", H_subjects, .nTrials)
+HybridL = getHybridaDDMParameterPosteriors(HybridaDDM_Loss_dir, "Loss", H_subjects, .nTrials)
 
 # Only keep veraibles of interest
 voi = c("subject", "condition", "variable", "true", "value", "marg_posterior")
-data = bind_rows(HybridG[,voi])
+data = bind_rows(HybridG[,voi], HybridL[,voi])
 
 # Get mean and HDI of marginal posterior
 summary_data = data %>%
@@ -299,4 +289,4 @@ plt.ParamRecov <- grid.arrange(
 
 plot(plt.ParamRecov)
 
-ggsave(file.path(figdir, "ParameterRecovery.pdf"), plt.ParamRecov, height=4.5, width=14.75, units="in")
+ggsave(file.path(figdir, "ParameterRecovery_HybridaDDM.pdf"), plt.ParamRecov, height=4.5, width=14.75, units="in")

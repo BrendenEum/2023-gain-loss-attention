@@ -7,7 +7,7 @@
 ##############################################
 
 # Libraries
-using ADDM, CSV, DataFrames, DataFramesMeta, Distributed, Distributions, LinearAlgebra, Base.Threads
+using ADDM, CSV, DataFrames, DataFramesMeta, Distributed, Distributions, LinearAlgebra, Base.Threads, Dates
 include("send_text.jl")
 
 #---------------------------------------------------------------------------------------
@@ -30,6 +30,7 @@ full_data = ADDM.load_data_from_csv(
 # Likelihood functions
 include("custom_functions/AddDDM_likelihood.jl");
 include("custom_functions/RaDDM_likelihood.jl");
+include("custom_functions/HybridaDDM_likelihood.jl");
 
 # Fitting options
 my_likelihood_args = (timeStep = 10.0, stateStep = 0.01);
@@ -50,8 +51,13 @@ tmp = DataFrame(CSV.File("parameter_grids/aDDM_grid.csv", delim=","));
 tmp.likelihood_fn .= "RaDDM_likelihood";
 param_grid2 = NamedTuple.(eachrow(tmp));
 
+# HybridaDDM
+tmp = DataFrame(CSV.File("parameter_grids/HybridaDDM_grid.csv", delim=","));
+tmp.likelihood_fn .= "HybridaDDM_likelihood";
+param_grid3 = NamedTuple.(eachrow(tmp));
+
 # Combine the grids
-param_grid = vcat(param_grid1, param_grid2);
+param_grid = vcat(param_grid1, param_grid2, param_grid3);
 
 
 ##############################################
@@ -62,6 +68,7 @@ Threads.@threads for k in study_participants
 
     # Subset data
     println("Starting Participant $(k).")
+    println(now())
     subj_data = full_data["$(k)"];
 
     # Grid search with uniform priors over all models. Measure computation time.

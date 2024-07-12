@@ -6,6 +6,8 @@
 # Preamble
 ##############################################
 
+include("send_text.jl")
+
 #---------------------------------------------------------------------------------------
 # THINGS TO CHANGE
 
@@ -90,3 +92,5 @@ Threads.@threads for k in study_participants
     CSV.write(outdir * "combdf_$(k).csv", combdf);
 
 end
+
+send_imessage("+17149067269", "Parameter recovery with Hybrid aDDM in gains has finished.") 
