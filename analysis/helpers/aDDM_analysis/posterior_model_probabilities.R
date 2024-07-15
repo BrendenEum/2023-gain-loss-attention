@@ -16,17 +16,16 @@ library(ggnewscale)
 
 
 #------------- Things you should edit at the start -------------
-dataset = "j"
-nTrials = "146_trials"
-fn = "aDDM_modelComparison_J.pdf"
+dataset = "e"
+fn = "aDDM_modelComparison_E.pdf"
 
 cfrdir = file.path("../../../data/processed_data/datasets")
 load(file.path(cfrdir, paste0(dataset, "cfr.RData")))
-cfr = jcfr
+cfr = ecfr
 #---------------------------------------------------------------
 
 codedir = getwd()
-datadir = file.path(paste0("../aDDM_fitting/results"))#_", nTrials))
+datadir = file.path(paste0("../aDDM_fitting/results"))
 figdir = file.path("../../outputs/figures")
 optdir = file.path("../plot_options/")
 source(file.path(optdir, "GainLossColorPalette.R"))
@@ -63,8 +62,8 @@ getData = function(folder, studyN, condition, subjectList) {
   
   posteriors_df$likelihood_fn = factor(
     posteriors_df$likelihood_fn,
-    levels=c("AddDDM_likelihood","RaDDM_likelihood"),
-    labels=c("AddDDM","RaDDM")
+    levels=c("AddDDM_likelihood", "HybridaDDM_likelihood", "RaDDM_likelihood"),
+    labels=c("AddDDM", "HybridaDDM", "RaDDM")
   )
 
   posteriors_df$study = factor(posteriors_df$studyN, levels=c(1,2), labels=c("Study 1","Study 2"))
